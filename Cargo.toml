@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "envoy-sdk",
+    "examples/http-filter",
+]
