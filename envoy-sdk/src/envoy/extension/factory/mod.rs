@@ -13,11 +13,11 @@ use proxy_wasm::types::Bytes;
 pub trait Factory {
     type Extension;
 
-    fn on_configure(&mut self, _plugin_configuration_size: usize, _ops: &dyn ConfigureOps) -> Result<bool> {
+    fn on_configure(&mut self, _configuration_size: usize, _ops: &dyn ConfigureOps) -> Result<bool> {
         Ok(true)
     }
 
-    fn new_extension(&mut self, _context_id: u32) -> Result<Box<Self::Extension>>;
+    fn new_extension(&mut self, _context_id: u32) -> Result<Self::Extension>;
 
     fn on_drain(&mut self, _ops: &dyn DrainOps) -> Result<bool> {
         Ok(true)

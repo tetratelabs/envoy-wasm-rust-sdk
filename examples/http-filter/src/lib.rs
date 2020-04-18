@@ -12,17 +12,26 @@ use envoy_sdk::envoy::extension::filter::http;
 pub fn _start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
-        Box::new(http::FilterContext::new(
-            HttpHeadersFilter::new(Rc::new(HttpHeadersFilterConfig{
-                value: "plain-text config".to_string(),
-            }), context_id),
-            http::ops::Host,
-        ))
+        let mut factory = HttpHeadersFilterFactory::new();
+        let extension = <HttpHeadersFilterFactory as extension::factory::Factory>::new_extension(&mut factory, context_id).unwrap();
+        Box::new(http::FilterContext::new(extension, http::ops::Host))
     });
 }
 
 struct HttpHeadersFilterConfig {
     pub value: String,
+}
+
+impl HttpHeadersFilterConfig {
+    fn new(value: String) -> HttpHeadersFilterConfig {
+        HttpHeadersFilterConfig{value: value}
+    }
+}
+
+impl Default for HttpHeadersFilterConfig {
+    fn default() -> Self {
+        HttpHeadersFilterConfig{value: "".to_string()}
+    }
 }
 
 struct HttpHeadersFilter {
@@ -74,22 +83,33 @@ impl http::Filter for HttpHeadersFilter {
 }
 
 struct HttpHeadersFilterFactory {
+    config: Rc<HttpHeadersFilterConfig>,
+}
+
+impl HttpHeadersFilterFactory {
+    fn new() -> HttpHeadersFilterFactory {
+        HttpHeadersFilterFactory{
+            config: Rc::new(HttpHeadersFilterConfig::default())
+        }
+    }
 }
 
 impl extension::Factory for HttpHeadersFilterFactory {
     type Extension = HttpHeadersFilter;
 
-    fn on_configure(&mut self, _plugin_configuration_size: usize, _ops: &dyn extension::factory::ConfigureOps) -> Result<bool> {
+    fn on_configure(&mut self, _configuration_size: usize, ops: &dyn extension::factory::ConfigureOps) -> Result<bool> {
+        let config = match ops.get_configuration()? {
+            Some(bytes) => match String::from_utf8(bytes) {
+                Ok(value) => value,
+                Err(_) => return Ok(false),
+            },
+            None => "".to_string(),
+        };
+        self.config = Rc::new(HttpHeadersFilterConfig::new(config));
         Ok(true)
     }
 
-    fn new_extension(&mut self, context_id: u32) -> Result<Box<HttpHeadersFilter>> {
-        Ok(Box::new(HttpHeadersFilter::new(Rc::new(HttpHeadersFilterConfig{
-            value: "plain-text config".to_string(),
-        }), context_id)))
-    }
-
-    fn on_drain(&mut self, _ops: &dyn extension::factory::DrainOps) -> Result<bool> {
-        Ok(true)
+    fn new_extension(&mut self, context_id: u32) -> Result<HttpHeadersFilter> {
+        Ok(HttpHeadersFilter::new(Rc::clone(&self.config), context_id))
     }
 }
