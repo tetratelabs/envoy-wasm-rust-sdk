@@ -6,24 +6,37 @@ use log::info;
 
 use envoy_sdk::extension::Result;
 use envoy_sdk::extension::filter::http;
+use envoy_sdk::host::services::time;
+use envoy_sdk::host::services::clients;
 
-pub struct SampleHttpFilter {
+extern crate chrono;
+use chrono::offset::Local;
+use chrono::DateTime;
+
+pub struct SampleHttpFilter<'a> {
     config: Rc<SampleHttpFilterConfig>,
     instance_id: u32,
+    time_service: &'a dyn time::Service,
+    _http_client: &'a dyn clients::http::Client,
 }
 
-impl SampleHttpFilter {
-    pub fn new(config: Rc<SampleHttpFilterConfig>, instance_id: u32) -> SampleHttpFilter {
+impl<'a> SampleHttpFilter<'a> {
+    pub fn new(config: Rc<SampleHttpFilterConfig>, instance_id: u32, time_service: &'a dyn time::Service, http_client: &'a dyn clients::http::Client) -> SampleHttpFilter<'a> {
         SampleHttpFilter {
             config: config,
             instance_id: instance_id,
+            time_service: time_service,
+            _http_client: http_client,
         }
     }
 }
 
-impl http::Filter for SampleHttpFilter {
+impl<'a> http::Filter for SampleHttpFilter<'a> {
     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn http::RequestHeadersOps) -> Result<http::FilterHeadersStatus> {
-        info!("#{} new http exchange with config: {}", self.instance_id, self.config.value);
+        let current_time = self.time_service.get_current_time()?;
+        let datetime: DateTime<Local> = current_time.into();
+
+        info!("#{} new http exchange starts at {} with config: {}", self.instance_id, datetime.format("%+"), self.config.value);
 
         for (name, value) in &ops.get_request_headers()? {
             info!("#{} -> {}: {}", self.instance_id, name, value);

@@ -6,8 +6,7 @@ use std::time::Duration;
 use crate::host;
 use crate::extension::Result;
 
-use proxy_wasm::types::{BufferType, Bytes, MapType};
-use proxy_wasm::hostcalls;
+use proxy_wasm::types::Bytes;
 
 pub trait Client {
     fn send_request(
@@ -42,18 +41,39 @@ pub trait ResponseOps {
     fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 }
 
-struct Abi;
+pub mod ops {
+    use std::time::Duration;
+    use crate::host;
+    use proxy_wasm::hostcalls;
+    use proxy_wasm::types::{BufferType, Bytes, MapType};
 
-impl ResponseOps for Abi {
-    fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpCallResponseHeaders)
+    pub struct Host;
+
+    impl super::Client for Host {
+        fn send_request(
+            &self,
+            upstream: &str,
+            headers: Vec<(&str, &str)>,
+            body: Option<&[u8]>,
+            trailers: Vec<(&str, &str)>,
+            timeout: Duration,
+            _handler: &dyn super::ResponseHandler,
+        ) -> host::Result<u32> {
+            hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
+        }
     }
 
-    fn get_http_call_response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
-        hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size)
-    }
+    impl super::ResponseOps for Host {
+        fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
+            hostcalls::get_map(MapType::HttpCallResponseHeaders)
+        }
 
-    fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpCallResponseTrailers)
+        fn get_http_call_response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
+            hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size)
+        }
+
+        fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
+            hostcalls::get_map(MapType::HttpCallResponseTrailers)
+        }
     }
 }

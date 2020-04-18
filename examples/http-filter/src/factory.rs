@@ -5,21 +5,27 @@ use super::filter::SampleHttpFilter;
 
 use envoy_sdk::extension;
 use envoy_sdk::extension::Result;
+use envoy_sdk::host::services::time;
+use envoy_sdk::host::services::clients;
 
-pub struct SampleHttpFilterFactory {
+pub struct SampleHttpFilterFactory<'a> {
     config: Rc<SampleHttpFilterConfig>,
+    time_service: &'a dyn time::Service,
+    http_client: &'a dyn clients::http::Client,
 }
 
-impl SampleHttpFilterFactory {
-    pub fn new() -> SampleHttpFilterFactory {
+impl<'a> SampleHttpFilterFactory<'a> {
+    pub fn new(time_service: &'a dyn time::Service, http_client: &'a dyn clients::http::Client) -> SampleHttpFilterFactory<'a> {
         SampleHttpFilterFactory{
-            config: Rc::new(SampleHttpFilterConfig::default())
+            config: Rc::new(SampleHttpFilterConfig::default()),
+            time_service: time_service,
+            http_client: http_client,
         }
     }
 }
 
-impl extension::Factory for SampleHttpFilterFactory {
-    type Extension = SampleHttpFilter;
+impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
+    type Extension = SampleHttpFilter<'a>;
 
     fn on_configure(&mut self, _configuration_size: usize, ops: &dyn extension::factory::ConfigureOps) -> Result<bool> {
         let value = match ops.get_configuration()? {
@@ -33,7 +39,7 @@ impl extension::Factory for SampleHttpFilterFactory {
         Ok(true)
     }
 
-    fn new_extension(&mut self, instance_id: u32) -> Result<SampleHttpFilter> {
-        Ok(SampleHttpFilter::new(Rc::clone(&self.config), instance_id))
+    fn new_extension(&mut self, instance_id: u32) -> Result<SampleHttpFilter<'a>> {
+        Ok(SampleHttpFilter::new(Rc::clone(&self.config), instance_id, self.time_service, self.http_client))
     }
 }

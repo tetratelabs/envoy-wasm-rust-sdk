@@ -118,8 +118,7 @@ pub trait ResponseFlowOps {
 }
 
 pub trait Ops: RequestHeadersOps + RequestBodyOps + RequestTrailersOps
- + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps
- where Self: std::marker::Sized {}
+ + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps {}
 
 impl<T> Ops for T 
  where T: RequestHeadersOps + RequestBodyOps + RequestTrailersOps
