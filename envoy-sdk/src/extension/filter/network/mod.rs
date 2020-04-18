@@ -45,6 +45,14 @@ pub trait UpstreamDataOps {
     fn get_upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
-pub trait Ops: DownstreamDataOps + UpstreamDataOps where Self: std::marker::Sized {}
+pub trait Ops: DownstreamDataOps + UpstreamDataOps {
+    fn as_downstream_data_ops(&self) -> &dyn DownstreamDataOps;
 
-impl<T> Ops for T where T: DownstreamDataOps + UpstreamDataOps {}
+    fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps;
+}
+
+impl<T> Ops for T where T: DownstreamDataOps + UpstreamDataOps {
+    fn as_downstream_data_ops(&self) -> &dyn DownstreamDataOps { self }
+
+    fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps { self }
+}

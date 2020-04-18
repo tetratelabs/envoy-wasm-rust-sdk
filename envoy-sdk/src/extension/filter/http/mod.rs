@@ -118,8 +118,32 @@ pub trait ResponseFlowOps {
 }
 
 pub trait Ops: RequestHeadersOps + RequestBodyOps + RequestTrailersOps
- + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps {}
+ + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps {
+    fn as_request_headers_ops(&self) -> &dyn RequestHeadersOps;
+
+    fn as_request_body_ops(&self) -> &dyn RequestBodyOps;
+
+    fn as_request_trailers_ops(&self) -> &dyn RequestTrailersOps;
+
+    fn as_response_headers_ops(&self) -> &dyn ResponseHeadersOps;
+
+    fn as_response_body_ops(&self) -> &dyn ResponseBodyOps;
+
+    fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps;
+ }
 
 impl<T> Ops for T 
  where T: RequestHeadersOps + RequestBodyOps + RequestTrailersOps
- + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps {}
+ + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps {
+    fn as_request_headers_ops(&self) -> &dyn RequestHeadersOps { self }
+
+    fn as_request_body_ops(&self) -> &dyn RequestBodyOps { self }
+
+    fn as_request_trailers_ops(&self) -> &dyn RequestTrailersOps { self }
+
+    fn as_response_headers_ops(&self) -> &dyn ResponseHeadersOps { self }
+
+    fn as_response_body_ops(&self) -> &dyn ResponseBodyOps { self }
+
+    fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps { self }
+}

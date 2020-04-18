@@ -18,7 +18,7 @@ pub mod ops {
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::Bytes;
 
-    struct Host;
+    pub struct Host;
 
     impl super::Service for Host {
         fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {

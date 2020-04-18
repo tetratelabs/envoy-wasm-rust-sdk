@@ -17,7 +17,7 @@ pub mod ops {
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::Bytes;
 
-    struct Host;
+    pub struct Host;
 
     impl super::Service for Host {
         fn register_queue(&self, name: &str) -> host::Result<u32> {
