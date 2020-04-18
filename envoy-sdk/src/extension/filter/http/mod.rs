@@ -5,8 +5,8 @@ pub mod ops;
 pub mod context;
 pub use context::FilterContext; 
 
-use crate::envoy::host;
-use crate::envoy::extension::Result;
+use crate::host;
+use crate::extension::Result;
 
 use proxy_wasm::types::{Action, Bytes};
 

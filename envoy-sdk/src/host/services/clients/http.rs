@@ -3,8 +3,8 @@ use std::prelude::v1::*;
 
 use std::time::Duration;
 
-use crate::envoy::host;
-use crate::envoy::extension::Result;
+use crate::host;
+use crate::extension::Result;
 
 use proxy_wasm::types::{BufferType, Bytes, MapType};
 use proxy_wasm::hostcalls;

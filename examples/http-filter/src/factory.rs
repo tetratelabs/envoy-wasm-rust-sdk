@@ -3,8 +3,8 @@ use std::rc::Rc;
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
 
-use envoy_sdk::envoy::extension;
-use envoy_sdk::envoy::extension::Result;
+use envoy_sdk::extension;
+use envoy_sdk::extension::Result;
 
 pub struct SampleHttpFilterFactory {
     config: Rc<SampleHttpFilterConfig>,

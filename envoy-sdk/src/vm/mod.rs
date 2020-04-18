@@ -1,5 +1,5 @@
-use crate::envoy::host;
-use crate::envoy::extension::Result;
+use crate::host;
+use crate::extension::Result;
 
 use proxy_wasm::types::Bytes;
 use proxy_wasm::hostcalls;

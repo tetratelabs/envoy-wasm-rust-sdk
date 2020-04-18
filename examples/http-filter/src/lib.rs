@@ -7,8 +7,8 @@ use factory::SampleHttpFilterFactory;
 use proxy_wasm::traits::HttpContext;
 use proxy_wasm::types::LogLevel;
 
-use envoy_sdk::envoy::extension;
-use envoy_sdk::envoy::extension::filter::http;
+use envoy_sdk::extension;
+use envoy_sdk::extension::filter::http;
 
 #[no_mangle]
 pub fn _start() {

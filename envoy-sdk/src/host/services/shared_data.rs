@@ -1,4 +1,4 @@
-use crate::envoy::host;
+use crate::host;
 
 use proxy_wasm::types::Bytes;
 use proxy_wasm::hostcalls;

@@ -4,8 +4,8 @@ use super::config::SampleHttpFilterConfig;
 
 use log::info;
 
-use envoy_sdk::envoy::extension::Result;
-use envoy_sdk::envoy::extension::filter::http;
+use envoy_sdk::extension::Result;
+use envoy_sdk::extension::filter::http;
 
 pub struct SampleHttpFilter {
     config: Rc<SampleHttpFilterConfig>,

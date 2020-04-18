@@ -2,8 +2,7 @@
 
 ## List
 
-* [hello-world](./hello-world) - calls `proxy_log` from various handlers, e.g. `proxy_on_start`,
-`proxy_on_configure`, `proxy_on_create`, `proxy_on_request_headers`, etc
+* [http-filter](./http-filter) - logs HTTP request/response headers
 
 ## How To
 

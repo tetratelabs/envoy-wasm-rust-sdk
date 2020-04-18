@@ -1,7 +1,7 @@
 extern crate std;
 use std::prelude::v1::*;
 
-use crate::envoy::host;
+use crate::host;
 
 use proxy_wasm::types::{BufferType, Bytes, MapType};
 use proxy_wasm::hostcalls;
