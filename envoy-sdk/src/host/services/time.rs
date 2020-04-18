@@ -16,7 +16,7 @@ pub mod ops {
 
     impl super::Service for Host {
         fn get_current_time(&self) -> host::Result<SystemTime> {
-            hostcalls::get_current_time()
+            hostcalls::get_current_time().map_err(|status| ("proxy_get_current_time_nanoseconds", status))
         }
     }
 }

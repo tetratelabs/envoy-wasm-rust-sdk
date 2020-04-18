@@ -22,7 +22,7 @@ pub mod ops {
 
     impl super::Service for Host {
         fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
-            hostcalls::get_shared_data(key)
+            hostcalls::get_shared_data(key).map_err(|status| ("proxy_get_shared_data", status))
         }
 
         fn set_data(
@@ -31,7 +31,7 @@ pub mod ops {
             value: Option<&[u8]>,
             cas: Option<u32>,
         ) -> host::Result<()> {
-            hostcalls::set_shared_data(key, value, cas)
+            hostcalls::set_shared_data(key, value, cas).map_err(|status| ("proxy_set_shared_data", status))
         }
     }
 }

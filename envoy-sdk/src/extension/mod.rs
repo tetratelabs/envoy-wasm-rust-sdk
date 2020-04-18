@@ -9,13 +9,13 @@ pub use factory::Factory;
 
 #[derive(Debug)]
 pub enum Error {
-    Host(proxy_wasm::types::Status),
+    HostCall(&'static str, proxy_wasm::types::Status),
     Extension,
 }
 
-impl From<proxy_wasm::types::Status> for Error {
-    fn from(status: proxy_wasm::types::Status) -> Self {
-        Error::Host(status)
+impl From<(&'static str, proxy_wasm::types::Status)> for Error {
+    fn from(pair: (&'static str, proxy_wasm::types::Status)) -> Self {
+        Error::HostCall(pair.0, pair.1)
     }
 }
 

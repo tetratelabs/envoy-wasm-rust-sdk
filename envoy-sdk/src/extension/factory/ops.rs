@@ -10,12 +10,12 @@ pub struct Host;
 
 impl super::ConfigureOps for Host {
     fn get_configuration(&self) -> host::Result<Option<Bytes>> {
-        hostcalls::get_configuration()
+        hostcalls::get_configuration().map_err(|status| ("proxy_get_configuration", status))
     }
 }
 
 impl super::DrainOps for Host {
     fn done(&self) -> host::Result<()> {
-        hostcalls::done()
+        hostcalls::done().map_err(|status| ("proxy_done", status))
     }
 }
