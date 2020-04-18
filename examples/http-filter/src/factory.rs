@@ -33,7 +33,7 @@ impl extension::Factory for SampleHttpFilterFactory {
         Ok(true)
     }
 
-    fn new_extension(&mut self, context_id: u32) -> Result<SampleHttpFilter> {
-        Ok(SampleHttpFilter::new(Rc::clone(&self.config), context_id))
+    fn new_extension(&mut self, instance_id: u32) -> Result<SampleHttpFilter> {
+        Ok(SampleHttpFilter::new(Rc::clone(&self.config), instance_id))
     }
 }

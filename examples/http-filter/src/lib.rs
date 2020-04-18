@@ -2,13 +2,13 @@ mod config;
 mod filter;
 mod factory;
 
-use factory::SampleHttpFilterFactory;
-
 use proxy_wasm::traits::HttpContext;
 use proxy_wasm::types::LogLevel;
 
 use envoy_sdk::extension;
 use envoy_sdk::extension::filter::http;
+
+use factory::SampleHttpFilterFactory;
 
 #[no_mangle]
 pub fn _start() {

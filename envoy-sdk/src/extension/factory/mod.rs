@@ -17,7 +17,7 @@ pub trait Factory {
         Ok(true)
     }
 
-    fn new_extension(&mut self, _context_id: u32) -> Result<Self::Extension>;
+    fn new_extension(&mut self, _instance_id: u32) -> Result<Self::Extension>;
 
     fn on_drain(&mut self, _ops: &dyn DrainOps) -> Result<bool> {
         Ok(true)
