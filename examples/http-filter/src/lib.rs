@@ -12,43 +12,43 @@ use envoy_sdk::envoy::extension::filter::http;
 pub fn _start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
-        let mut factory = HttpHeadersFilterFactory::new();
-        let extension = <HttpHeadersFilterFactory as extension::factory::Factory>::new_extension(&mut factory, context_id).unwrap();
+        let mut factory = SampleHttpFilterFactory::new();
+        let extension = <SampleHttpFilterFactory as extension::factory::Factory>::new_extension(&mut factory, context_id).unwrap();
         Box::new(http::FilterContext::new(extension, http::ops::Host))
     });
 }
 
-struct HttpHeadersFilterConfig {
-    pub value: String,
+struct SampleHttpFilterConfig {
+    value: String,
 }
 
-impl HttpHeadersFilterConfig {
-    fn new(value: String) -> HttpHeadersFilterConfig {
-        HttpHeadersFilterConfig{value: value}
+impl SampleHttpFilterConfig {
+    fn new(value: String) -> SampleHttpFilterConfig {
+        SampleHttpFilterConfig{value: value}
     }
 }
 
-impl Default for HttpHeadersFilterConfig {
+impl Default for SampleHttpFilterConfig {
     fn default() -> Self {
-        HttpHeadersFilterConfig{value: "".to_string()}
+        SampleHttpFilterConfig{value: "".to_string()}
     }
 }
 
-struct HttpHeadersFilter {
-    config: Rc<HttpHeadersFilterConfig>,
+struct SampleHttpFilter {
+    config: Rc<SampleHttpFilterConfig>,
     context_id: u32,
 }
 
-impl HttpHeadersFilter {
-    fn new(config: Rc<HttpHeadersFilterConfig>, context_id: u32) -> HttpHeadersFilter {
-        HttpHeadersFilter {
+impl SampleHttpFilter {
+    fn new(config: Rc<SampleHttpFilterConfig>, context_id: u32) -> SampleHttpFilter {
+        SampleHttpFilter {
             config: config,
             context_id: context_id,
         }
     }
 }
 
-impl http::Filter for HttpHeadersFilter {
+impl http::Filter for SampleHttpFilter {
     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn http::RequestHeadersOps) -> Result<http::FilterHeadersStatus> {
         info!("#{} -> config: {}", self.context_id, self.config.value);
 
@@ -82,34 +82,34 @@ impl http::Filter for HttpHeadersFilter {
     }
 }
 
-struct HttpHeadersFilterFactory {
-    config: Rc<HttpHeadersFilterConfig>,
+struct SampleHttpFilterFactory {
+    config: Rc<SampleHttpFilterConfig>,
 }
 
-impl HttpHeadersFilterFactory {
-    fn new() -> HttpHeadersFilterFactory {
-        HttpHeadersFilterFactory{
-            config: Rc::new(HttpHeadersFilterConfig::default())
+impl SampleHttpFilterFactory {
+    fn new() -> SampleHttpFilterFactory {
+        SampleHttpFilterFactory{
+            config: Rc::new(SampleHttpFilterConfig::default())
         }
     }
 }
 
-impl extension::Factory for HttpHeadersFilterFactory {
-    type Extension = HttpHeadersFilter;
+impl extension::Factory for SampleHttpFilterFactory {
+    type Extension = SampleHttpFilter;
 
     fn on_configure(&mut self, _configuration_size: usize, ops: &dyn extension::factory::ConfigureOps) -> Result<bool> {
-        let config = match ops.get_configuration()? {
+        let value = match ops.get_configuration()? {
             Some(bytes) => match String::from_utf8(bytes) {
                 Ok(value) => value,
                 Err(_) => return Ok(false),
             },
             None => "".to_string(),
         };
-        self.config = Rc::new(HttpHeadersFilterConfig::new(config));
+        self.config = Rc::new(SampleHttpFilterConfig::new(value));
         Ok(true)
     }
 
-    fn new_extension(&mut self, context_id: u32) -> Result<HttpHeadersFilter> {
-        Ok(HttpHeadersFilter::new(Rc::clone(&self.config), context_id))
+    fn new_extension(&mut self, context_id: u32) -> Result<SampleHttpFilter> {
+        Ok(SampleHttpFilter::new(Rc::clone(&self.config), context_id))
     }
 }
