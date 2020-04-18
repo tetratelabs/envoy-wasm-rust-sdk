@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use log::info;
 use proxy_wasm::traits::*;
 use proxy_wasm::types::*;
@@ -11,18 +13,36 @@ pub fn _start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
         Box::new(http::FilterContext::new(
-            HttpHeadersFilter{context_id: context_id},
+            HttpHeadersFilter::new(Rc::new(HttpHeadersFilterConfig{
+                value: "plain-text config".to_string(),
+            }), context_id),
             http::ops::Host,
         ))
     });
 }
 
+struct HttpHeadersFilterConfig {
+    pub value: String,
+}
+
 struct HttpHeadersFilter {
+    config: Rc<HttpHeadersFilterConfig>,
     context_id: u32,
+}
+
+impl HttpHeadersFilter {
+    fn new(config: Rc<HttpHeadersFilterConfig>, context_id: u32) -> HttpHeadersFilter {
+        HttpHeadersFilter {
+            config: config,
+            context_id: context_id,
+        }
+    }
 }
 
 impl http::Filter for HttpHeadersFilter {
     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn http::RequestHeadersOps) -> Result<http::FilterHeadersStatus> {
+        info!("#{} -> config: {}", self.context_id, self.config.value);
+
         for (name, value) in &ops.get_request_headers()? {
             info!("#{} -> {}: {}", self.context_id, name, value);
         }
@@ -64,7 +84,9 @@ impl extension::Factory for HttpHeadersFilterFactory {
     }
 
     fn new_extension(&mut self, context_id: u32) -> Result<Box<HttpHeadersFilter>> {
-        Ok(Box::new(HttpHeadersFilter{context_id: context_id}))
+        Ok(Box::new(HttpHeadersFilter::new(Rc::new(HttpHeadersFilterConfig{
+            value: "plain-text config".to_string(),
+        }), context_id)))
     }
 
     fn on_drain(&mut self, _ops: &dyn extension::factory::DrainOps) -> Result<bool> {
