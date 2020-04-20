@@ -52,20 +52,20 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
 
         info!("logging at {} with config: {}", datetime.format("%+"), self.config.value);
 
-        info!("     request headers:");
+        info!("  request headers:");
         let request_headers = logger_ops.get_request_headers()?;
         for (name, value) in &request_headers {
-            info!("       {}: {}", name, value);
+            info!("    {}: {}", name, value);
         }
-        info!("     response headers:");
+        info!("  response headers:");
         let response_headers = logger_ops.get_response_headers()?;
         for (name, value) in &response_headers {
-            info!("       {}: {}", name, value);
+            info!("    {}: {}", name, value);
         }
         let upstream_address = logger_ops.get_property(vec!["upstream", "address"])?;
         let upstream_address = upstream_address.map(|value| String::from_utf8(value).unwrap()).unwrap_or("".to_string());
-        info!("     upstream info:");
-        info!("       {}: {}", "upstream.address", upstream_address);
+        info!("  upstream info:");
+        info!("    {}: {}", "upstream.address", upstream_address);
 
         // simulate sending a log entry off
         self.active_request = Some(self.http_client.send_request(
@@ -79,7 +79,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
             vec![],
             Duration::from_secs(3),
         )?);
-        info!("sent outgoing request: @{}", self.active_request.as_ref().unwrap());
+        info!("sent request to a log collector: @{}", self.active_request.as_ref().unwrap());
 
         Ok(())
     }
@@ -89,14 +89,14 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
     fn on_http_call_response(&mut self, request: clients::http::RequestHandle,
                             num_headers: usize, _body_size: usize, _num_trailers: usize,
                             http_client_ops: &dyn clients::http::ResponseOps) -> Result<()> {
-        info!("received response on outgoing request: @{}", request);
+        info!("received response from a log collector on request: @{}", request);
         assert!(self.active_request == Some(request));
         self.active_request = None;
 
-        info!("     headers[count={}]:", num_headers);
+        info!("  headers[count={}]:", num_headers);
         let response_headers = http_client_ops.get_http_call_response_headers()?;
         for (name, value) in &response_headers {
-            info!("       {}: {}", name, value);
+            info!("    {}: {}", name, value);
         }
 
         Ok(())
