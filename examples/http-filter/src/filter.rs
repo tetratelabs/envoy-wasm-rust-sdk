@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::time::Duration;
 
 use super::config::SampleHttpFilterConfig;
 
@@ -17,7 +18,9 @@ pub struct SampleHttpFilter<'a> {
     config: Rc<SampleHttpFilterConfig>,
     instance_id: u32,
     time_service: &'a dyn time::Service,
-    _http_client: &'a dyn clients::http::Client,
+    http_client: &'a dyn clients::http::Client,
+
+    active_request: Option<clients::http::RequestHandle>,
 }
 
 impl<'a> SampleHttpFilter<'a> {
@@ -26,37 +29,53 @@ impl<'a> SampleHttpFilter<'a> {
             config: config,
             instance_id: instance_id,
             time_service: time_service,
-            _http_client: http_client,
+            http_client: http_client,
+            active_request: None,
         }
     }
 }
 
 impl<'a> http::Filter for SampleHttpFilter<'a> {
-    fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn http::RequestHeadersOps) -> Result<http::FilterHeadersStatus> {
+    fn on_request_headers(&mut self, _num_headers: usize, filter_ops: &dyn http::RequestHeadersOps) -> Result<http::FilterHeadersStatus> {
         let current_time = self.time_service.get_current_time()?;
         let datetime: DateTime<Local> = current_time.into();
 
         info!("#{} new http exchange starts at {} with config: {}", self.instance_id, datetime.format("%+"), self.config.value);
 
-        for (name, value) in &ops.get_request_headers()? {
+        for (name, value) in &filter_ops.get_request_headers()? {
             info!("#{} -> {}: {}", self.instance_id, name, value);
         }
 
-        match ops.get_request_header(":path")? {
+        match filter_ops.get_request_header(":path")? {
             Some(path) if path == "/ping" => {
-                ops.send_response(
+                filter_ops.send_response(
                     200,
                     vec![("x-sample-response", "pong")],
                     Some(b"Pong!\n"),
                 )?;
                 Ok(http::FilterHeadersStatus::Pause)
             }
+            Some(path) if path == "/mock" => {
+                self.active_request = Some(self.http_client.send_request(
+                    "mock_service",
+                    vec![
+                        (":method", "GET"),
+                        (":path", "/mock"),
+                        (":authority", "mock.local"),
+                    ],
+                    None,
+                    vec![],
+                    Duration::from_secs(3),
+                )?);
+                info!("#{} sent outgoing request: @{}", self.instance_id, self.active_request.as_ref().unwrap());
+                Ok(http::FilterHeadersStatus::Pause)
+            }
             _ => Ok(http::FilterHeadersStatus::Continue),
         }
     }
 
-    fn on_response_headers(&mut self, _num_headers: usize, ops: &dyn http::ResponseHeadersOps) -> Result<http::FilterHeadersStatus> {
-        for (name, value) in &ops.get_response_headers()? {
+    fn on_response_headers(&mut self, _num_headers: usize, filter_ops: &dyn http::ResponseHeadersOps) -> Result<http::FilterHeadersStatus> {
+        for (name, value) in &filter_ops.get_response_headers()? {
             info!("#{} <- {}: {}", self.instance_id, name, value);
         }
         Ok(http::FilterHeadersStatus::Continue)
@@ -64,6 +83,25 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
 
     fn on_exchange_complete(&mut self) -> Result<()> {
         info!("#{} http exchange complete", self.instance_id);
+        Ok(())
+    }
+
+    // Http Client callbacks
+
+    fn on_http_call_response(&mut self, request: clients::http::RequestHandle,
+                            num_headers: usize, _body_size: usize, _num_trailers: usize,
+                            filter_ops: &dyn http::Ops,
+                            http_client_ops: &dyn clients::http::ResponseOps) -> Result<()> {
+        info!("#{} received response on outgoing request: @{}", self.instance_id, request);
+        assert!(self.active_request == Some(request));
+
+        info!("     headers[count={}]:", num_headers);
+        let response_headers = http_client_ops.get_http_call_response_headers()?;
+        for (name, value) in &response_headers {
+            info!("       {}: {}", name, value);
+        }
+
+        filter_ops.resume_request()?;
         Ok(())
     }
 }

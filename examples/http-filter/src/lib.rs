@@ -18,6 +18,6 @@ pub fn _start() {
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
         let mut factory = SampleHttpFilterFactory::new(&time::ops::Host, &clients::http::ops::Host);
         let http_filter = <SampleHttpFilterFactory as extension::factory::Factory>::new_extension(&mut factory, context_id).unwrap();
-        Box::new(http::FilterContext::new(http_filter, &http::ops::Host))
+        Box::new(http::FilterContext::new(http_filter, &http::ops::Host, &clients::http::ops::Host))
     });
 }

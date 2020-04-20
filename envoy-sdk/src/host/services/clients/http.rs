@@ -4,9 +4,10 @@ use std::prelude::v1::*;
 use std::time::Duration;
 
 use crate::host;
-use crate::extension::Result;
 
 use proxy_wasm::types::Bytes;
+
+pub type RequestHandle = u32;
 
 pub trait Client {
     fn send_request(
@@ -16,21 +17,7 @@ pub trait Client {
         body: Option<&[u8]>,
         trailers: Vec<(&str, &str)>,
         timeout: Duration,
-        handler: &dyn ResponseHandler,
-    ) -> host::Result<u32>;
-}
-
-pub trait ResponseHandler {
-    fn on_response(
-        &mut self,
-        _ops: &dyn ResponseOps,
-        _token_id: u32,
-        _num_headers: usize,
-        _body_size: usize,
-        _num_trailers: usize,
-    ) -> Result<()> {
-        Ok(())
-    }
+    ) -> host::Result<RequestHandle>;
 }
 
 pub trait ResponseOps {
@@ -57,8 +44,7 @@ pub mod ops {
             body: Option<&[u8]>,
             trailers: Vec<(&str, &str)>,
             timeout: Duration,
-            _handler: &dyn super::ResponseHandler,
-        ) -> host::Result<u32> {
+        ) -> host::Result<super::RequestHandle> {
             hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout).map_err(|status| ("proxy_http_call", status))
         }
     }
