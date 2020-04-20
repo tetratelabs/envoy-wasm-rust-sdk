@@ -5,6 +5,7 @@ pub mod context;
 pub use context::FilterContext; 
 
 use crate::host;
+use crate::host::services::clients;
 use crate::extension::Result;
 
 use proxy_wasm::types::{Action, Bytes, PeerType};
@@ -33,6 +34,16 @@ pub trait Filter {
     }
 
     fn on_connection_complete(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    // Http Client callbacks
+
+    fn on_http_call_response(&mut self, _request: clients::http::RequestHandle,
+        _num_headers: usize, _body_size: usize, _num_trailers: usize,
+        _filter_ops: &dyn Ops,
+        _http_client_ops: &dyn clients::http::ResponseOps,
+        ) -> Result<()> {
         Ok(())
     }
 }

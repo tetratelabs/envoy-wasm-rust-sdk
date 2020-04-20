@@ -1,5 +1,5 @@
 [package]
-name = "http-filter"
+name = "network-filter"
 version = "0.0.0"
 authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
 edition = "2018"

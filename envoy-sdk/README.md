@@ -1,6 +1,7 @@
 # # Rust SDK for Envoy Wasm extensions
 
-TODO:
+Convenience layer on top of original [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) SDK
+that brings in structure and guidance for extension developers.
 
 ## Components
 
