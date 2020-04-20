@@ -1,0 +1,10 @@
+version: '3.5'
+services:
+  envoy:
+    image: yskopets/envoy-wasm:d29f7a6
+    volumes:
+    - ./envoy.yaml:/etc/envoy/envoy.yaml
+    - ../../target/wasm32-unknown-unknown/release/network_filter.wasm:/etc/envoy/network_filter.wasm
+    ports:
+    - 10000:10000
+    - 9901:9901
