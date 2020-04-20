@@ -94,6 +94,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                             http_client_ops: &dyn clients::http::ResponseOps) -> Result<()> {
         info!("#{} received response on outgoing request: @{}", self.instance_id, request);
         assert!(self.active_request == Some(request));
+        self.active_request = None;
 
         info!("     headers[count={}]:", num_headers);
         let response_headers = http_client_ops.get_http_call_response_headers()?;

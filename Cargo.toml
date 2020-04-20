@@ -2,5 +2,6 @@
 
 members = [
     "envoy-sdk",
+    "examples/access-logger",
     "examples/http-filter",
 ]
