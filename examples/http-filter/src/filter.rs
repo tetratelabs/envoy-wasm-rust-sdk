@@ -42,6 +42,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
 
         info!("#{} new http exchange starts at {} with config: {}", self.instance_id, datetime.format("%+"), self.config.value);
 
+        info!("#{} observing request headers", self.instance_id);
         for (name, value) in &filter_ops.get_request_headers()? {
             info!("#{} -> {}: {}", self.instance_id, name, value);
         }
@@ -55,19 +56,20 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                 )?;
                 Ok(http::FilterHeadersStatus::Pause)
             }
-            Some(path) if path == "/mock" => {
+            Some(path) if path == "/secret" => {
                 self.active_request = Some(self.http_client.send_request(
                     "mock_service",
                     vec![
                         (":method", "GET"),
-                        (":path", "/mock"),
+                        (":path", "/authz"),
                         (":authority", "mock.local"),
                     ],
                     None,
                     vec![],
                     Duration::from_secs(3),
                 )?);
-                info!("#{} sent outgoing request: @{}", self.instance_id, self.active_request.as_ref().unwrap());
+                info!("#{} sent authorization request: @{}", self.instance_id, self.active_request.as_ref().unwrap());
+                info!("#{} suspending http exchange processing", self.instance_id);
                 Ok(http::FilterHeadersStatus::Pause)
             }
             _ => Ok(http::FilterHeadersStatus::Continue),
@@ -75,6 +77,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
     }
 
     fn on_response_headers(&mut self, _num_headers: usize, filter_ops: &dyn http::ResponseHeadersOps) -> Result<http::FilterHeadersStatus> {
+        info!("#{} observing response headers", self.instance_id);
         for (name, value) in &filter_ops.get_response_headers()? {
             info!("#{} <- {}: {}", self.instance_id, name, value);
         }
@@ -92,7 +95,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                             num_headers: usize, _body_size: usize, _num_trailers: usize,
                             filter_ops: &dyn http::Ops,
                             http_client_ops: &dyn clients::http::ResponseOps) -> Result<()> {
-        info!("#{} received response on outgoing request: @{}", self.instance_id, request);
+        info!("#{} received response on authorization request: @{}", self.instance_id, request);
         assert!(self.active_request == Some(request));
         self.active_request = None;
 
@@ -102,6 +105,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
             info!("       {}: {}", name, value);
         }
 
+        info!("#{} resuming http exchange processing", self.instance_id);
         filter_ops.resume_request()?;
         Ok(())
     }
