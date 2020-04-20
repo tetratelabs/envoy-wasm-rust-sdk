@@ -32,6 +32,14 @@ pub trait DrainOps {
     fn done(&self) -> host::Result<()>;
 }
 
-pub trait Ops: ConfigureOps + DrainOps where Self: std::marker::Sized {}
+pub trait Ops: ConfigureOps + DrainOps {
+    fn as_configure_ops(&self) -> &dyn ConfigureOps;
 
-impl<T> Ops for T where T: ConfigureOps + DrainOps {}
+    fn as_done_ops(&self) -> &dyn DrainOps;
+}
+
+impl<T> Ops for T where T: ConfigureOps + DrainOps {
+    fn as_configure_ops(&self) -> &dyn ConfigureOps { self }
+
+    fn as_done_ops(&self) -> &dyn DrainOps { self }
+}

@@ -1,25 +1,25 @@
-pub struct FactoryContext<F, O> where F: super::Factory, O: super::Ops {
+pub struct FactoryContext<'a, F> where F: super::Factory {
     factory: F,
-    ops: O,
+    factory_ops: &'a dyn super::Ops,
 }
 
-impl<F, O> proxy_wasm::traits::RootContext for FactoryContext<F, O> where F: super::Factory, O: super::Ops {
+impl<'a, F> proxy_wasm::traits::RootContext for FactoryContext<'a, F> where F: super::Factory {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
-        self.factory.on_configure(plugin_configuration_size, &self.ops).unwrap()
+        self.factory.on_configure(plugin_configuration_size, self.factory_ops.as_configure_ops()).unwrap()
     }
 }
 
-impl<F, O> proxy_wasm::traits::Context for FactoryContext<F, O> where F: super::Factory, O: super::Ops {
+impl<'a, F> proxy_wasm::traits::Context for FactoryContext<'a, F> where F: super::Factory {
     fn on_done(&mut self) -> bool {
-        self.factory.on_drain(&self.ops).unwrap()
+        self.factory.on_drain(self.factory_ops.as_done_ops()).unwrap()
     }
 }
 
-impl<F, O> FactoryContext<F, O> where F: super::Factory, O: super::Ops {
-    pub fn new(factory: F, ops: O) -> FactoryContext<F, O> {
+impl<'a, F> FactoryContext<'a, F> where F: super::Factory {
+    pub fn new(factory: F, factory_ops: &'a dyn super::Ops) -> FactoryContext<'a, F> {
         FactoryContext {
             factory: factory,
-            ops: ops,
+            factory_ops: factory_ops,
         }
     }
 }
