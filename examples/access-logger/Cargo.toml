@@ -13,7 +13,7 @@ crate-type = ["cdylib", "rlib"]
 chrono = "0.4"
 log = "0.4"
 envoy-sdk = { path = "../../envoy-sdk" }
-proxy-wasm = { path = "/Users/yaro/ws/envoy/src/github.com/proxy-wasm/proxy-wasm-rust-sdk" }
+proxy-wasm = { git = "https://github.com/yskopets/proxy-wasm-rust-sdk", branch = "latest" }
 extension-abi-memory = { path = "../../support/extension-abi-memory" }
 
 [dev-dependencies]
