@@ -58,5 +58,5 @@ curl https://wasmtime.dev/install.sh -sSf | bash
 
 Run tests:
 ```
-cargo wasi test
+cargo wasi test --no-default-features
 ```

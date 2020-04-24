@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-proxy-wasm = "0.1.0"
+proxy-wasm = { path = "/Users/yaro/ws/envoy/src/github.com/proxy-wasm/proxy-wasm-rust-sdk" }
 
 [dev-dependencies]
-envoy-abi-stubs = { path = "../envoy-abi-stubs" }
+envoy-abi-stubs = { path = "../support/envoy-abi-stubs" }

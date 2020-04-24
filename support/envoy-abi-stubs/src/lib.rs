@@ -39,6 +39,39 @@ pub extern "C" fn proxy_get_header_map_pairs(_: i32, _: i32, _: i32) -> i32 {
 }
 
 #[no_mangle]
+pub extern "C" fn proxy_set_header_map_pairs(_: i32, _: i32, _: i32) -> i32 {
+    unimplemented!()
+}
+
+#[no_mangle]
+pub extern "C" fn proxy_get_header_map_value(
+    _: i32, _: i32, _: i32, _: i32, _: i32
+) -> i32 {
+    unimplemented!()
+}
+
+#[no_mangle]
+pub extern "C" fn proxy_remove_header_map_value(
+    _: i32, _: i32, _: i32
+) -> i32 {
+    unimplemented!()
+}
+
+#[no_mangle]
+pub extern "C" fn proxy_replace_header_map_value(
+    _: i32, _: i32, _: i32, _: i32, _: i32
+) -> i32 {
+    unimplemented!()
+}
+
+#[no_mangle]
+pub extern "C" fn proxy_add_header_map_value(
+    _: i32, _: i32, _: i32, _: i32, _: i32
+) -> i32 {
+    unimplemented!()
+}
+
+#[no_mangle]
 pub extern "C" fn proxy_continue_request() -> i32 {
     unimplemented!()
 }

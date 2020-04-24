@@ -119,3 +119,17 @@ docker-compose up
 
 * [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) doesn't support configuration of Http Filters
 * [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) has an issue that doesn't allow to access headers of the response to outgoing HTTP request
+
+### How to Run unit tests
+
+One-off setup:
+```shell
+rustup target add wasm32-wasi
+cargo install cargo-wasi
+curl https://wasmtime.dev/install.sh -sSf | bash
+```
+
+Run tests:
+```
+cargo wasi test --no-default-features
+```

@@ -8,13 +8,8 @@ use envoy_sdk::host::services::clients;
 
 use crate::factory::SampleHttpFilterFactory;
 
-#[cfg(not(test))]
-#[no_mangle]
+#[cfg_attr(not(test), no_mangle)]
 pub fn _start() {
-    start()
-}
-
-fn start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
         // TODO: at the moment, extension configuration is ignored since it belongs to the RootContext 
@@ -23,4 +18,14 @@ fn start() {
         let http_filter = <SampleHttpFilterFactory as extension::factory::Factory>::new_extension(&mut factory, context_id).unwrap();
         Box::new(http::FilterContext::new(http_filter, &http::ops::Host, &clients::http::ops::Host))
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_start() {
+        _start()
+    }
 }
