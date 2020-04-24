@@ -85,3 +85,17 @@ envoy_1  | [2020-04-20 18:07:13.653][20][critical][backtrace] [bazel-out/k8-opt/
   Any subsequent request (to ther same Envoy worker thread) will crash Envoy because Access Logger has already been destroyed.
 * in the attached log one can notice that Access Logger never receives a response on the request to a log collector.
   This is caused by the issue above.
+
+### How to Run unit tests
+
+One-off setup:
+```shell
+rustup target add wasm32-wasi
+cargo install cargo-wasi
+curl https://wasmtime.dev/install.sh -sSf | bash
+```
+
+Run tests:
+```
+cargo wasi test
+```

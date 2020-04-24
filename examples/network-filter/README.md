@@ -46,3 +46,17 @@ docker-compose up
 * [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) doesn't support configuration of Network Filters
 * [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) doesn't
   support resume operation for TCP streams
+
+### How to Run unit tests
+
+One-off setup:
+```shell
+rustup target add wasm32-wasi
+cargo install cargo-wasi
+curl https://wasmtime.dev/install.sh -sSf | bash
+```
+
+Run tests:
+```
+cargo wasi test
+```

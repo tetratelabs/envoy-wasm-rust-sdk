@@ -1,0 +1,5 @@
+[package]
+name = "envoy-abi-stubs"
+version = "0.0.0"
+authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
+edition = "2018"

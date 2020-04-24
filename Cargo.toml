@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "envoy-abi-stubs",
     "envoy-sdk",
     "examples/access-logger",
     "examples/http-filter",

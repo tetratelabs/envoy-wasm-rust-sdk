@@ -19,3 +19,17 @@ rustup target add wasm32-unknown-unknown
 ```shell
 cargo build --release
 ```
+
+### How to Run unit tests
+
+One-off setup:
+```shell
+rustup target add wasm32-wasi
+cargo install cargo-wasi
+curl https://wasmtime.dev/install.sh -sSf | bash
+```
+
+Run tests:
+```
+cargo wasi test
+```
