@@ -1,5 +1,3 @@
-#![cfg(not(test))]
-
 use proxy_wasm::traits::RootContext;
 use proxy_wasm::types::LogLevel;
 
@@ -9,8 +7,13 @@ use envoy_sdk::host::services::clients;
 
 use crate::logger::SampleAccessLogger;
 
+#[cfg(not(test))]
 #[no_mangle]
 pub fn _start() {
+    start()
+}
+
+fn start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
         let logger = SampleAccessLogger::new(&time::ops::Host, &clients::http::ops::Host);

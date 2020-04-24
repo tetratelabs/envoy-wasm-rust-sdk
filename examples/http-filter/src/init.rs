@@ -1,5 +1,3 @@
-#![cfg(not(test))]
-
 use proxy_wasm::traits::HttpContext;
 use proxy_wasm::types::LogLevel;
 
@@ -10,8 +8,13 @@ use envoy_sdk::host::services::clients;
 
 use crate::factory::SampleHttpFilterFactory;
 
+#[cfg(not(test))]
 #[no_mangle]
 pub fn _start() {
+    start()
+}
+
+fn start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
         // TODO: at the moment, extension configuration is ignored since it belongs to the RootContext 
