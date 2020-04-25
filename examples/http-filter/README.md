@@ -122,14 +122,7 @@ docker-compose up
 
 ### How to Run unit tests
 
-One-off setup:
-```shell
-rustup target add wasm32-wasi
-cargo install cargo-wasi
-curl https://wasmtime.dev/install.sh -sSf | bash
-```
-
 Run tests:
 ```
-cargo wasi test --no-default-features
+cargo test --tests
 ```

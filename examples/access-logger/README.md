@@ -88,14 +88,6 @@ envoy_1  | [2020-04-20 18:07:13.653][20][critical][backtrace] [bazel-out/k8-opt/
 
 ### How to Run unit tests
 
-One-off setup:
 ```shell
-rustup target add wasm32-wasi
-cargo install cargo-wasi
-curl https://wasmtime.dev/install.sh -sSf | bash
-```
-
-Run tests:
-```
-cargo wasi test --no-default-features
+cargo test --tests
 ```
