@@ -7,8 +7,8 @@ use envoy_sdk::host::services::clients;
 
 use crate::logger::SampleAccessLogger;
 
-#[cfg_attr(not(test), no_mangle)]
-fn _start() {
+#[no_mangle]
+pub fn _start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
         let logger = SampleAccessLogger::new(&time::ops::Host, &clients::http::ops::Host);

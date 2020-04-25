@@ -13,5 +13,5 @@ rustup target add wasm32-unknown-unknown
 ### How To Build
 
 ```shell
-cargo build --release
+cargo build:wasm --release
 ```

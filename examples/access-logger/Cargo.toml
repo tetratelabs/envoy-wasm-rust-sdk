@@ -14,11 +14,6 @@ chrono = "0.4"
 log = "0.4"
 envoy-sdk = { path = "../../envoy-sdk" }
 proxy-wasm = { git = "https://github.com/yskopets/proxy-wasm-rust-sdk", branch = "latest" }
-extension-abi-memory = { path = "../../support/extension-abi-memory" }
 
 [dev-dependencies]
 envoy-abi-stubs = { path = "../../support/envoy-abi-stubs" }
-
-[features]
-default = ["malloc"]
-malloc = []

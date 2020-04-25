@@ -7,7 +7,6 @@ dependencies = [
  "chrono",
  "envoy-abi-stubs",
  "envoy-sdk",
- "extension-abi-memory",
  "log",
  "proxy-wasm",
 ]
@@ -54,10 +53,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "extension-abi-memory"
-version = "0.0.0"
-
-[[package]]
 name = "hashbrown"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -74,7 +69,6 @@ dependencies = [
  "chrono",
  "envoy-abi-stubs",
  "envoy-sdk",
- "extension-abi-memory",
  "log",
  "proxy-wasm",
 ]
@@ -107,7 +101,6 @@ dependencies = [
  "chrono",
  "envoy-abi-stubs",
  "envoy-sdk",
- "extension-abi-memory",
  "log",
  "proxy-wasm",
 ]

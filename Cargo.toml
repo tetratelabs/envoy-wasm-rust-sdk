@@ -6,5 +6,4 @@ members = [
     "examples/http-filter",
     "examples/network-filter",
     "support/envoy-abi-stubs",
-    "support/extension-abi-memory",
 ]

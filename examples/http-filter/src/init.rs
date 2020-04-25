@@ -8,7 +8,7 @@ use envoy_sdk::host::services::clients;
 
 use crate::factory::SampleHttpFilterFactory;
 
-#[cfg_attr(not(test), no_mangle)]
+#[no_mangle]
 pub fn _start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
