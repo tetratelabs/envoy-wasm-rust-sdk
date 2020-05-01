@@ -20,7 +20,7 @@ static_resources:
           config:
             configuration: 'config for network-filter'
             name: "envoy-sdk-samples"
-            root_id: "network-filter"
+            root_id: examples.network-filter
             vm_config:
               vm_id: "vm-with-network-filter"
               runtime: "envoy.wasm.runtime.v8"

@@ -36,7 +36,7 @@ static_resources:
               config:
                 configuration: 'config for http-filter'
                 name: "envoy-sdk-samples"
-                root_id: "http-filter"
+                root_id: examples.http-filter
                 vm_config:
                   vm_id: "vm-with-http-filter"
                   runtime: "envoy.wasm.runtime.v8"
