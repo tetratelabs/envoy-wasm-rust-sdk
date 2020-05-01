@@ -1,13 +1,13 @@
 extern crate std;
 use std::prelude::v1::*;
 
-pub mod ops;
 pub mod context;
-pub use context::FilterContext; 
+pub mod ops;
+pub use context::FilterContext;
 
+use crate::extension::Result;
 use crate::host;
 use crate::host::services::clients;
-use crate::extension::Result;
 
 use proxy_wasm::types::{Action, Bytes};
 
@@ -16,27 +16,53 @@ pub type FilterDataStatus = Action;
 pub type FilterTrailersStatus = Action;
 
 pub trait Filter {
-    fn on_request_headers(&mut self, _num_headers: usize, _ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+    fn on_request_headers(
+        &mut self,
+        _num_headers: usize,
+        _ops: &dyn RequestHeadersOps,
+    ) -> Result<FilterHeadersStatus> {
         Ok(FilterHeadersStatus::Continue)
     }
 
-    fn on_request_body(&mut self, _body_size: usize, _end_of_stream: bool, _ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
+    fn on_request_body(
+        &mut self,
+        _body_size: usize,
+        _end_of_stream: bool,
+        _ops: &dyn RequestBodyOps,
+    ) -> Result<FilterDataStatus> {
         Ok(FilterDataStatus::Continue)
     }
 
-    fn on_request_trailers(&mut self, _num_trailers: usize, _ops: &dyn RequestTrailersOps) -> Result<FilterTrailersStatus> {
+    fn on_request_trailers(
+        &mut self,
+        _num_trailers: usize,
+        _ops: &dyn RequestTrailersOps,
+    ) -> Result<FilterTrailersStatus> {
         Ok(FilterTrailersStatus::Continue)
     }
 
-    fn on_response_headers(&mut self, _num_headers: usize, _ops: &dyn ResponseHeadersOps) -> Result<FilterHeadersStatus> {
+    fn on_response_headers(
+        &mut self,
+        _num_headers: usize,
+        _ops: &dyn ResponseHeadersOps,
+    ) -> Result<FilterHeadersStatus> {
         Ok(FilterHeadersStatus::Continue)
     }
 
-    fn on_response_body(&mut self, _body_size: usize, _end_of_stream: bool, _ops: &dyn ResponseBodyOps) -> Result<FilterDataStatus> {
+    fn on_response_body(
+        &mut self,
+        _body_size: usize,
+        _end_of_stream: bool,
+        _ops: &dyn ResponseBodyOps,
+    ) -> Result<FilterDataStatus> {
         Ok(FilterDataStatus::Continue)
     }
 
-    fn on_response_trailers(&mut self, _num_trailers: usize, _ops: &dyn ResponseTrailersOps) -> Result<FilterTrailersStatus> {
+    fn on_response_trailers(
+        &mut self,
+        _num_trailers: usize,
+        _ops: &dyn ResponseTrailersOps,
+    ) -> Result<FilterTrailersStatus> {
         Ok(FilterTrailersStatus::Continue)
     }
 
@@ -46,11 +72,15 @@ pub trait Filter {
 
     // Http Client callbacks
 
-    fn on_http_call_response(&mut self, _request: clients::http::RequestHandle,
-                             _num_headers: usize, _body_size: usize, _num_trailers: usize,
-                             _filter_ops: &dyn Ops,
-                             _http_client_ops: &dyn clients::http::ResponseOps,
-                            ) -> Result<()> {
+    fn on_http_call_response(
+        &mut self,
+        _request: clients::http::RequestHandle,
+        _num_headers: usize,
+        _body_size: usize,
+        _num_trailers: usize,
+        _filter_ops: &dyn Ops,
+        _http_client_ops: &dyn clients::http::ResponseOps,
+    ) -> Result<()> {
         Ok(())
     }
 }
@@ -128,8 +158,14 @@ pub trait ResponseFlowOps {
     fn resume_response(&self) -> host::Result<()>;
 }
 
-pub trait Ops: RequestHeadersOps + RequestBodyOps + RequestTrailersOps
- + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps {
+pub trait Ops:
+    RequestHeadersOps
+    + RequestBodyOps
+    + RequestTrailersOps
+    + ResponseHeadersOps
+    + ResponseBodyOps
+    + ResponseTrailersOps
+{
     fn as_request_headers_ops(&self) -> &dyn RequestHeadersOps;
 
     fn as_request_body_ops(&self) -> &dyn RequestBodyOps;
@@ -141,20 +177,38 @@ pub trait Ops: RequestHeadersOps + RequestBodyOps + RequestTrailersOps
     fn as_response_body_ops(&self) -> &dyn ResponseBodyOps;
 
     fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps;
- }
+}
 
-impl<T> Ops for T 
- where T: RequestHeadersOps + RequestBodyOps + RequestTrailersOps
- + ResponseHeadersOps + ResponseBodyOps + ResponseTrailersOps {
-    fn as_request_headers_ops(&self) -> &dyn RequestHeadersOps { self }
+impl<T> Ops for T
+where
+    T: RequestHeadersOps
+        + RequestBodyOps
+        + RequestTrailersOps
+        + ResponseHeadersOps
+        + ResponseBodyOps
+        + ResponseTrailersOps,
+{
+    fn as_request_headers_ops(&self) -> &dyn RequestHeadersOps {
+        self
+    }
 
-    fn as_request_body_ops(&self) -> &dyn RequestBodyOps { self }
+    fn as_request_body_ops(&self) -> &dyn RequestBodyOps {
+        self
+    }
 
-    fn as_request_trailers_ops(&self) -> &dyn RequestTrailersOps { self }
+    fn as_request_trailers_ops(&self) -> &dyn RequestTrailersOps {
+        self
+    }
 
-    fn as_response_headers_ops(&self) -> &dyn ResponseHeadersOps { self }
+    fn as_response_headers_ops(&self) -> &dyn ResponseHeadersOps {
+        self
+    }
 
-    fn as_response_body_ops(&self) -> &dyn ResponseBodyOps { self }
+    fn as_response_body_ops(&self) -> &dyn ResponseBodyOps {
+        self
+    }
 
-    fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps { self }
+    fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps {
+        self
+    }
 }

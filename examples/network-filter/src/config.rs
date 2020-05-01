@@ -4,12 +4,14 @@ pub struct SampleNetworkFilterConfig {
 
 impl SampleNetworkFilterConfig {
     pub fn new(value: String) -> SampleNetworkFilterConfig {
-        SampleNetworkFilterConfig{value: value}
+        SampleNetworkFilterConfig { value: value }
     }
 }
 
 impl Default for SampleNetworkFilterConfig {
     fn default() -> Self {
-        SampleNetworkFilterConfig{value: "".to_string()}
+        SampleNetworkFilterConfig {
+            value: "".to_string(),
+        }
     }
 }

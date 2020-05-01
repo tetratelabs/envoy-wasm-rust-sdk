@@ -3,8 +3,8 @@ use std::prelude::v1::*;
 
 use crate::host;
 
-use proxy_wasm::types::Bytes;
 use proxy_wasm::hostcalls;
+use proxy_wasm::types::Bytes;
 
 pub struct Host;
 

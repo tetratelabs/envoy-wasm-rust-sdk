@@ -2,8 +2,8 @@ extern crate std;
 use std::prelude::v1::*;
 
 pub mod access_logger;
-pub mod filter;
 pub mod factory;
+pub mod filter;
 
 pub use factory::Factory;
 

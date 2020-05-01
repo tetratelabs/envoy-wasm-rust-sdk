@@ -4,12 +4,14 @@ pub struct SampleAccessLoggerConfig {
 
 impl SampleAccessLoggerConfig {
     pub fn new(value: String) -> SampleAccessLoggerConfig {
-        SampleAccessLoggerConfig{value: value}
+        SampleAccessLoggerConfig { value: value }
     }
 }
 
 impl Default for SampleAccessLoggerConfig {
     fn default() -> Self {
-        SampleAccessLoggerConfig{value: "".to_string()}
+        SampleAccessLoggerConfig {
+            value: "".to_string(),
+        }
     }
 }

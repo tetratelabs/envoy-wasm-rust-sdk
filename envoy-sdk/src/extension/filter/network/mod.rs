@@ -1,12 +1,12 @@
 extern crate std;
 
-pub mod ops;
 pub mod context;
-pub use context::FilterContext; 
+pub mod ops;
+pub use context::FilterContext;
 
+use crate::extension::Result;
 use crate::host;
 use crate::host::services::clients;
-use crate::extension::Result;
 
 use proxy_wasm::types::{Action, Bytes, PeerType};
 
@@ -17,7 +17,12 @@ pub trait Filter {
         Ok(FilterStatus::Continue)
     }
 
-    fn on_downstream_data(&mut self, _data_size: usize, _end_of_stream: bool, _ops: &dyn DownstreamDataOps) -> Result<FilterStatus> {
+    fn on_downstream_data(
+        &mut self,
+        _data_size: usize,
+        _end_of_stream: bool,
+        _ops: &dyn DownstreamDataOps,
+    ) -> Result<FilterStatus> {
         Ok(FilterStatus::Continue)
     }
 
@@ -25,7 +30,12 @@ pub trait Filter {
         Ok(())
     }
 
-    fn on_upstream_data(&mut self, _data_size: usize, _end_of_stream: bool, _ops: &dyn UpstreamDataOps) -> Result<FilterStatus> {
+    fn on_upstream_data(
+        &mut self,
+        _data_size: usize,
+        _end_of_stream: bool,
+        _ops: &dyn UpstreamDataOps,
+    ) -> Result<FilterStatus> {
         Ok(FilterStatus::Continue)
     }
 
@@ -39,11 +49,15 @@ pub trait Filter {
 
     // Http Client callbacks
 
-    fn on_http_call_response(&mut self, _request: clients::http::RequestHandle,
-        _num_headers: usize, _body_size: usize, _num_trailers: usize,
+    fn on_http_call_response(
+        &mut self,
+        _request: clients::http::RequestHandle,
+        _num_headers: usize,
+        _body_size: usize,
+        _num_trailers: usize,
         _filter_ops: &dyn Ops,
         _http_client_ops: &dyn clients::http::ResponseOps,
-        ) -> Result<()> {
+    ) -> Result<()> {
         Ok(())
     }
 }
@@ -62,8 +76,15 @@ pub trait Ops: DownstreamDataOps + UpstreamDataOps {
     fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps;
 }
 
-impl<T> Ops for T where T: DownstreamDataOps + UpstreamDataOps {
-    fn as_downstream_data_ops(&self) -> &dyn DownstreamDataOps { self }
+impl<T> Ops for T
+where
+    T: DownstreamDataOps + UpstreamDataOps,
+{
+    fn as_downstream_data_ops(&self) -> &dyn DownstreamDataOps {
+        self
+    }
 
-    fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps { self }
+    fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps {
+        self
+    }
 }

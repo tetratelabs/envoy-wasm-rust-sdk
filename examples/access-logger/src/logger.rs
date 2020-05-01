@@ -4,10 +4,10 @@ use super::config::SampleAccessLoggerConfig;
 
 use log::info;
 
-use envoy_sdk::extension::Result;
 use envoy_sdk::extension::access_logger;
-use envoy_sdk::host::services::time;
+use envoy_sdk::extension::Result;
 use envoy_sdk::host::services::clients;
+use envoy_sdk::host::services::time;
 
 extern crate chrono;
 use chrono::offset::Local;
@@ -22,7 +22,10 @@ pub struct SampleAccessLogger<'a> {
 }
 
 impl<'a> SampleAccessLogger<'a> {
-    pub fn new(time_service: &'a dyn time::Service, http_client: &'a dyn clients::http::Client) -> SampleAccessLogger<'a> {
+    pub fn new(
+        time_service: &'a dyn time::Service,
+        http_client: &'a dyn clients::http::Client,
+    ) -> SampleAccessLogger<'a> {
         SampleAccessLogger {
             config: SampleAccessLoggerConfig::default(),
             time_service: time_service,
@@ -33,8 +36,11 @@ impl<'a> SampleAccessLogger<'a> {
 }
 
 impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
-
-    fn on_configure(&mut self, _configuration_size: usize, logger_ops: &dyn access_logger::ConfigureOps) -> Result<bool> {
+    fn on_configure(
+        &mut self,
+        _configuration_size: usize,
+        logger_ops: &dyn access_logger::ConfigureOps,
+    ) -> Result<bool> {
         let value = match logger_ops.get_configuration()? {
             Some(bytes) => match String::from_utf8(bytes) {
                 Ok(value) => value,
@@ -50,7 +56,11 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         let current_time = self.time_service.get_current_time()?;
         let datetime: DateTime<Local> = current_time.into();
 
-        info!("logging at {} with config: {}", datetime.format("%+"), self.config.value);
+        info!(
+            "logging at {} with config: {}",
+            datetime.format("%+"),
+            self.config.value
+        );
 
         info!("  request headers:");
         let request_headers = logger_ops.get_request_headers()?;
@@ -63,7 +73,9 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
             info!("    {}: {}", name, value);
         }
         let upstream_address = logger_ops.get_property(vec!["upstream", "address"])?;
-        let upstream_address = upstream_address.map(|value| String::from_utf8(value).unwrap()).unwrap_or("".to_string());
+        let upstream_address = upstream_address
+            .map(|value| String::from_utf8(value).unwrap())
+            .unwrap_or("".to_string());
         info!("  upstream info:");
         info!("    {}: {}", "upstream.address", upstream_address);
 
@@ -79,17 +91,28 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
             vec![],
             Duration::from_secs(3),
         )?);
-        info!("sent request to a log collector: @{}", self.active_request.as_ref().unwrap());
+        info!(
+            "sent request to a log collector: @{}",
+            self.active_request.as_ref().unwrap()
+        );
 
         Ok(())
     }
 
     // Http Client callbacks
 
-    fn on_http_call_response(&mut self, request: clients::http::RequestHandle,
-                            num_headers: usize, _body_size: usize, _num_trailers: usize,
-                            http_client_ops: &dyn clients::http::ResponseOps) -> Result<()> {
-        info!("received response from a log collector on request: @{}", request);
+    fn on_http_call_response(
+        &mut self,
+        request: clients::http::RequestHandle,
+        num_headers: usize,
+        _body_size: usize,
+        _num_trailers: usize,
+        http_client_ops: &dyn clients::http::ResponseOps,
+    ) -> Result<()> {
+        info!(
+            "received response from a log collector on request: @{}",
+            request
+        );
         assert!(self.active_request == Some(request));
         self.active_request = None;
 

@@ -8,7 +8,7 @@ use proxy_wasm::types::Bytes;
 pub trait Service {
     fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
 
-    fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;    
+    fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;
 }
 
 pub mod ops {

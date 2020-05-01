@@ -1,18 +1,22 @@
 extern crate std;
 use std::prelude::v1::*;
 
-pub mod ops;
 pub mod context;
-pub use context::LoggerContext; 
+pub mod ops;
+pub use context::LoggerContext;
 
+use crate::extension::Result;
 use crate::host;
 use crate::host::services::clients;
-use crate::extension::Result;
 
 use proxy_wasm::types::Bytes;
 
 pub trait Logger {
-    fn on_configure(&mut self, _configuration_size: usize, _logger_ops: &dyn ConfigureOps) -> Result<bool> {
+    fn on_configure(
+        &mut self,
+        _configuration_size: usize,
+        _logger_ops: &dyn ConfigureOps,
+    ) -> Result<bool> {
         Ok(true)
     }
 
@@ -22,10 +26,14 @@ pub trait Logger {
 
     // Http Client callbacks
 
-    fn on_http_call_response(&mut self, _request: clients::http::RequestHandle,
-        _num_headers: usize, _body_size: usize, _num_trailers: usize,
+    fn on_http_call_response(
+        &mut self,
+        _request: clients::http::RequestHandle,
+        _num_headers: usize,
+        _body_size: usize,
+        _num_trailers: usize,
         _http_client_ops: &dyn clients::http::ResponseOps,
-       ) -> Result<()> {
+    ) -> Result<()> {
         Ok(())
     }
 }
@@ -56,8 +64,15 @@ pub trait Ops: ConfigureOps + LogOps {
     fn as_log_ops(&self) -> &dyn LogOps;
 }
 
-impl<T> Ops for T where T: ConfigureOps + LogOps {
-    fn as_configure_ops(&self) -> &dyn ConfigureOps { self }
+impl<T> Ops for T
+where
+    T: ConfigureOps + LogOps,
+{
+    fn as_configure_ops(&self) -> &dyn ConfigureOps {
+        self
+    }
 
-    fn as_log_ops(&self) -> &dyn LogOps { self }
+    fn as_log_ops(&self) -> &dyn LogOps {
+        self
+    }
 }

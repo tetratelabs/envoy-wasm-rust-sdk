@@ -1,5 +1,5 @@
-pub mod host;
 pub mod extension;
+pub mod host;
 pub mod vm;
 
 #[cfg(test)]
