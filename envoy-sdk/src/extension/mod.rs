@@ -19,4 +19,5 @@ impl From<(&'static str, proxy_wasm::types::Status)> for Error {
     }
 }
 
+/// The type returned by extension methods.
 pub type Result<T> = core::result::Result<T, Error>;

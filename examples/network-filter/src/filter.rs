@@ -14,9 +14,14 @@ extern crate chrono;
 use chrono::offset::Local;
 use chrono::DateTime;
 
+/// Sample network filter.
 pub struct SampleNetworkFilter<'a> {
+    // This example shows how multiple filter instances could share
+    // the same configuration.
     config: Rc<SampleNetworkFilterConfig>,
     instance_id: u32,
+    // This example shows how to use Time API and HTTP Client API
+    // provided by Envoy host.
     time_service: &'a dyn time::Service,
     http_client: &'a dyn clients::http::Client,
 
@@ -24,12 +29,14 @@ pub struct SampleNetworkFilter<'a> {
 }
 
 impl<'a> SampleNetworkFilter<'a> {
+    /// Creates a new instance of sample network filter.
     pub fn new(
         config: Rc<SampleNetworkFilterConfig>,
         instance_id: u32,
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
     ) -> SampleNetworkFilter<'a> {
+        // Inject dependencies on Envoy host APIs
         SampleNetworkFilter {
             config,
             instance_id,
@@ -41,6 +48,7 @@ impl<'a> SampleNetworkFilter<'a> {
 }
 
 impl<'a> network::Filter for SampleNetworkFilter<'a> {
+    /// Is called when a new TCP connection is opened.
     fn on_new_connection(&mut self) -> Result<network::FilterStatus> {
         let current_time = self.time_service.get_current_time()?;
         let datetime: DateTime<Local> = current_time.into();
@@ -72,13 +80,20 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
         Ok(network::FilterStatus::Pause)
     }
 
+    /// Is called when the TCP connection is complete.
     fn on_connection_complete(&mut self) -> Result<()> {
         info!("#{} TCP connection ended", self.instance_id);
         Ok(())
     }
 
-    // Http Client callbacks
+    // HTTP Client API callbacks
 
+    /// Is called when an auxiliary HTTP request sent via HTTP Client API
+    /// is finally complete.
+    ///
+    /// Use http_client_ops to get ahold of response headers, body, etc.
+    ///
+    /// Use filter_ops to amend and resume TCP flow.
     fn on_http_call_response(
         &mut self,
         request: clients::http::RequestHandle,

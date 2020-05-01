@@ -18,7 +18,7 @@ that brings in structure and guidance for extension developers.
 
 ## How To
 
-### How to Set-up Rust
+### How to Set up Rust
 
 ```shell
 rustup target add wasm32-unknown-unknown

@@ -4,7 +4,7 @@ Envoy ABI shim that makes unit testing possible.
 
 ## How To
 
-### How to Set-up Rust
+### How to Set up Rust
 
 ```shell
 rustup target add wasm32-unknown-unknown

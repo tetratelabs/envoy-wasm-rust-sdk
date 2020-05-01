@@ -8,17 +8,25 @@ use envoy_sdk::extension::Result;
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
+/// Factory for creating sample HTTP filter instances
+/// (one filter instance per HTTP request).
 pub struct SampleHttpFilterFactory<'a> {
+    // This example shows how multiple filter instances could share
+    // the same configuration.
     config: Rc<SampleHttpFilterConfig>,
+    // This example shows how to use Time API and HTTP Client API
+    // provided by Envoy host.
     time_service: &'a dyn time::Service,
     http_client: &'a dyn clients::http::Client,
 }
 
 impl<'a> SampleHttpFilterFactory<'a> {
+    /// Creates a new factory.
     pub fn new(
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
     ) -> SampleHttpFilterFactory<'a> {
+        // Inject dependencies on Envoy host APIs
         SampleHttpFilterFactory {
             config: Rc::new(SampleHttpFilterConfig::default()),
             time_service,
@@ -30,6 +38,12 @@ impl<'a> SampleHttpFilterFactory<'a> {
 impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
     type Extension = SampleHttpFilter<'a>;
 
+    /// The reference name for sample network filter.
+    ///
+    /// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.
+    const NAME: &'static str = "examples.http-filter";
+
+    /// Is called when Envoy creates a new Listener that uses sample HTTP filter.
     fn on_configure(
         &mut self,
         _configuration_size: usize,
@@ -46,6 +60,8 @@ impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
         Ok(true)
     }
 
+    /// Is called to create a unique instance of sample HTTP filter
+    /// for each HTTP request.
     fn new_extension(&mut self, instance_id: u32) -> Result<SampleHttpFilter<'a>> {
         Ok(SampleHttpFilter::new(
             Rc::clone(&self.config),

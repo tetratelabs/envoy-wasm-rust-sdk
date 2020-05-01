@@ -7,10 +7,12 @@ use envoy_sdk::host::services::time;
 
 use crate::logger::SampleAccessLogger;
 
+/// Is called when a new instance of WebAssembly module is created.
 #[no_mangle]
 pub fn _start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
+        // Inject dependencies on Envoy host APIs
         let logger = SampleAccessLogger::new(&time::ops::Host, &clients::http::ops::Host);
         Box::new(access_logger::LoggerContext::new(
             logger,

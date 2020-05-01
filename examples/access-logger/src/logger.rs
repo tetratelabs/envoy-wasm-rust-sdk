@@ -13,8 +13,11 @@ extern crate chrono;
 use chrono::offset::Local;
 use chrono::DateTime;
 
+/// Sample Access Logger.
 pub struct SampleAccessLogger<'a> {
     config: SampleAccessLoggerConfig,
+    // This example shows how to use Time API and HTTP Client API
+    // provided by Envoy host.
     time_service: &'a dyn time::Service,
     http_client: &'a dyn clients::http::Client,
 
@@ -22,10 +25,12 @@ pub struct SampleAccessLogger<'a> {
 }
 
 impl<'a> SampleAccessLogger<'a> {
+    /// Creates a new instance of sample access logger.
     pub fn new(
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
     ) -> SampleAccessLogger<'a> {
+        // Inject dependencies on Envoy host APIs
         SampleAccessLogger {
             config: SampleAccessLoggerConfig::default(),
             time_service,
@@ -36,6 +41,9 @@ impl<'a> SampleAccessLogger<'a> {
 }
 
 impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
+    /// Is called when Envoy creates a new Listener that uses sample access logger.
+    ///
+    /// Use logger_ops to get ahold of configuration.
     fn on_configure(
         &mut self,
         _configuration_size: usize,
@@ -52,6 +60,10 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         Ok(true)
     }
 
+    /// Is called to log a complete TCP connection or HTTP request.
+    ///
+    /// Use logger_ops to get ahold of request/response headers,
+    /// TCP connection properties, etc.
     fn on_log(&mut self, logger_ops: &dyn access_logger::LogOps) -> Result<()> {
         let current_time = self.time_service.get_current_time()?;
         let datetime: DateTime<Local> = current_time.into();
@@ -99,8 +111,12 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         Ok(())
     }
 
-    // Http Client callbacks
+    // HTTP Client API callbacks
 
+    /// Is called when an auxiliary HTTP request sent via HTTP Client API
+    /// is finally complete.
+    ///
+    /// Use http_client_ops to get ahold of response headers, body, etc.
     fn on_http_call_response(
         &mut self,
         request: clients::http::RequestHandle,

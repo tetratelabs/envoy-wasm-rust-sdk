@@ -14,9 +14,14 @@ extern crate chrono;
 use chrono::offset::Local;
 use chrono::DateTime;
 
+// Sample HTTP filter.
 pub struct SampleHttpFilter<'a> {
+    // This example shows how multiple filter instances could share
+    // the same configuration.
     config: Rc<SampleHttpFilterConfig>,
     instance_id: u32,
+    // This example shows how to use Time API and HTTP Client API
+    // provided by Envoy host.
     time_service: &'a dyn time::Service,
     http_client: &'a dyn clients::http::Client,
 
@@ -24,12 +29,14 @@ pub struct SampleHttpFilter<'a> {
 }
 
 impl<'a> SampleHttpFilter<'a> {
+    /// Creates a new instance of sample HTTP filter.
     pub fn new(
         config: Rc<SampleHttpFilterConfig>,
         instance_id: u32,
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
     ) -> SampleHttpFilter<'a> {
+        // Inject dependencies on Envoy host APIs
         SampleHttpFilter {
             config,
             instance_id,
@@ -41,6 +48,9 @@ impl<'a> SampleHttpFilter<'a> {
 }
 
 impl<'a> http::Filter for SampleHttpFilter<'a> {
+    /// Is called when HTTP request headers have been received.
+    ///
+    /// Use filter_ops to access and mutate request headers.
     fn on_request_headers(
         &mut self,
         _num_headers: usize,
@@ -94,6 +104,9 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         }
     }
 
+    /// Is called when HTTP response headers have been received.
+    ///
+    /// Use filter_ops to access and mutate response headers.
     fn on_response_headers(
         &mut self,
         _num_headers: usize,
@@ -106,13 +119,20 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         Ok(http::FilterHeadersStatus::Continue)
     }
 
+    /// Is called when HTTP exchange is complete.
     fn on_exchange_complete(&mut self) -> Result<()> {
         info!("#{} http exchange complete", self.instance_id);
         Ok(())
     }
 
-    // Http Client callbacks
+    // HTTP Client API callbacks
 
+    /// Is called when an auxiliary HTTP request sent via HTTP Client API
+    /// is finally complete.
+    ///
+    /// Use http_client_ops to get ahold of response headers, body, etc.
+    ///
+    /// Use filter_ops to amend and resume HTTP exchange.
     fn on_http_call_response(
         &mut self,
         request: clients::http::RequestHandle,

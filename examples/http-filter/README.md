@@ -4,7 +4,7 @@ Example of an Envoy HTTP filter.
 
 ## How To
 
-### How to Set-up Rust
+### How to Set up Rust
 
 ```shell
 rustup target add wasm32-unknown-unknown

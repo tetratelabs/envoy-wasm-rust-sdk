@@ -13,6 +13,8 @@ use proxy_wasm::types::Bytes;
 pub trait Factory {
     type Extension;
 
+    const NAME: &'static str;
+
     fn on_configure(
         &mut self,
         _configuration_size: usize,

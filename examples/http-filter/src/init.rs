@@ -8,12 +8,15 @@ use envoy_sdk::host::services::time;
 
 use crate::factory::SampleHttpFilterFactory;
 
+/// Is called when a new instance of WebAssembly module is created.
 #[no_mangle]
 pub fn _start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_http_context(|context_id, _| -> Box<dyn HttpContext> {
         // TODO: at the moment, extension configuration is ignored since it belongs to the RootContext
         // but `proxy-wasm` doesn't provide any way to associate HttpContext with its parent RootContext
+
+        // Inject dependencies on Envoy host APIs
         let mut factory = SampleHttpFilterFactory::new(&time::ops::Host, &clients::http::ops::Host);
         let http_filter = <SampleHttpFilterFactory as extension::factory::Factory>::new_extension(
             &mut factory,
