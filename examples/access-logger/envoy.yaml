@@ -16,7 +16,7 @@ static_resources:
     - filters:            
       - name: envoy.filters.network.http_connection_manager
         typed_config:
-          "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
           stat_prefix: ingress_http
           route_config:
             name: local_route
@@ -31,11 +31,10 @@ static_resources:
                   cluster: mock_service
           http_filters:
           - name: envoy.router
-            config: {}
           access_log:
           - name: envoy.access_loggers.wasm
             typed_config:
-              "@type": type.googleapis.com/envoy.config.accesslog.v2.WasmAccessLog      
+              "@type": type.googleapis.com/envoy.extensions.access_loggers.wasm.v3.WasmAccessLog
               config:
                 configuration: 'config for access-logger'
                 name: "envoy-sdk-samples"
@@ -56,7 +55,7 @@ static_resources:
     - filters:
       - name: envoy.filters.network.http_connection_manager
         typed_config:
-          "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
           stat_prefix: mock
           route_config:
             name: local_route
@@ -73,7 +72,6 @@ static_resources:
                     inline_string: "Hi from mock service!\n"
           http_filters:
           - name: envoy.router
-            config: {}
 
   clusters:
   - name: mock_service
