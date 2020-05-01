@@ -28,8 +28,8 @@ impl<'a> SampleAccessLogger<'a> {
     ) -> SampleAccessLogger<'a> {
         SampleAccessLogger {
             config: SampleAccessLoggerConfig::default(),
-            time_service: time_service,
-            http_client: http_client,
+            time_service,
+            http_client,
             active_request: None,
         }
     }
@@ -46,7 +46,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
                 Ok(value) => value,
                 Err(_) => return Ok(false),
             },
-            None => "".to_string(),
+            None => String::new(),
         };
         self.config = SampleAccessLoggerConfig::new(value);
         Ok(true)
@@ -75,7 +75,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         let upstream_address = logger_ops.get_property(vec!["upstream", "address"])?;
         let upstream_address = upstream_address
             .map(|value| String::from_utf8(value).unwrap())
-            .unwrap_or("".to_string());
+            .unwrap_or_else(String::new);
         info!("  upstream info:");
         info!("    {}: {}", "upstream.address", upstream_address);
 

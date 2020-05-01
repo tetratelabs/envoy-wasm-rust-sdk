@@ -88,9 +88,9 @@ where
         http_client_ops: &'a dyn clients::http::ResponseOps,
     ) -> FilterContext<'a, F> {
         FilterContext {
-            filter: filter,
-            logger_ops: logger_ops,
-            http_client_ops: http_client_ops,
+            filter,
+            logger_ops,
+            http_client_ops,
         }
     }
 }

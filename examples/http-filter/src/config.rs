@@ -4,14 +4,14 @@ pub struct SampleHttpFilterConfig {
 
 impl SampleHttpFilterConfig {
     pub fn new(value: String) -> SampleHttpFilterConfig {
-        SampleHttpFilterConfig { value: value }
+        SampleHttpFilterConfig { value }
     }
 }
 
 impl Default for SampleHttpFilterConfig {
     fn default() -> Self {
         SampleHttpFilterConfig {
-            value: "".to_string(),
+            value: String::new(),
         }
     }
 }

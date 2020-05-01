@@ -62,9 +62,9 @@ where
         http_client_ops: &'a dyn clients::http::ResponseOps,
     ) -> LoggerContext<'a, L> {
         LoggerContext {
-            logger: logger,
-            logger_ops: logger_ops,
-            http_client_ops: http_client_ops,
+            logger,
+            logger_ops,
+            http_client_ops,
         }
     }
 }

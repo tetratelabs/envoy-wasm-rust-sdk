@@ -21,8 +21,8 @@ impl<'a> SampleHttpFilterFactory<'a> {
     ) -> SampleHttpFilterFactory<'a> {
         SampleHttpFilterFactory {
             config: Rc::new(SampleHttpFilterConfig::default()),
-            time_service: time_service,
-            http_client: http_client,
+            time_service,
+            http_client,
         }
     }
 }
@@ -40,7 +40,7 @@ impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
                 Ok(value) => value,
                 Err(_) => return Ok(false),
             },
-            None => "".to_string(),
+            None => String::new(),
         };
         self.config = Rc::new(SampleHttpFilterConfig::new(value));
         Ok(true)

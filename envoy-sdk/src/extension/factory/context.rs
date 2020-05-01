@@ -37,8 +37,8 @@ where
 {
     pub fn new(factory: F, factory_ops: &'a dyn super::Ops) -> FactoryContext<'a, F> {
         FactoryContext {
-            factory: factory,
-            factory_ops: factory_ops,
+            factory,
+            factory_ops,
         }
     }
 }

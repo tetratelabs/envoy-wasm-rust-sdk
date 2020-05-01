@@ -31,10 +31,10 @@ impl<'a> SampleNetworkFilter<'a> {
         http_client: &'a dyn clients::http::Client,
     ) -> SampleNetworkFilter<'a> {
         SampleNetworkFilter {
-            config: config,
-            instance_id: instance_id,
-            time_service: time_service,
-            http_client: http_client,
+            config,
+            instance_id,
+            time_service,
+            http_client,
             active_request: None,
         }
     }
