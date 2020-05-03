@@ -5,7 +5,7 @@ pub mod context;
 pub mod ops;
 pub use context::FactoryContext;
 
-use crate::extension::Result;
+use crate::extension::{InstanceId, Result};
 use crate::host;
 
 use proxy_wasm::types::Bytes;
@@ -23,7 +23,7 @@ pub trait Factory {
         Ok(true)
     }
 
-    fn new_extension(&mut self, _instance_id: u32) -> Result<Self::Extension>;
+    fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension>;
 
     fn on_drain(&mut self, _ops: &dyn DrainOps) -> Result<bool> {
         Ok(true)

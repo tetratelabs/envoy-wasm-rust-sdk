@@ -4,7 +4,7 @@ use super::config::SampleNetworkFilterConfig;
 use super::filter::SampleNetworkFilter;
 
 use envoy_sdk::extension;
-use envoy_sdk::extension::Result;
+use envoy_sdk::extension::{InstanceId, Result};
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
@@ -62,7 +62,7 @@ impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
 
     /// Is called to create a unique instance of sample network filter
     /// for each TCP connection.
-    fn new_extension(&mut self, instance_id: u32) -> Result<SampleNetworkFilter<'a>> {
+    fn new_extension(&mut self, instance_id: InstanceId) -> Result<SampleNetworkFilter<'a>> {
         Ok(SampleNetworkFilter::new(
             Rc::clone(&self.config),
             instance_id,

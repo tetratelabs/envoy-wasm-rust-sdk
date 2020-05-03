@@ -6,7 +6,7 @@ use super::config::SampleNetworkFilterConfig;
 use log::info;
 
 use envoy_sdk::extension::filter::network;
-use envoy_sdk::extension::Result;
+use envoy_sdk::extension::{InstanceId, Result};
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
@@ -19,7 +19,7 @@ pub struct SampleNetworkFilter<'a> {
     // This example shows how multiple filter instances could share
     // the same configuration.
     config: Rc<SampleNetworkFilterConfig>,
-    instance_id: u32,
+    instance_id: InstanceId,
     // This example shows how to use Time API and HTTP Client API
     // provided by Envoy host.
     time_service: &'a dyn time::Service,
@@ -32,7 +32,7 @@ impl<'a> SampleNetworkFilter<'a> {
     /// Creates a new instance of sample network filter.
     pub fn new(
         config: Rc<SampleNetworkFilterConfig>,
-        instance_id: u32,
+        instance_id: InstanceId,
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
     ) -> SampleNetworkFilter<'a> {

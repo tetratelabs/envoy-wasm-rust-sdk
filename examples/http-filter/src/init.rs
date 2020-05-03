@@ -20,7 +20,7 @@ pub fn _start() {
         let mut factory = SampleHttpFilterFactory::new(&time::ops::Host, &clients::http::ops::Host);
         let http_filter = <SampleHttpFilterFactory as extension::factory::Factory>::new_extension(
             &mut factory,
-            context_id,
+            extension::InstanceId::from(context_id),
         )
         .unwrap();
         Box::new(http::FilterContext::new(

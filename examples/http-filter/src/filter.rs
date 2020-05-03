@@ -6,7 +6,7 @@ use super::config::SampleHttpFilterConfig;
 use log::info;
 
 use envoy_sdk::extension::filter::http;
-use envoy_sdk::extension::Result;
+use envoy_sdk::extension::{InstanceId, Result};
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
@@ -19,7 +19,7 @@ pub struct SampleHttpFilter<'a> {
     // This example shows how multiple filter instances could share
     // the same configuration.
     config: Rc<SampleHttpFilterConfig>,
-    instance_id: u32,
+    instance_id: InstanceId,
     // This example shows how to use Time API and HTTP Client API
     // provided by Envoy host.
     time_service: &'a dyn time::Service,
@@ -32,7 +32,7 @@ impl<'a> SampleHttpFilter<'a> {
     /// Creates a new instance of sample HTTP filter.
     pub fn new(
         config: Rc<SampleHttpFilterConfig>,
-        instance_id: u32,
+        instance_id: InstanceId,
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
     ) -> SampleHttpFilter<'a> {

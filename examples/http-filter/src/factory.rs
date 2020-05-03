@@ -4,7 +4,7 @@ use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
 
 use envoy_sdk::extension;
-use envoy_sdk::extension::Result;
+use envoy_sdk::extension::{InstanceId, Result};
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
@@ -62,7 +62,7 @@ impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
 
     /// Is called to create a unique instance of sample HTTP filter
     /// for each HTTP request.
-    fn new_extension(&mut self, instance_id: u32) -> Result<SampleHttpFilter<'a>> {
+    fn new_extension(&mut self, instance_id: InstanceId) -> Result<SampleHttpFilter<'a>> {
         Ok(SampleHttpFilter::new(
             Rc::clone(&self.config),
             instance_id,

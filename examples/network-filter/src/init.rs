@@ -22,7 +22,7 @@ pub fn _start() {
         let network_filter =
             <SampleNetworkFilterFactory as extension::factory::Factory>::new_extension(
                 &mut factory,
-                context_id,
+                extension::InstanceId::from(context_id),
             )
             .unwrap();
         Box::new(network::FilterContext::new(
