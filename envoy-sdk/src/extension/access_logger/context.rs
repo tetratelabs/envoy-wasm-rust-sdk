@@ -42,7 +42,7 @@ where
     ) {
         self.logger
             .on_http_call_response(
-                token_id,
+                clients::http::RequestHandle::from(token_id),
                 num_headers,
                 body_size,
                 num_trailers,

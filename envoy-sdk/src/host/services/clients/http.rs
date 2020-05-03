@@ -1,4 +1,5 @@
 extern crate std;
+use std::fmt;
 use std::prelude::v1::*;
 
 use std::time::Duration;
@@ -7,7 +8,21 @@ use crate::host;
 
 use proxy_wasm::types::Bytes;
 
-pub type RequestHandle = u32;
+/// Opaque identifier of an ongoing HTTP request.
+#[derive(PartialEq, Eq)]
+pub struct RequestHandle(u32);
+
+impl From<u32> for RequestHandle {
+    fn from(token_id: u32) -> Self {
+        RequestHandle(token_id)
+    }
+}
+
+impl fmt::Display for RequestHandle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 pub trait Client {
     fn send_request(
@@ -51,6 +66,7 @@ pub mod ops {
         ) -> host::Result<super::RequestHandle> {
             hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
                 .map_err(|status| ("proxy_http_call", status))
+                .map(super::RequestHandle::from)
         }
     }
 
