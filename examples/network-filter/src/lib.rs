@@ -1,4 +1,3 @@
-mod boilerplate;
 mod config;
 mod factory;
 mod filter;
