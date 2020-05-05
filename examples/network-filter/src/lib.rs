@@ -1,4 +1,5 @@
 mod config;
 mod factory;
 mod filter;
-mod init;
+
+pub use factory::SampleNetworkFilterFactory;

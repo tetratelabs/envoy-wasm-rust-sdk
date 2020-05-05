@@ -1,3 +1,4 @@
 mod config;
-mod init;
 mod logger;
+
+pub use logger::SampleAccessLogger;

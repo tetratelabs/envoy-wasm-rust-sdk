@@ -1,12 +1,11 @@
-use proxy_wasm::traits::StreamContext;
+use proxy_wasm::traits::RootContext;
 use proxy_wasm::types::LogLevel;
 
 use envoy_sdk::extension;
-use envoy_sdk::extension::filter::network;
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
-use crate::factory::SampleNetworkFilterFactory;
+use access_logger::SampleAccessLogger;
 
 // Apparently, Rust toolchain doesn't handle well exported name `_start`
 // when this package is compiled to targets other than `wasm32-unknown-unknown`.
@@ -25,22 +24,12 @@ use crate::factory::SampleNetworkFilterFactory;
 /// Is called when a new instance of WebAssembly module is created.
 extern "C" fn start() {
     proxy_wasm::set_log_level(LogLevel::Info);
-    proxy_wasm::set_stream_context(|context_id, _| -> Box<dyn StreamContext> {
-        // TODO: at the moment, extension configuration is ignored since it belongs to the RootContext
-        // but `proxy-wasm` doesn't provide any way to associate StreamContext with its parent RootContext
-
+    proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
         // Inject dependencies on Envoy host APIs
-        let mut factory =
-            SampleNetworkFilterFactory::new(&time::ops::Host, &clients::http::ops::Host);
-        let network_filter =
-            <SampleNetworkFilterFactory as extension::factory::Factory>::new_extension(
-                &mut factory,
-                extension::InstanceId::from(context_id),
-            )
-            .unwrap();
-        Box::new(network::FilterContext::new(
-            network_filter,
-            &network::ops::Host,
+        let logger = SampleAccessLogger::new(&time::ops::Host, &clients::http::ops::Host);
+        Box::new(extension::access_logger::LoggerContext::new(
+            logger,
+            &extension::access_logger::ops::Host,
             &clients::http::ops::Host,
         ))
     });

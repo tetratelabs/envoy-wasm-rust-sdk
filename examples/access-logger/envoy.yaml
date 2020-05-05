@@ -44,7 +44,7 @@ static_resources:
                   runtime: "envoy.wasm.runtime.v8"
                   code:
                     local:
-                      filename: /etc/envoy/access_logger.wasm
+                      filename: /etc/envoy/access_logger_module.wasm
 
   - name: mock
     address:
