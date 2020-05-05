@@ -5,5 +5,4 @@ members = [
     "examples/access-logger",
     "examples/http-filter",
     "examples/network-filter",
-    "support/envoy-abi-stubs",
 ]

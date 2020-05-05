@@ -8,8 +8,14 @@ use envoy_sdk::host::services::time;
 use crate::logger::SampleAccessLogger;
 
 /// Is called when a new instance of WebAssembly module is created.
+#[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), export_name = "_start")]
 #[no_mangle]
-pub fn _start() {
+// Apparently, Rust toolchain doesn't handle well exported name `_start`
+// when this package is compiled to targets other than `wasm32-unknown-unknown`.
+// Specifically, linking issues have been observed with targets `wasm32-wasi`
+// and `x86_64-unknown-linux-gnu`, which is a blocker for unit testing.
+// Therefore, export name `_start` only in the context of target `wasm32-unknown-unknown`.
+extern "C" fn start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
         // Inject dependencies on Envoy host APIs
@@ -28,6 +34,6 @@ mod tests {
 
     #[test]
     fn should_start() {
-        _start()
+        start()
     }
 }

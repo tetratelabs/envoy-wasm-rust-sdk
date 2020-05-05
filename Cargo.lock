@@ -5,7 +5,6 @@ name = "access-logger"
 version = "0.0.0"
 dependencies = [
  "chrono",
- "envoy-abi-stubs",
  "envoy-sdk",
  "log",
  "proxy-wasm",
@@ -41,14 +40,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "envoy-abi-stubs"
-version = "0.0.0"
-
-[[package]]
 name = "envoy-sdk"
 version = "0.0.0"
 dependencies = [
- "envoy-abi-stubs",
  "proxy-wasm",
 ]
 
@@ -67,7 +61,6 @@ name = "http-filter"
 version = "0.0.0"
 dependencies = [
  "chrono",
- "envoy-abi-stubs",
  "envoy-sdk",
  "log",
  "proxy-wasm",
@@ -99,7 +92,6 @@ name = "network-filter"
 version = "0.0.0"
 dependencies = [
  "chrono",
- "envoy-abi-stubs",
  "envoy-sdk",
  "log",
  "proxy-wasm",
