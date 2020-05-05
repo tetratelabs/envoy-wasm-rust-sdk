@@ -6,7 +6,7 @@ use envoy_sdk::extension::filter::http;
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
-use crate::factory::SampleHttpFilterFactory;
+use http_filter::SampleHttpFilterFactory;
 
 // Apparently, Rust toolchain doesn't handle well exported name `_start`
 // when this package is compiled to targets other than `wasm32-unknown-unknown`.

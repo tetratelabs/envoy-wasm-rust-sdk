@@ -4,7 +4,7 @@ services:
     image: yskopets/envoy-wasm:d29f7a6
     volumes:
     - ./envoy.yaml:/etc/envoy/envoy.yaml
-    - ../../target/wasm32-unknown-unknown/release/access_logger.wasm:/etc/envoy/access_logger.wasm
+    - ../../target/wasm32-unknown-unknown/release/access_logger_module.wasm:/etc/envoy/access_logger_module.wasm
     ports:
     - 10000:10000
     - 9901:9901

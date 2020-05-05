@@ -42,7 +42,7 @@ static_resources:
                   runtime: "envoy.wasm.runtime.v8"
                   code:
                     local:
-                      filename: /etc/envoy/http_filter.wasm
+                      filename: /etc/envoy/http_filter_module.wasm
           - name: envoy.router
 
   - name: mock

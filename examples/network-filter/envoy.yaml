@@ -26,7 +26,7 @@ static_resources:
               runtime: "envoy.wasm.runtime.v8"
               code:
                 local:
-                  filename: /etc/envoy/network_filter.wasm
+                  filename: /etc/envoy/network_filter_module.wasm
       - name: envoy.tcp_proxy
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
