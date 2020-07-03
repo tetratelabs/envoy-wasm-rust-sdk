@@ -1,22 +1,94 @@
-name: Commit
+name: commit
 
 on:
   push:
-    branches: [ '**' ]
+    branches:
+    - '**'
   pull_request:
-    branches: [ '**' ]
+    branches:
+    - '**'
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
+    name: "Build (wasm32-unknown-unknown)"
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly]
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup self update
+        rustup update ${{ matrix.rust }}
+        rustup default ${{ matrix.rust }}
+        rustc -vV
+
+    - name: "Install 'wasm32-unknown-unknown'"
+      run: |
+        rustup target add wasm32-unknown-unknown
+
+    - name: "Build"
+      run: cargo build --workspace --verbose
+
+  test:
+    name: "Test (x86_64-unknown-linux-gnu)"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly]
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup self update
+        rustup update ${{ matrix.rust }}
+        rustup default ${{ matrix.rust }}
+        rustc -vV
+
+    - name: "Test"
+      run: cargo test --workspace --verbose
+
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup self update
+        rustup update stable
+        rustup default stable
+        rustc -vV
+
+    - name: "Check code format"
+      run: cargo fmt --all -- --check
+
+    - name: "Check code mistakes"
+      run: cargo clippy --all -- -Dwarnings
+
+  docs:
+    name: "Docs"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup self update
+        rustup update stable
+        rustup default stable
+        rustc -vV
+
+    - name: "Build docs"
+      run: cargo doc --workspace --no-deps --verbose

@@ -7,11 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [dependencies]
 chrono = "0.4"
 log = "0.4"
 envoy-sdk = { path = "../../envoy-sdk" }
 proxy-wasm = { git = "https://github.com/yskopets/proxy-wasm-rust-sdk", branch = "proxy-wasm-spec-0.1.0" }
-# { path = "/tmp/proxy-wasm-rust-sdk" }
