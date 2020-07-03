@@ -28,8 +28,8 @@ jobs:
 
     - name: "Check license headers"
       run: |
-        if ! $HOME/bin/licenser verify -r .; then
-          echo >&2 "Licenses are missing. Run 'licenser apply -r \"Tetrate\"' to automatically add missing license headers."
+        if ! $HOME/bin/licenser verify -r . ; then
+          echo >&2 "There are some files without a license header. Run 'licenser apply -r \"Tetrate\"' to add it automatically."
           exit 1
         fi
 
