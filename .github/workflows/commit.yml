@@ -68,7 +68,7 @@ jobs:
         rustup target add wasm32-unknown-unknown
 
     - name: "Build"
-      run: cargo build --workspace --verbose
+      run: cargo build:wasm --workspace --verbose
 
   test:
     name: "Test"
