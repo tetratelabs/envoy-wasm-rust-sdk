@@ -47,7 +47,7 @@ jobs:
       run: cargo clippy --all -- -Dwarnings
 
   build:
-    name: "Build (wasm32-unknown-unknown)"
+    name: "Build"
     needs: lint
     runs-on: ubuntu-latest
     strategy:
@@ -72,7 +72,7 @@ jobs:
       run: cargo build --workspace --verbose
 
   test:
-    name: "Test (x86_64-unknown-linux-gnu)"
+    name: "Test"
     needs: lint
     runs-on: ubuntu-latest
     strategy:
