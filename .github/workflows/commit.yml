@@ -12,8 +12,43 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Licenser"
+      env:
+        LICENSER_VERSION: 0.6.0
+      run: |
+        mkdir -p $HOME/bin
+        wget -c https://github.com/liamawhite/licenser/releases/download/v${LICENSER_VERSION}/licenser_${LICENSER_VERSION}_Linux_x86_64.tar.gz -O - | tar -xz -C $HOME/bin licenser
+
+    - name: "Check license headers"
+      run: |
+        if ! $HOME/bin/licenser verify -r .; then
+          echo >&2 "Licenses are missing. Run 'licenser apply -r \"Tetrate\"' to automatically add missing license headers."
+          exit 1
+        fi
+
+    - name: "Install Rust"
+      run: |
+        rustup self update
+        rustup update stable
+        rustup default stable
+        rustc -vV
+
+    - name: "Check code format"
+      run: cargo fmt --all -- --check
+
+    - name: "Check code mistakes"
+      run: cargo clippy --all -- -Dwarnings
+
   build:
     name: "Build (wasm32-unknown-unknown)"
+    needs: lint
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,6 +73,7 @@ jobs:
 
   test:
     name: "Test (x86_64-unknown-linux-gnu)"
+    needs: lint
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -56,28 +92,9 @@ jobs:
     - name: "Test"
       run: cargo test --workspace --verbose
 
-  lint:
-    name: "Lint"
-    runs-on: ubuntu-latest
-    steps:
-    - name: "Checkout"
-      uses: actions/checkout@v2
-
-    - name: "Install Rust"
-      run: |
-        rustup self update
-        rustup update stable
-        rustup default stable
-        rustc -vV
-
-    - name: "Check code format"
-      run: cargo fmt --all -- --check
-
-    - name: "Check code mistakes"
-      run: cargo clippy --all -- -Dwarnings
-
   docs:
     name: "Docs"
+    needs: lint
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"
@@ -91,4 +108,4 @@ jobs:
         rustc -vV
 
     - name: "Build docs"
-      run: cargo doc --workspace --no-deps --verbose
+      run: cargo doc --workspace --no-deps
