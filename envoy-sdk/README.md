@@ -1,6 +1,9 @@
-# # Rust SDK for Envoy Wasm extensions
+[![Build](https://github.com/tetratelabs/envoy-wasm-rust-sdk/workflows/build/badge.svg)](https://github.com/tetratelabs/envoy-wasm-rust-sdk/actions)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-Convenience layer on top of original [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) SDK
+# Rust SDK for WebAssembly-based Envoy extensions
+
+Convenience layer on top of the original [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) SDK
 that brings in structure and guidance for extension developers.
 
 ## Components
@@ -27,11 +30,11 @@ rustup target add wasm32-unknown-unknown
 ### How To Build
 
 ```shell
-cargo build:wasm --release
+cargo build:wasm
 ```
 
 ### How to Run unit tests
 
 ```shell
-cargo test --tests
+cargo test
 ```

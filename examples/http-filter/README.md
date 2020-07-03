@@ -124,5 +124,5 @@ docker-compose up
 
 Run tests:
 ```
-cargo test --tests
+cargo test
 ```

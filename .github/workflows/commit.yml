@@ -1,0 +1,121 @@
+# `name` value will appear "as is" in the badge.
+# See https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#adding-a-workflow-status-badge-to-your-repository
+name: "build"
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - '**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Licenser"
+      env:
+        LICENSER_VERSION: 0.6.0
+      run: |
+        mkdir -p $HOME/bin
+        wget -c https://github.com/liamawhite/licenser/releases/download/v${LICENSER_VERSION}/licenser_${LICENSER_VERSION}_Linux_x86_64.tar.gz -O - | tar -xz -C $HOME/bin licenser
+
+    - name: "Check license headers"
+      run: |
+        if ! $HOME/bin/licenser verify -r . ; then
+          echo >&2 "There are some files without a license header. Run 'licenser apply -r \"Tetrate\"' to add it automatically."
+          exit 1
+        fi
+
+    - name: "Install Rust"
+      run: |
+        rustup update stable
+        rustup default stable
+        rustc -vV
+
+    - name: "Check code format"
+      run: cargo fmt --all -- --check
+
+    - name: "Check code mistakes"
+      run: cargo clippy --all -- -Dwarnings
+
+  build:
+    name: "Build"
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable]
+        include:
+        - os: ubuntu-latest
+          rust: beta
+        - os: ubuntu-latest
+          rust: nightly
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup update ${{ matrix.rust }}
+        rustup default ${{ matrix.rust }}
+        rustc -vV
+
+    - name: "Install 'wasm32-unknown-unknown'"
+      run: |
+        rustup target add wasm32-unknown-unknown
+
+    - name: "Build"
+      run: cargo build:wasm --workspace --verbose
+
+  test:
+    name: "Test"
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable]
+        include:
+        - os: ubuntu-latest
+          rust: beta
+        - os: ubuntu-latest
+          rust: nightly
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup update ${{ matrix.rust }}
+        rustup default ${{ matrix.rust }}
+        rustc -vV
+
+    - name: "Test"
+      run: cargo test --workspace --verbose
+
+  docs:
+    name: "Docs"
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup update stable
+        rustup default stable
+        rustc -vV
+
+    - name: "Build docs"
+      run: cargo doc --workspace --no-deps

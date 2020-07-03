@@ -89,5 +89,5 @@ envoy_1  | [2020-04-20 18:07:13.653][20][critical][backtrace] [bazel-out/k8-opt/
 ### How to Run unit tests
 
 ```shell
-cargo test --tests
+cargo test
 ```

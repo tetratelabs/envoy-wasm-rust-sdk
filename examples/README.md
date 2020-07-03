@@ -23,5 +23,5 @@ cargo build:wasm --release
 ### How to Run unit tests
 
 ```shell
-cargo test --tests
+cargo test
 ```
