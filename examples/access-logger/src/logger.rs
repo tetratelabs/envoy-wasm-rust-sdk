@@ -23,7 +23,6 @@ use envoy_sdk::extension::Result;
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
-extern crate chrono;
 use chrono::offset::Local;
 use chrono::DateTime;
 
