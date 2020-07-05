@@ -23,7 +23,7 @@ use proxy_wasm::types::Bytes;
 use crate::host;
 
 /// Opaque identifier of an initiated HTTP request.
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct RequestHandle(u32);
 
 impl From<u32> for RequestHandle {

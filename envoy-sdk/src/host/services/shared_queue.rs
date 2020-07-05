@@ -21,7 +21,7 @@ use proxy_wasm::types::Bytes;
 use crate::host;
 
 /// Opaque identifier of a Queue.
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct QueueHandle(u32);
 
 impl From<u32> for QueueHandle {

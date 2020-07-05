@@ -39,6 +39,7 @@ impl From<(&'static str, proxy_wasm::types::Status)> for Error {
 pub type Result<T> = core::result::Result<T, Error>;
 
 /// Opaque identifier of an extension instance.
+#[derive(Debug, PartialEq, Eq)]
 pub struct InstanceId(u32);
 
 impl From<u32> for InstanceId {

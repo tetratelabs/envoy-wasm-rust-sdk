@@ -13,6 +13,7 @@
 // limitations under the License.
 
 /// Configuration for a sample network filter.
+#[derive(Debug)]
 pub struct SampleNetworkFilterConfig {
     pub value: String,
 }
