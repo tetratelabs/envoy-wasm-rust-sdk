@@ -23,9 +23,11 @@ pub trait Service {
 }
 
 pub mod ops {
-    use crate::host;
-    use proxy_wasm::hostcalls;
     use std::time::SystemTime;
+
+    use proxy_wasm::hostcalls;
+
+    use crate::host;
 
     pub struct Host;
 

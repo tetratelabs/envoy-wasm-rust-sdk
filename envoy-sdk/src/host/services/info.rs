@@ -27,9 +27,10 @@ pub trait Service {
 }
 
 pub mod ops {
-    use crate::host;
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::Bytes;
+
+    use crate::host;
 
     pub struct Host;
 
