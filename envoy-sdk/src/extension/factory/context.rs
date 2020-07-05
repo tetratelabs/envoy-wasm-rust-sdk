@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use super::{Factory, Ops};
+
 pub struct FactoryContext<'a, F>
 where
-    F: super::Factory,
+    F: Factory,
 {
     factory: F,
-    factory_ops: &'a dyn super::Ops,
+    factory_ops: &'a dyn Ops,
 }
 
 impl<'a, F> proxy_wasm::traits::RootContext for FactoryContext<'a, F>
 where
-    F: super::Factory,
+    F: Factory,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
         self.factory
@@ -36,7 +38,7 @@ where
 
 impl<'a, F> proxy_wasm::traits::Context for FactoryContext<'a, F>
 where
-    F: super::Factory,
+    F: Factory,
 {
     fn on_done(&mut self) -> bool {
         self.factory
@@ -47,9 +49,9 @@ where
 
 impl<'a, F> FactoryContext<'a, F>
 where
-    F: super::Factory,
+    F: Factory,
 {
-    pub fn new(factory: F, factory_ops: &'a dyn super::Ops) -> FactoryContext<'a, F> {
+    pub fn new(factory: F, factory_ops: &'a dyn Ops) -> FactoryContext<'a, F> {
         FactoryContext {
             factory,
             factory_ops,

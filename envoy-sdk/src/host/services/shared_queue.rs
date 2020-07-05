@@ -50,12 +50,12 @@ pub mod ops {
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::Bytes;
 
-    use super::QueueHandle;
+    use super::{QueueHandle, Service};
     use crate::host;
 
     pub struct Host;
 
-    impl super::Service for Host {
+    impl Service for Host {
         fn register_queue(&self, name: &str) -> host::Result<QueueHandle> {
             hostcalls::register_shared_queue(name)
                 .map_err(|status| ("proxy_register_shared_queue", status))

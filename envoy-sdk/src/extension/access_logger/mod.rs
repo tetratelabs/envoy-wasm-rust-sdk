@@ -20,7 +20,7 @@ use proxy_wasm::types::Bytes;
 
 use crate::extension::Result;
 use crate::host;
-use crate::host::services::clients;
+use crate::host::services::clients::http as http_client;
 
 pub mod context;
 pub mod ops;
@@ -43,11 +43,11 @@ pub trait Logger {
 
     fn on_http_call_response(
         &mut self,
-        _request: clients::http::RequestHandle,
+        _request: http_client::RequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
-        _http_client_ops: &dyn clients::http::ResponseOps,
+        _http_client_ops: &dyn http_client::ResponseOps,
     ) -> Result<()> {
         Ok(())
     }

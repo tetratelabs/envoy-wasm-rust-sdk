@@ -26,11 +26,12 @@ pub mod ops {
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::Bytes;
 
+    use super::Service;
     use crate::host;
 
     pub struct Host;
 
-    impl super::Service for Host {
+    impl Service for Host {
         fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
             hostcalls::get_shared_data(key).map_err(|status| ("proxy_get_shared_data", status))
         }

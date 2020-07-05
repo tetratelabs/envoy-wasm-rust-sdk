@@ -15,18 +15,19 @@
 use proxy_wasm::hostcalls;
 use proxy_wasm::types::{BufferType, Bytes};
 
+use super::{DownstreamDataOps, UpstreamDataOps};
 use crate::host;
 
 pub struct Host;
 
-impl super::DownstreamDataOps for Host {
+impl DownstreamDataOps for Host {
     fn get_downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::DownstreamData, start, max_size)
             .map_err(|status| ("proxy_get_buffer_bytes", status))
     }
 }
 
-impl super::UpstreamDataOps for Host {
+impl UpstreamDataOps for Host {
     fn get_upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
             .map_err(|status| ("proxy_get_buffer_bytes", status))

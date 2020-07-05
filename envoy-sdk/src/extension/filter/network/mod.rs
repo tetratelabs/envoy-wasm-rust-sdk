@@ -18,7 +18,7 @@ use proxy_wasm::types::{Action, Bytes, PeerType};
 
 use crate::extension::Result;
 use crate::host;
-use crate::host::services::clients;
+use crate::host::services::clients::http as http_client;
 
 pub use context::FilterContext;
 
@@ -66,12 +66,12 @@ pub trait Filter {
 
     fn on_http_call_response(
         &mut self,
-        _request: clients::http::RequestHandle,
+        _request: http_client::RequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
         _filter_ops: &dyn Ops,
-        _http_client_ops: &dyn clients::http::ResponseOps,
+        _http_client_ops: &dyn http_client::ResponseOps,
     ) -> Result<()> {
         Ok(())
     }

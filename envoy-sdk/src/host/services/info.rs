@@ -30,11 +30,12 @@ pub mod ops {
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::Bytes;
 
+    use super::Service;
     use crate::host;
 
     pub struct Host;
 
-    impl super::Service for Host {
+    impl Service for Host {
         fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
             hostcalls::get_property(path).map_err(|status| ("proxy_get_property", status))
         }

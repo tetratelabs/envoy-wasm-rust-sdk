@@ -19,11 +19,15 @@ use std::prelude::v1::*;
 use proxy_wasm::hostcalls;
 use proxy_wasm::types::{BufferType, Bytes, MapType};
 
+use super::{
+    RequestBodyOps, RequestFlowOps, RequestHeadersOps, RequestTrailersOps, ResponseBodyOps,
+    ResponseFlowOps, ResponseHeadersOps, ResponseTrailersOps,
+};
 use crate::host;
 
 pub struct Host;
 
-impl super::RequestHeadersOps for Host {
+impl RequestHeadersOps for Host {
     fn get_request_headers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpRequestHeaders)
             .map_err(|status| ("proxy_get_header_map_pairs", status))
@@ -54,14 +58,14 @@ impl super::RequestHeadersOps for Host {
     }
 }
 
-impl super::RequestBodyOps for Host {
+impl RequestBodyOps for Host {
     fn get_request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::HttpRequestBody, start, max_size)
             .map_err(|status| ("proxy_get_buffer_bytes", status))
     }
 }
 
-impl super::RequestTrailersOps for Host {
+impl RequestTrailersOps for Host {
     fn get_request_trailers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpRequestTrailers)
             .map_err(|status| ("proxy_get_header_map_pairs", status))
@@ -92,7 +96,7 @@ impl super::RequestTrailersOps for Host {
     }
 }
 
-impl super::ResponseHeadersOps for Host {
+impl ResponseHeadersOps for Host {
     fn get_response_headers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpResponseHeaders)
             .map_err(|status| ("proxy_get_header_map_pairs", status))
@@ -123,14 +127,14 @@ impl super::ResponseHeadersOps for Host {
     }
 }
 
-impl super::ResponseBodyOps for Host {
+impl ResponseBodyOps for Host {
     fn get_response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::HttpResponseBody, start, max_size)
             .map_err(|status| ("proxy_get_buffer_bytes", status))
     }
 }
 
-impl super::ResponseTrailersOps for Host {
+impl ResponseTrailersOps for Host {
     fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpResponseTrailers)
             .map_err(|status| ("proxy_get_header_map_pairs", status))
@@ -161,7 +165,7 @@ impl super::ResponseTrailersOps for Host {
     }
 }
 
-impl super::RequestFlowOps for Host {
+impl RequestFlowOps for Host {
     fn resume_request(&self) -> host::Result<()> {
         hostcalls::resume_http_request().map_err(|status| ("proxy_continue_request", status))
     }
@@ -181,7 +185,7 @@ impl super::RequestFlowOps for Host {
     }
 }
 
-impl super::ResponseFlowOps for Host {
+impl ResponseFlowOps for Host {
     fn resume_response(&self) -> host::Result<()> {
         hostcalls::resume_http_response().map_err(|status| ("proxy_continue_response", status))
     }

@@ -27,11 +27,12 @@ pub mod ops {
 
     use proxy_wasm::hostcalls;
 
+    use super::Service;
     use crate::host;
 
     pub struct Host;
 
-    impl super::Service for Host {
+    impl Service for Host {
         fn get_current_time(&self) -> host::Result<SystemTime> {
             hostcalls::get_current_time()
                 .map_err(|status| ("proxy_get_current_time_nanoseconds", status))
