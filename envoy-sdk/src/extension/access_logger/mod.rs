@@ -13,17 +13,18 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::prelude::v1::*;
 
-pub mod context;
-pub mod ops;
-pub use context::LoggerContext;
+use proxy_wasm::types::Bytes;
 
 use crate::extension::Result;
 use crate::host;
 use crate::host::services::clients;
 
-use proxy_wasm::types::Bytes;
+pub mod context;
+pub mod ops;
+pub use context::LoggerContext;
 
 pub trait Logger {
     fn on_configure(

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::host;
-
 use proxy_wasm::hostcalls;
 use proxy_wasm::types::{BufferType, Bytes};
+
+use crate::host;
 
 pub struct Host;
 

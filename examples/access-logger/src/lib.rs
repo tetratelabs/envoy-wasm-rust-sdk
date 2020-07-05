@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub use logger::SampleAccessLogger;
+
 mod config;
 mod logger;
-
-pub use logger::SampleAccessLogger;

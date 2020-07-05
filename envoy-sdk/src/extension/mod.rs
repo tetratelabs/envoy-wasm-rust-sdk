@@ -13,14 +13,15 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::fmt;
 use std::prelude::v1::*;
+
+pub use factory::Factory;
 
 pub mod access_logger;
 pub mod factory;
 pub mod filter;
-
-pub use factory::Factory;
 
 #[derive(Debug)]
 pub enum Error {

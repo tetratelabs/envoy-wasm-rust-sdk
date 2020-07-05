@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::host;
-
 use proxy_wasm::types::Bytes;
+
+use crate::host;
 
 pub trait Service {
     fn register_queue(&self, name: &str) -> host::Result<u32>;

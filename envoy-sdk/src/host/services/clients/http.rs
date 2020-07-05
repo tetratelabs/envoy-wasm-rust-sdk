@@ -13,14 +13,14 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::fmt;
 use std::prelude::v1::*;
-
 use std::time::Duration;
 
-use crate::host;
-
 use proxy_wasm::types::Bytes;
+
+use crate::host;
 
 /// Opaque identifier of an ongoing HTTP request.
 #[derive(PartialEq, Eq)]
@@ -62,10 +62,12 @@ pub trait ResponseOps {
 }
 
 pub mod ops {
-    use crate::host;
+    use std::time::Duration;
+
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::{BufferType, Bytes, MapType};
-    use std::time::Duration;
+
+    use crate::host;
 
     pub struct Host;
 

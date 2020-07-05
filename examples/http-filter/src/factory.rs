@@ -14,13 +14,13 @@
 
 use std::rc::Rc;
 
-use super::config::SampleHttpFilterConfig;
-use super::filter::SampleHttpFilter;
-
 use envoy_sdk::extension;
 use envoy_sdk::extension::{InstanceId, Result};
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
+
+use super::config::SampleHttpFilterConfig;
+use super::filter::SampleHttpFilter;
 
 /// Factory for creating sample HTTP filter instances
 /// (one filter instance per HTTP request).

@@ -15,8 +15,6 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use super::config::SampleNetworkFilterConfig;
-
 use log::info;
 
 use envoy_sdk::extension::filter::network;
@@ -26,6 +24,8 @@ use envoy_sdk::host::services::time;
 
 use chrono::offset::Local;
 use chrono::DateTime;
+
+use super::config::SampleNetworkFilterConfig;
 
 /// Sample network filter.
 pub struct SampleNetworkFilter<'a> {

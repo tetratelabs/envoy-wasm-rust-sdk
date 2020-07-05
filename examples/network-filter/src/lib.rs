@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub use factory::SampleNetworkFilterFactory;
+
 mod config;
 mod factory;
 mod filter;
-
-pub use factory::SampleNetworkFilterFactory;

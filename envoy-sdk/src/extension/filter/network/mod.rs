@@ -14,15 +14,16 @@
 
 extern crate std;
 
-pub mod context;
-pub mod ops;
-pub use context::FilterContext;
+use proxy_wasm::types::{Action, Bytes, PeerType};
 
 use crate::extension::Result;
 use crate::host;
 use crate::host::services::clients;
 
-use proxy_wasm::types::{Action, Bytes, PeerType};
+pub use context::FilterContext;
+
+pub mod context;
+pub mod ops;
 
 pub type FilterStatus = Action;
 

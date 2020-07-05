@@ -13,12 +13,13 @@
 // limitations under the License.
 
 extern crate std;
-use std::prelude::v1::*;
 
-use crate::host;
+use std::prelude::v1::*;
 
 use proxy_wasm::hostcalls;
 use proxy_wasm::types::{BufferType, Bytes, MapType};
+
+use crate::host;
 
 pub struct Host;
 

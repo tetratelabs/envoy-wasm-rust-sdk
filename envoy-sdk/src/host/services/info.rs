@@ -13,11 +13,12 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::prelude::v1::*;
 
-use crate::host;
-
 use proxy_wasm::types::Bytes;
+
+use crate::host;
 
 pub trait Service {
     fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;

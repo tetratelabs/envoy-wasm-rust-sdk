@@ -13,17 +13,18 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::prelude::v1::*;
 
-pub mod context;
-pub mod ops;
-pub use context::FilterContext;
+use proxy_wasm::types::{Action, Bytes};
 
 use crate::extension::Result;
 use crate::host;
 use crate::host::services::clients;
 
-use proxy_wasm::types::{Action, Bytes};
+pub mod context;
+pub mod ops;
+pub use context::FilterContext;
 
 pub type FilterHeadersStatus = Action;
 pub type FilterDataStatus = Action;
