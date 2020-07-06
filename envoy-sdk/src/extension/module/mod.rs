@@ -21,7 +21,7 @@ macro_rules! start {
     // Therefore, only use export name `_start` when in the context of target
     // `wasm32-unknown-unknown`.
 
-    ($on_start:ident) => {
+    ($($t:tt)*) => {
         #[cfg_attr(
             all(
                 target_arch = "wasm32",
@@ -32,7 +32,7 @@ macro_rules! start {
         )]
         #[no_mangle]
         extern "C" fn start() {
-            $on_start()
+            $($t)*
         }
     };
 }

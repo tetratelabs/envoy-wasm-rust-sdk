@@ -23,7 +23,7 @@ use envoy_sdk::host::services::time;
 
 use http_filter::SampleHttpFilterFactory;
 
-start! { on_module_start }
+start! { on_module_start(); }
 
 /// Is called when a new instance of WebAssembly module is created.
 fn on_module_start() {
