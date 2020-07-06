@@ -31,7 +31,8 @@ fn on_module_start() {
     // Register Access logger extension
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
         // Inject dependencies on Envoy host APIs
-        let logger = SampleAccessLogger::with_default_ops();
+        let logger =
+            SampleAccessLogger::with_default_ops().expect("unable to initialize extension");
 
         // Bridge between Access logger abstraction and Envoy ABI
         Box::new(extension::access_logger::LoggerContext::with_default_ops(

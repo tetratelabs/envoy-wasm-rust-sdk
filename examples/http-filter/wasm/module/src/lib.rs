@@ -33,7 +33,8 @@ fn on_module_start() {
     // Register HTTP filter extension
     proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
         // Inject dependencies on Envoy host APIs
-        let http_filter_factory = SampleHttpFilterFactory::with_default_ops();
+        let http_filter_factory =
+            SampleHttpFilterFactory::with_default_ops().expect("unable to initialize extension");
 
         // Bridge between HTTP filter factory abstraction and Envoy ABI
         Box::new(factory::FactoryContext::with_default_ops(

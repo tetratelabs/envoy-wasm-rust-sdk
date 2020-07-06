@@ -16,11 +16,11 @@ use std::rc::Rc;
 
 use envoy_sdk::extension;
 use envoy_sdk::extension::{InstanceId, Result};
-use envoy_sdk::host::services::clients;
-use envoy_sdk::host::services::time;
+use envoy_sdk::host::services::{clients, metrics, time};
 
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
+use super::stats::SampleHttpFilterStats;
 
 /// Factory for creating sample HTTP filter instances
 /// (one filter instance per HTTP request).
@@ -28,8 +28,11 @@ pub struct SampleHttpFilterFactory<'a> {
     // This example shows how multiple filter instances could share
     // the same configuration.
     config: Rc<SampleHttpFilterConfig>,
-    // This example shows how to use Time API and HTTP Client API
-    // provided by Envoy host.
+    // This example shows how multiple filter instances could share
+    // metrics.
+    stats: Rc<SampleHttpFilterStats>,
+    // This example shows how to use Time API, HTTP Client API and
+    // Metrics API provided by Envoy host.
     time_service: &'a dyn time::Service,
     http_client: &'a dyn clients::http::Client,
 }
@@ -39,18 +42,29 @@ impl<'a> SampleHttpFilterFactory<'a> {
     pub fn new(
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
-    ) -> SampleHttpFilterFactory<'a> {
+        metrics_service: &'a dyn metrics::Service,
+    ) -> Result<SampleHttpFilterFactory<'a>> {
+        let stats = SampleHttpFilterStats::new(
+            metrics_service.counter("examples.http_filter.requests_total")?,
+            metrics_service.gauge("examples.http_filter.requests_active")?,
+            metrics_service.histogram("examples.http_filter.response_body_size_bytes")?,
+        );
         // Inject dependencies on Envoy host APIs
-        SampleHttpFilterFactory {
+        Ok(SampleHttpFilterFactory {
             config: Rc::new(SampleHttpFilterConfig::default()),
+            stats: Rc::new(stats),
             time_service,
             http_client,
-        }
+        })
     }
 
     /// Creates a new factory bound to the actual Envoy ABI.
-    pub fn with_default_ops() -> SampleHttpFilterFactory<'a> {
-        SampleHttpFilterFactory::new(&time::ops::Host, &clients::http::ops::Host)
+    pub fn with_default_ops() -> Result<SampleHttpFilterFactory<'a>> {
+        SampleHttpFilterFactory::new(
+            &time::ops::Host,
+            &clients::http::ops::Host,
+            &metrics::ops::Host,
+        )
     }
 }
 
@@ -84,6 +98,7 @@ impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
     fn new_extension(&mut self, instance_id: InstanceId) -> Result<SampleHttpFilter<'a>> {
         Ok(SampleHttpFilter::new(
             Rc::clone(&self.config),
+            Rc::clone(&self.stats),
             instance_id,
             self.time_service,
             self.http_client,
