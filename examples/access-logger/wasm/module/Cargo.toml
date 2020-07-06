@@ -1,6 +1,6 @@
 [package]
 name = "access-logger-module"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
 edition = "2018"
 publish = false
@@ -14,4 +14,4 @@ crate-type = ["cdylib"]
 log = "0.4"
 access-logger = { path = "../.." }
 envoy-sdk = { path = "../../../../envoy-sdk" }
-proxy-wasm = { git = "https://github.com/yskopets/proxy-wasm-rust-sdk", branch = "proxy-wasm-spec-0.1.0" }
+proxy-wasm = { package="proxy-wasm-experimental", version = "0.1.0-alpha.2" }
