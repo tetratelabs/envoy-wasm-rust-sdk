@@ -37,7 +37,10 @@ where
             .unwrap()
     }
 
-    fn on_create_child_context(&mut self, context_id: u32) -> Option<proxy_wasm::traits::ChildContext> {
+    fn on_create_child_context(
+        &mut self,
+        context_id: u32,
+    ) -> Option<proxy_wasm::traits::ChildContext> {
         let new_child_context = self.child_context_factory;
         Some(new_child_context(
             &mut self.factory,
