@@ -82,4 +82,9 @@ where
             http_client_ops,
         }
     }
+
+    /// Creates a new Access logger context bound to the actual Envoy ABI.
+    pub fn with_default_ops(logger: L) -> LoggerContext<'a, L> {
+        LoggerContext::new(logger, &super::ops::Host, &http_client::ops::Host)
+    }
 }

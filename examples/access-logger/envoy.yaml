@@ -50,7 +50,8 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.access_loggers.wasm.v3.WasmAccessLog
               config:
-                configuration: 'config for access-logger'
+                configuration: |
+                  {"setting":"value"}
                 name: "envoy-sdk-samples"
                 root_id: examples.access-logger
                 vm_config:
