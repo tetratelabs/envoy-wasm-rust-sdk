@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![doc(html_root_url = "https://docs.rs/envoy-sdk/0.0.0")]
+
 pub mod extension;
 pub mod host;
 pub mod vm;

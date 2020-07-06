@@ -13,21 +13,24 @@
 // limitations under the License.
 
 extern crate std;
-use std::prelude::v1::*;
 
-use crate::host;
+use std::prelude::v1::*;
 
 use proxy_wasm::hostcalls;
 use proxy_wasm::types::{Bytes, MapType};
+
+use super::{ConfigureOps, LogOps};
+use crate::host;
+
 pub struct Host;
 
-impl super::ConfigureOps for Host {
+impl ConfigureOps for Host {
     fn get_configuration(&self) -> host::Result<Option<Bytes>> {
         hostcalls::get_configuration().map_err(|status| ("proxy_get_configuration", status))
     }
 }
 
-impl super::LogOps for Host {
+impl LogOps for Host {
     fn get_request_headers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpRequestHeaders)
             .map_err(|status| ("proxy_get_header_map_pairs", status))

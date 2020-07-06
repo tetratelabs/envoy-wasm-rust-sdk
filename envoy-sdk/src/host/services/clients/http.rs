@@ -13,17 +13,17 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::fmt;
 use std::prelude::v1::*;
-
 use std::time::Duration;
-
-use crate::host;
 
 use proxy_wasm::types::Bytes;
 
-/// Opaque identifier of an ongoing HTTP request.
-#[derive(PartialEq, Eq)]
+use crate::host;
+
+/// Opaque identifier of an initiated HTTP request.
+#[derive(Debug, PartialEq, Eq)]
 pub struct RequestHandle(u32);
 
 impl From<u32> for RequestHandle {
@@ -62,14 +62,17 @@ pub trait ResponseOps {
 }
 
 pub mod ops {
-    use crate::host;
+    use std::time::Duration;
+
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::{BufferType, Bytes, MapType};
-    use std::time::Duration;
+
+    use super::{Client, RequestHandle, ResponseOps};
+    use crate::host;
 
     pub struct Host;
 
-    impl super::Client for Host {
+    impl Client for Host {
         fn send_request(
             &self,
             upstream: &str,
@@ -77,14 +80,14 @@ pub mod ops {
             body: Option<&[u8]>,
             trailers: Vec<(&str, &str)>,
             timeout: Duration,
-        ) -> host::Result<super::RequestHandle> {
+        ) -> host::Result<RequestHandle> {
             hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
                 .map_err(|status| ("proxy_http_call", status))
-                .map(super::RequestHandle::from)
+                .map(RequestHandle::from)
         }
     }
 
-    impl super::ResponseOps for Host {
+    impl ResponseOps for Host {
         fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
             hostcalls::get_map(MapType::HttpCallResponseHeaders)
                 .map_err(|status| ("proxy_get_header_map_pairs", status))

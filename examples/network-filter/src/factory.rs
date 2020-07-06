@@ -14,13 +14,13 @@
 
 use std::rc::Rc;
 
-use super::config::SampleNetworkFilterConfig;
-use super::filter::SampleNetworkFilter;
-
 use envoy_sdk::extension;
 use envoy_sdk::extension::{InstanceId, Result};
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
+
+use super::config::SampleNetworkFilterConfig;
+use super::filter::SampleNetworkFilter;
 
 /// Factory for creating sample network filter instances
 /// (one filter instance per TCP connection).

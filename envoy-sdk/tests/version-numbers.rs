@@ -12,26 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Configuration for a sample network filter.
-#[derive(Debug)]
-pub struct SampleNetworkFilterConfig {
-    pub value: String,
+#[test]
+fn test_readme_deps() {
+    version_sync::assert_markdown_deps_updated!("README.md");
 }
 
-impl SampleNetworkFilterConfig {
-    /// Creates a new configuration.
-    pub fn new<T: Into<String>>(value: T) -> SampleNetworkFilterConfig {
-        SampleNetworkFilterConfig {
-            value: value.into(),
-        }
-    }
-}
-
-impl Default for SampleNetworkFilterConfig {
-    /// Creates the default configuration.
-    fn default() -> Self {
-        SampleNetworkFilterConfig {
-            value: String::new(),
-        }
-    }
+#[test]
+fn test_html_root_url() {
+    version_sync::assert_html_root_url_updated!("src/lib.rs");
 }

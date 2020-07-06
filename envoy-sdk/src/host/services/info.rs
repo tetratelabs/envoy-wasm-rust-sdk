@@ -13,11 +13,12 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::prelude::v1::*;
 
-use crate::host;
-
 use proxy_wasm::types::Bytes;
+
+use crate::host;
 
 pub trait Service {
     fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
@@ -26,13 +27,15 @@ pub trait Service {
 }
 
 pub mod ops {
-    use crate::host;
     use proxy_wasm::hostcalls;
     use proxy_wasm::types::Bytes;
 
+    use super::Service;
+    use crate::host;
+
     pub struct Host;
 
-    impl super::Service for Host {
+    impl Service for Host {
         fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
             hostcalls::get_property(path).map_err(|status| ("proxy_get_property", status))
         }

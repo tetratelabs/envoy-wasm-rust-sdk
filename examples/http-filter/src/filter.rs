@@ -15,8 +15,6 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use super::config::SampleHttpFilterConfig;
-
 use log::info;
 
 use envoy_sdk::extension::filter::http;
@@ -24,9 +22,10 @@ use envoy_sdk::extension::{InstanceId, Result};
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
-extern crate chrono;
 use chrono::offset::Local;
 use chrono::DateTime;
+
+use super::config::SampleHttpFilterConfig;
 
 // Sample HTTP filter.
 pub struct SampleHttpFilter<'a> {

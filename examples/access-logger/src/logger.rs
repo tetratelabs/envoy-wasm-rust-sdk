@@ -14,8 +14,6 @@
 
 use std::time::Duration;
 
-use super::config::SampleAccessLoggerConfig;
-
 use log::info;
 
 use envoy_sdk::extension::access_logger;
@@ -23,9 +21,10 @@ use envoy_sdk::extension::Result;
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
-extern crate chrono;
 use chrono::offset::Local;
 use chrono::DateTime;
+
+use super::config::SampleAccessLoggerConfig;
 
 /// Sample Access Logger.
 pub struct SampleAccessLogger<'a> {

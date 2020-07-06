@@ -13,16 +13,18 @@
 // limitations under the License.
 
 extern crate std;
+
 use std::prelude::v1::*;
 
-pub mod context;
-pub mod ops;
-pub use context::FactoryContext;
+use proxy_wasm::types::Bytes;
 
 use crate::extension::{InstanceId, Result};
 use crate::host;
 
-use proxy_wasm::types::Bytes;
+pub use context::FactoryContext;
+
+pub mod context;
+pub mod ops;
 
 pub trait Factory {
     type Extension;

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 /// Configuration for a sample access logger.
+#[derive(Debug)]
 pub struct SampleAccessLoggerConfig {
     pub value: String,
 }

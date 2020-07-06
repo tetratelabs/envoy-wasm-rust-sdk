@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::extension::Result;
-use crate::host;
-
 use proxy_wasm::hostcalls;
 use proxy_wasm::types::Bytes;
+
+use crate::extension::Result;
+use crate::host;
 
 pub trait Lifecycle {
     fn on_start(&mut self, _vm_configuration_size: usize, _ops: &dyn StartOps) -> Result<bool> {

@@ -14,20 +14,21 @@
 
 use proxy_wasm::types::Action;
 
-use crate::host::services::clients;
+use super::{Filter, Ops};
+use crate::host::services::clients::http as http_client;
 
 pub struct FilterContext<'a, F>
 where
-    F: super::Filter,
+    F: Filter,
 {
     filter: F,
-    filter_ops: &'a dyn super::Ops,
-    http_client_ops: &'a dyn clients::http::ResponseOps,
+    filter_ops: &'a dyn Ops,
+    http_client_ops: &'a dyn http_client::ResponseOps,
 }
 
 impl<'a, F> proxy_wasm::traits::HttpContext for FilterContext<'a, F>
 where
-    F: super::Filter,
+    F: Filter,
 {
     fn on_http_request_headers(&mut self, num_headers: usize) -> Action {
         self.filter
@@ -80,7 +81,7 @@ where
 
 impl<'a, F> proxy_wasm::traits::Context for FilterContext<'a, F>
 where
-    F: super::Filter,
+    F: Filter,
 {
     // Http Client callbacks
 
@@ -93,7 +94,7 @@ where
     ) {
         self.filter
             .on_http_call_response(
-                clients::http::RequestHandle::from(token_id),
+                http_client::RequestHandle::from(token_id),
                 num_headers,
                 body_size,
                 num_trailers,
@@ -106,12 +107,12 @@ where
 
 impl<'a, F> FilterContext<'a, F>
 where
-    F: super::Filter,
+    F: Filter,
 {
     pub fn new(
         filter: F,
-        filter_ops: &'a dyn super::Ops,
-        http_client_ops: &'a dyn clients::http::ResponseOps,
+        filter_ops: &'a dyn Ops,
+        http_client_ops: &'a dyn http_client::ResponseOps,
     ) -> FilterContext<'a, F> {
         FilterContext {
             filter,

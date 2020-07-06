@@ -12,20 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::host::services::clients;
+use super::{Logger, Ops};
+use crate::host::services::clients::http as http_client;
 
 pub struct LoggerContext<'a, L>
 where
-    L: super::Logger,
+    L: Logger,
 {
     logger: L,
-    logger_ops: &'a dyn super::Ops,
-    http_client_ops: &'a dyn clients::http::ResponseOps,
+    logger_ops: &'a dyn Ops,
+    http_client_ops: &'a dyn http_client::ResponseOps,
 }
 
 impl<'a, L> proxy_wasm::traits::RootContext for LoggerContext<'a, L>
 where
-    L: super::Logger,
+    L: Logger,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
         self.logger
@@ -43,7 +44,7 @@ where
 
 impl<'a, L> proxy_wasm::traits::Context for LoggerContext<'a, L>
 where
-    L: super::Logger,
+    L: Logger,
 {
     // Http Client callbacks
 
@@ -56,7 +57,7 @@ where
     ) {
         self.logger
             .on_http_call_response(
-                clients::http::RequestHandle::from(token_id),
+                http_client::RequestHandle::from(token_id),
                 num_headers,
                 body_size,
                 num_trailers,
@@ -68,12 +69,12 @@ where
 
 impl<'a, L> LoggerContext<'a, L>
 where
-    L: super::Logger,
+    L: Logger,
 {
     pub fn new(
         logger: L,
-        logger_ops: &'a dyn super::Ops,
-        http_client_ops: &'a dyn clients::http::ResponseOps,
+        logger_ops: &'a dyn Ops,
+        http_client_ops: &'a dyn http_client::ResponseOps,
     ) -> LoggerContext<'a, L> {
         LoggerContext {
             logger,
