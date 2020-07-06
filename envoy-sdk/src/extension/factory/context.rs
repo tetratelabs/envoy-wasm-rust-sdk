@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use super::{Factory, Ops};
+use crate::extension::InstanceId;
 
 pub struct FactoryContext<'a, F>
 where
@@ -20,6 +21,7 @@ where
 {
     factory: F,
     factory_ops: &'a dyn Ops,
+    child_context_factory: fn(&mut F, InstanceId) -> proxy_wasm::traits::ChildContext,
 }
 
 impl<'a, F> proxy_wasm::traits::RootContext for FactoryContext<'a, F>
@@ -33,6 +35,14 @@ where
                 self.factory_ops.as_configure_ops(),
             )
             .unwrap()
+    }
+
+    fn on_create_child_context(&mut self, context_id: u32) -> Option<proxy_wasm::traits::ChildContext> {
+        let new_child_context = self.child_context_factory;
+        Some(new_child_context(
+            &mut self.factory,
+            InstanceId::from(context_id),
+        ))
     }
 }
 
@@ -51,10 +61,23 @@ impl<'a, F> FactoryContext<'a, F>
 where
     F: Factory,
 {
-    pub fn new(factory: F, factory_ops: &'a dyn Ops) -> FactoryContext<'a, F> {
+    pub fn new(
+        factory: F,
+        factory_ops: &'a dyn Ops,
+        child_context_factory: fn(&mut F, InstanceId) -> proxy_wasm::traits::ChildContext,
+    ) -> FactoryContext<'a, F> {
         FactoryContext {
             factory,
+            child_context_factory,
             factory_ops,
         }
+    }
+
+    /// Creates a new factory context bound to the actual Envoy ABI.
+    pub fn with_default_ops(
+        factory: F,
+        child_context_factory: fn(&mut F, InstanceId) -> proxy_wasm::traits::ChildContext,
+    ) -> FactoryContext<'a, F> {
+        FactoryContext::new(factory, &super::ops::Host, child_context_factory)
     }
 }

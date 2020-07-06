@@ -48,7 +48,8 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
               config:
-                configuration: 'config for http-filter'
+                configuration: |
+                  {"setting":"value"}
                 name: "envoy-sdk-samples"
                 root_id: examples.http-filter
                 vm_config:

@@ -32,7 +32,8 @@ static_resources:
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.wasm.v3.Wasm
           config:
-            configuration: 'config for network-filter'
+            configuration: |
+              {"setting":"value"}
             name: "envoy-sdk-samples"
             root_id: examples.network-filter
             vm_config:

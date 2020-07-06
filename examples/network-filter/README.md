@@ -33,7 +33,7 @@ docker-compose up
 
   Check Envoy logs:
   ```shell
-  wasm log envoy-sdk-samples network-filter: #2 new TCP connection starts at 2020-04-20T17:42:42.524006+00:00 with config:
+  wasm log envoy-sdk-samples network-filter: #2 new TCP connection starts at 2020-04-20T17:42:42.524006+00:00 with config: {"setting":"value"}
   wasm log envoy-sdk-samples network-filter: #2 sent outgoing request: @1
   wasm log envoy-sdk-samples network-filter: #2 received response on outgoing request: @1
   wasm log envoy-sdk-samples network-filter:      headers[count=6]:
@@ -43,7 +43,6 @@ docker-compose up
 
 ### Known issues
 
-* [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) doesn't support configuration of Network Filters
 * [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) doesn't
   support resume operation for TCP streams
 

@@ -108,4 +108,9 @@ where
             http_client_ops,
         }
     }
+
+    /// Creates a new network filter context bound to the actual Envoy ABI.
+    pub fn with_default_ops(filter: F) -> FilterContext<'a, F> {
+        FilterContext::new(filter, &super::ops::Host, &http_client::ops::Host)
+    }
 }

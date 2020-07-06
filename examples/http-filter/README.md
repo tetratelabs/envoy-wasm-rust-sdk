@@ -40,6 +40,7 @@ docker-compose up
 
   Check Envoy logs:
   ```shell
+  wasm log envoy-sdk-samples http-filter: #2 new http exchange starts at 2020-07-06T14:42:05.918002+00:00 with config: {"setting":"value"}
   wasm log envoy-sdk-samples http-filter: #2 observing request headers
   wasm log envoy-sdk-samples http-filter: #2 -> :authority: localhost:10000
   wasm log envoy-sdk-samples http-filter: #2 -> :path: /secret
@@ -90,6 +91,7 @@ docker-compose up
 
   Check Envoy logs:
   ```shell
+  wasm log envoy-sdk-samples http-filter: #2 new http exchange starts at 2020-07-06T14:42:05.918002+00:00 with config: {"setting":"value"}
   wasm log envoy-sdk-samples http-filter: #2 observing request headers
   wasm log envoy-sdk-samples http-filter: #2 -> :authority: localhost:10000
   wasm log envoy-sdk-samples http-filter: #2 -> :path: /secret
@@ -114,11 +116,6 @@ docker-compose up
   ```
 
   Notice that request processing was suspended until authorization request was complete.
-
-  ### Known issues
-
-* [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) doesn't support configuration of Http Filters
-* [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) has an issue that doesn't allow to access headers of the response to outgoing HTTP request
 
 ### How to Run unit tests
 
