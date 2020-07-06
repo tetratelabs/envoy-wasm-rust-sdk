@@ -22,6 +22,7 @@ pub use factory::Factory;
 pub mod access_logger;
 pub mod factory;
 pub mod filter;
+pub mod module;
 
 #[derive(Debug)]
 pub enum Error {

@@ -16,28 +16,17 @@ use proxy_wasm::traits::StreamContext;
 use proxy_wasm::types::LogLevel;
 
 use envoy_sdk::extension;
+use envoy_sdk::start;
 use envoy_sdk::extension::filter::network;
 use envoy_sdk::host::services::clients;
 use envoy_sdk::host::services::time;
 
 use network_filter::SampleNetworkFilterFactory;
 
-// Apparently, Rust toolchain doesn't handle well exported name `_start`
-// when this package is compiled to targets other than `wasm32-unknown-unknown`.
-// Specifically, linking issues have been observed with targets `wasm32-wasi`
-// and `x86_64-unknown-linux-gnu`, which is a blocker for unit testing.
-// Therefore, export name `_start` only in the context of target `wasm32-unknown-unknown`.
-#[cfg_attr(
-    all(
-        target_arch = "wasm32",
-        target_vendor = "unknown",
-        target_os = "unknown"
-    ),
-    export_name = "_start"
-)]
-#[no_mangle]
+start! { on_module_start }
+
 /// Is called when a new instance of WebAssembly module is created.
-extern "C" fn start() {
+fn on_module_start() {
     proxy_wasm::set_log_level(LogLevel::Info);
     proxy_wasm::set_stream_context(|context_id, _| -> Box<dyn StreamContext> {
         // TODO: at the moment, extension configuration is ignored since it belongs to the RootContext
@@ -66,6 +55,6 @@ mod tests {
 
     #[test]
     fn should_start() {
-        start()
+        on_module_start()
     }
 }
