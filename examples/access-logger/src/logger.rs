@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::convert::TryFrom;
 use std::time::Duration;
 
-use log::info;
+use log::{error, info};
 
 use envoy_sdk::extension::access_logger;
 use envoy_sdk::extension::Result;
@@ -80,14 +81,16 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         _configuration_size: usize,
         logger_ops: &dyn access_logger::ConfigureOps,
     ) -> Result<bool> {
-        let value = match logger_ops.get_configuration()? {
-            Some(bytes) => match String::from_utf8(bytes) {
+        self.config = match logger_ops.get_configuration()? {
+            Some(bytes) => match SampleAccessLoggerConfig::try_from(bytes.as_ref()) {
                 Ok(value) => value,
-                Err(_) => return Ok(false),
+                Err(err) => {
+                    error!("failed to parse extension configuration: {}", err);
+                    return Ok(false);
+                }
             },
-            None => String::new(),
+            None => SampleAccessLoggerConfig::default(),
         };
-        self.config = SampleAccessLoggerConfig::new(value);
         Ok(true)
     }
 
@@ -103,9 +106,9 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         let datetime: DateTime<Local> = current_time.into();
 
         info!(
-            "logging at {} with config: {}",
+            "logging at {} with config: {:?}",
             datetime.format("%+"),
-            self.config.value
+            self.config,
         );
 
         info!("  request headers:");
