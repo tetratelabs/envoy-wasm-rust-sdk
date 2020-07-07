@@ -20,7 +20,7 @@ pub struct SampleHttpFilterConfig {
 
 impl SampleHttpFilterConfig {
     /// Creates a new configuration.
-    pub fn new<T: Into<String>>(value: T) -> SampleHttpFilterConfig {
+    pub fn new<T: Into<String>>(value: T) -> Self {
         SampleHttpFilterConfig {
             value: value.into(),
         }

@@ -32,6 +32,8 @@ pub struct Host;
 
 impl StartOps for Host {
     fn get_configuration(&self) -> host::Result<Option<Bytes>> {
-        hostcalls::get_configuration().map_err(|status| ("proxy_get_configuration", status))
+        hostcalls::get_configuration().map_err(|status| {
+            host::Function::new("env", "proxy_get_configuration").call_error(status)
+        })
     }
 }

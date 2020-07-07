@@ -82,15 +82,16 @@ pub mod ops {
             timeout: Duration,
         ) -> host::Result<RequestHandle> {
             hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
-                .map_err(|status| ("proxy_http_call", status))
+                .map_err(|status| host::Function::new("env", "proxy_http_call").call_error(status))
                 .map(RequestHandle::from)
         }
     }
 
     impl ResponseOps for Host {
         fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
-            hostcalls::get_map(MapType::HttpCallResponseHeaders)
-                .map_err(|status| ("proxy_get_header_map_pairs", status))
+            hostcalls::get_map(MapType::HttpCallResponseHeaders).map_err(|status| {
+                host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
+            })
         }
 
         fn get_http_call_response_body(
@@ -98,13 +99,15 @@ pub mod ops {
             start: usize,
             max_size: usize,
         ) -> host::Result<Option<Bytes>> {
-            hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size)
-                .map_err(|status| ("proxy_get_buffer_bytes", status))
+            hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size).map_err(
+                |status| host::Function::new("env", "proxy_get_buffer_bytes").call_error(status),
+            )
         }
 
         fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
-            hostcalls::get_map(MapType::HttpCallResponseTrailers)
-                .map_err(|status| ("proxy_get_header_map_pairs", status))
+            hostcalls::get_map(MapType::HttpCallResponseTrailers).map_err(|status| {
+                host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
+            })
         }
     }
 }

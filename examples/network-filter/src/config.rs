@@ -20,7 +20,7 @@ pub struct SampleNetworkFilterConfig {
 
 impl SampleNetworkFilterConfig {
     /// Creates a new configuration.
-    pub fn new<T: Into<String>>(value: T) -> SampleNetworkFilterConfig {
+    pub fn new<T: Into<String>>(value: T) -> Self {
         SampleNetworkFilterConfig {
             value: value.into(),
         }

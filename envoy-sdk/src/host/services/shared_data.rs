@@ -33,12 +33,15 @@ pub mod ops {
 
     impl Service for Host {
         fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
-            hostcalls::get_shared_data(key).map_err(|status| ("proxy_get_shared_data", status))
+            hostcalls::get_shared_data(key).map_err(|status| {
+                host::Function::new("env", "proxy_get_shared_data").call_error(status)
+            })
         }
 
         fn set_data(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()> {
-            hostcalls::set_shared_data(key, value, cas)
-                .map_err(|status| ("proxy_set_shared_data", status))
+            hostcalls::set_shared_data(key, value, cas).map_err(|status| {
+                host::Function::new("env", "proxy_set_shared_data").call_error(status)
+            })
         }
     }
 }

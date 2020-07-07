@@ -26,7 +26,7 @@ impl SampleHttpFilterStats {
         requests_total: Box<dyn Counter>,
         requests_active: Box<dyn Gauge>,
         response_body_size_bytes: Box<dyn Histogram>,
-    ) -> SampleHttpFilterStats {
+    ) -> Self {
         SampleHttpFilterStats {
             requests_total,
             requests_active,

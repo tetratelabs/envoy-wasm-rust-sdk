@@ -54,7 +54,7 @@ impl<'a> SampleNetworkFilter<'a> {
         instance_id: InstanceId,
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
-    ) -> SampleNetworkFilter<'a> {
+    ) -> Self {
         // Inject dependencies on Envoy host APIs
         SampleNetworkFilter {
             config,

@@ -43,7 +43,7 @@ impl<'a> SampleNetworkFilterFactory<'a> {
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
         metrics_service: &'a dyn metrics::Service,
-    ) -> Result<SampleNetworkFilterFactory<'a>> {
+    ) -> Result<Self> {
         let stats = SampleNetworkFilterStats::new(
             metrics_service.counter("examples.network_filter.requests_total")?,
             metrics_service.gauge("examples.network_filter.requests_active")?,
@@ -59,7 +59,7 @@ impl<'a> SampleNetworkFilterFactory<'a> {
     }
 
     /// Creates a new factory bound to the actual Envoy ABI.
-    pub fn with_default_ops() -> Result<SampleNetworkFilterFactory<'a>> {
+    pub fn with_default_ops() -> Result<Self> {
         SampleNetworkFilterFactory::new(
             &time::ops::Host,
             &clients::http::ops::Host,

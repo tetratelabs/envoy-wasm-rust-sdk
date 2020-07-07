@@ -26,7 +26,7 @@ impl SampleNetworkFilterStats {
         requests_total: Box<dyn Counter>,
         requests_active: Box<dyn Gauge>,
         response_body_size_bytes: Box<dyn Histogram>,
-    ) -> SampleNetworkFilterStats {
+    ) -> Self {
         SampleNetworkFilterStats {
             requests_total,
             requests_active,

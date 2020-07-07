@@ -26,7 +26,7 @@ impl SampleAccessLoggerStats {
         requests_total: Box<dyn Counter>,
         reports_active: Box<dyn Gauge>,
         reports_total: Box<dyn Counter>,
-    ) -> SampleAccessLoggerStats {
+    ) -> Self {
         SampleAccessLoggerStats {
             requests_total,
             reports_active,

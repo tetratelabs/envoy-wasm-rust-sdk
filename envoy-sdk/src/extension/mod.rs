@@ -12,32 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
-
 use std::fmt;
-use std::prelude::v1::*;
 
+pub use self::error::{Error, Result};
 pub use factory::Factory;
+
+mod error;
 
 pub mod access_logger;
 pub mod factory;
 pub mod filter;
 pub mod module;
-
-#[derive(Debug)]
-pub enum Error {
-    HostCall(&'static str, proxy_wasm::types::Status),
-    Extension,
-}
-
-impl From<(&'static str, proxy_wasm::types::Status)> for Error {
-    fn from(pair: (&'static str, proxy_wasm::types::Status)) -> Self {
-        Error::HostCall(pair.0, pair.1)
-    }
-}
-
-/// The type returned by extension methods.
-pub type Result<T> = core::result::Result<T, Error>;
 
 /// Opaque identifier of an extension instance.
 #[derive(Debug, PartialEq, Eq)]

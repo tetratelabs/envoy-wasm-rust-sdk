@@ -22,14 +22,16 @@ pub struct Host;
 
 impl DownstreamDataOps for Host {
     fn get_downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
-        hostcalls::get_buffer(BufferType::DownstreamData, start, max_size)
-            .map_err(|status| ("proxy_get_buffer_bytes", status))
+        hostcalls::get_buffer(BufferType::DownstreamData, start, max_size).map_err(|status| {
+            host::Function::new("env", "proxy_get_buffer_bytes").call_error(status)
+        })
     }
 }
 
 impl UpstreamDataOps for Host {
     fn get_upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
-        hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
-            .map_err(|status| ("proxy_get_buffer_bytes", status))
+        hostcalls::get_buffer(BufferType::UpstreamData, start, max_size).map_err(|status| {
+            host::Function::new("env", "proxy_get_buffer_bytes").call_error(status)
+        })
     }
 }
