@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::convert::TryFrom;
 use std::rc::Rc;
+
+use log::error;
 
 use envoy_sdk::extension;
 use envoy_sdk::extension::{InstanceId, Result};
@@ -82,14 +85,17 @@ impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
         _configuration_size: usize,
         ops: &dyn extension::factory::ConfigureOps,
     ) -> Result<bool> {
-        let value = match ops.get_configuration()? {
-            Some(bytes) => match String::from_utf8(bytes) {
+        let config = match ops.get_configuration()? {
+            Some(bytes) => match SampleNetworkFilterConfig::try_from(bytes.as_ref()) {
                 Ok(value) => value,
-                Err(_) => return Ok(false),
+                Err(err) => {
+                    error!("failed to parse extension configuration: {}", err);
+                    return Ok(false);
+                }
             },
-            None => String::new(),
+            None => SampleNetworkFilterConfig::default(),
         };
-        self.config = Rc::new(SampleNetworkFilterConfig::new(value));
+        self.config = Rc::new(config);
         Ok(true)
     }
 

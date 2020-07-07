@@ -84,10 +84,10 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         let datetime: DateTime<Local> = current_time.into();
 
         info!(
-            "#{} new http exchange starts at {} with config: {}",
+            "#{} new http exchange starts at {} with config: {:?}",
             self.instance_id,
             datetime.format("%+"),
-            self.config.value
+            self.config,
         );
 
         info!("#{} observing request headers", self.instance_id);

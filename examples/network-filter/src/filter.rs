@@ -78,10 +78,10 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
         let datetime: DateTime<Local> = current_time.into();
 
         info!(
-            "#{} new TCP connection starts at {} with config: {}",
+            "#{} new TCP connection starts at {} with config: {:?}",
             self.instance_id,
             datetime.format("%+"),
-            self.config.value
+            self.config,
         );
 
         self.active_request = Some(self.http_client.send_request(

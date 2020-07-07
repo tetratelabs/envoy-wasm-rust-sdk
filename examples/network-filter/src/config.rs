@@ -12,18 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::convert::TryFrom;
+
+use serde::Deserialize;
+
+use envoy_sdk::extension;
+
 /// Configuration for a sample network filter.
-#[derive(Debug)]
+#[derive(Deserialize, Debug)]
 pub struct SampleNetworkFilterConfig {
-    pub value: String,
+    #[serde(default)]
+    pub param: String,
 }
 
-impl SampleNetworkFilterConfig {
-    /// Creates a new configuration.
-    pub fn new<T: Into<String>>(value: T) -> Self {
-        SampleNetworkFilterConfig {
-            value: value.into(),
-        }
+impl TryFrom<&[u8]> for SampleNetworkFilterConfig {
+    type Error = extension::Error;
+
+    /// Parses filter configuration from JSON.
+    fn try_from(value: &[u8]) -> extension::Result<Self> {
+        serde_json::from_slice(value).map_err(extension::Error::new)
     }
 }
 
@@ -31,7 +38,7 @@ impl Default for SampleNetworkFilterConfig {
     /// Creates the default configuration.
     fn default() -> Self {
         SampleNetworkFilterConfig {
-            value: String::new(),
+            param: String::new(),
         }
     }
 }
