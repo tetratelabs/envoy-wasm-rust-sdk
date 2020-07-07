@@ -26,12 +26,15 @@ pub struct Host;
 
 impl ConfigureOps for Host {
     fn get_configuration(&self) -> host::Result<Option<Bytes>> {
-        hostcalls::get_configuration().map_err(|status| ("proxy_get_configuration", status))
+        hostcalls::get_configuration().map_err(|status| {
+            host::Function::new("env", "proxy_get_configuration").call_error(status)
+        })
     }
 }
 
 impl DrainOps for Host {
     fn done(&self) -> host::Result<()> {
-        hostcalls::done().map_err(|status| ("proxy_done", status))
+        hostcalls::done()
+            .map_err(|status| host::Function::new("env", "proxy_done").call_error(status))
     }
 }

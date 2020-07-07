@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Configuration for a sample access logger.
-#[derive(Debug)]
 pub struct SampleAccessLoggerConfig {
     pub value: String,
 }
 
 impl SampleAccessLoggerConfig {
     /// Creates a new configuration.
-    pub fn new<T: Into<String>>(value: T) -> SampleAccessLoggerConfig {
+    pub fn new<T: Into<String>>(value: T) -> Self {
         SampleAccessLoggerConfig {
             value: value.into(),
         }

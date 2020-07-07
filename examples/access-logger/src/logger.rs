@@ -44,7 +44,7 @@ impl<'a> SampleAccessLogger<'a> {
         time_service: &'a dyn time::Service,
         http_client: &'a dyn clients::http::Client,
         metrics_service: &'a dyn metrics::Service,
-    ) -> Result<SampleAccessLogger<'a>> {
+    ) -> Result<Self> {
         let stats = SampleAccessLoggerStats::new(
             metrics_service.counter("examples.access_logger.requests_total")?,
             metrics_service.gauge("examples.access_logger.reports_active")?,
@@ -62,7 +62,7 @@ impl<'a> SampleAccessLogger<'a> {
 
     /// Creates a new instance of sample access logger
     /// bound to the actual Envoy ABI.
-    pub fn with_default_ops() -> Result<SampleAccessLogger<'a>> {
+    pub fn with_default_ops() -> Result<Self> {
         SampleAccessLogger::new(
             &time::ops::Host,
             &clients::http::ops::Host,

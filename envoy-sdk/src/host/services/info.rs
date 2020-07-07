@@ -37,11 +37,15 @@ pub mod ops {
 
     impl Service for Host {
         fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
-            hostcalls::get_property(path).map_err(|status| ("proxy_get_property", status))
+            hostcalls::get_property(path).map_err(|status| {
+                host::Function::new("env", "proxy_get_property").call_error(status)
+            })
         }
 
         fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()> {
-            hostcalls::set_property(path, value).map_err(|status| ("proxy_set_property", status))
+            hostcalls::set_property(path, value).map_err(|status| {
+                host::Function::new("env", "proxy_set_property").call_error(status)
+            })
         }
     }
 }

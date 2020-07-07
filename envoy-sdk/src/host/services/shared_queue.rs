@@ -58,24 +58,30 @@ pub mod ops {
     impl Service for Host {
         fn register_queue(&self, name: &str) -> host::Result<QueueHandle> {
             hostcalls::register_shared_queue(name)
-                .map_err(|status| ("proxy_register_shared_queue", status))
+                .map_err(|status| {
+                    host::Function::new("env", "proxy_register_shared_queue").call_error(status)
+                })
                 .map(QueueHandle::from)
         }
 
         fn lookup_queue(&self, vm_id: &str, name: &str) -> host::Result<Option<QueueHandle>> {
             hostcalls::resolve_shared_queue(vm_id, name)
-                .map_err(|status| ("proxy_resolve_shared_queue", status))
+                .map_err(|status| {
+                    host::Function::new("env", "proxy_resolve_shared_queue").call_error(status)
+                })
                 .map(|o| o.map(QueueHandle::from))
         }
 
         fn dequeue(&self, queue_id: QueueHandle) -> host::Result<Option<Bytes>> {
-            hostcalls::dequeue_shared_queue(queue_id.0)
-                .map_err(|status| ("proxy_dequeue_shared_queue", status))
+            hostcalls::dequeue_shared_queue(queue_id.0).map_err(|status| {
+                host::Function::new("env", "proxy_dequeue_shared_queue").call_error(status)
+            })
         }
 
         fn enqueue(&self, queue_id: QueueHandle, value: Option<&[u8]>) -> host::Result<()> {
-            hostcalls::enqueue_shared_queue(queue_id.0, value)
-                .map_err(|status| ("proxy_enqueue_shared_queue", status))
+            hostcalls::enqueue_shared_queue(queue_id.0, value).map_err(|status| {
+                host::Function::new("env", "proxy_enqueue_shared_queue").call_error(status)
+            })
         }
     }
 

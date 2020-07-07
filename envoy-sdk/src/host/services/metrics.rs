@@ -178,7 +178,9 @@ pub mod ops {
                     &mut return_metric_id,
                 ) {
                     Status::Ok => Ok(MetricHandle::from(return_metric_id)),
-                    status => Err(("proxy_define_metric", status)),
+                    status => {
+                        Err(host::Function::new("env", "proxy_define_metric").call_error(status))
+                    }
                 }
             }
         }
@@ -191,7 +193,9 @@ pub mod ops {
             unsafe {
                 match proxy_increment_metric(metric_handle.0, offset) {
                     Status::Ok => Ok(()),
-                    status => Err(("proxy_increment_metric", status)),
+                    status => {
+                        Err(host::Function::new("env", "proxy_increment_metric").call_error(status))
+                    }
                 }
             }
         }
@@ -204,7 +208,9 @@ pub mod ops {
             unsafe {
                 match proxy_record_metric(metric_handle.0, value) {
                     Status::Ok => Ok(()),
-                    status => Err(("proxy_record_metric", status)),
+                    status => {
+                        Err(host::Function::new("env", "proxy_record_metric").call_error(status))
+                    }
                 }
             }
         }
@@ -218,7 +224,9 @@ pub mod ops {
                 let mut return_metric_value: u64 = 0;
                 match proxy_get_metric(metric_handle.0, &mut return_metric_value) {
                     Status::Ok => Ok(return_metric_value),
-                    status => Err(("proxy_increment_metric", status)),
+                    status => {
+                        Err(host::Function::new("env", "proxy_increment_metric").call_error(status))
+                    }
                 }
             }
         }

@@ -68,7 +68,7 @@ where
         factory: F,
         factory_ops: &'a dyn Ops,
         child_context_factory: fn(&mut F, InstanceId) -> proxy_wasm::traits::ChildContext,
-    ) -> FactoryContext<'a, F> {
+    ) -> Self {
         FactoryContext {
             factory,
             child_context_factory,
@@ -80,7 +80,7 @@ where
     pub fn with_default_ops(
         factory: F,
         child_context_factory: fn(&mut F, InstanceId) -> proxy_wasm::traits::ChildContext,
-    ) -> FactoryContext<'a, F> {
+    ) -> Self {
         FactoryContext::new(factory, &super::ops::Host, child_context_factory)
     }
 }

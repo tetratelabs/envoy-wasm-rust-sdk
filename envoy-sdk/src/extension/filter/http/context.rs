@@ -113,7 +113,7 @@ where
         filter: F,
         filter_ops: &'a dyn Ops,
         http_client_ops: &'a dyn http_client::ResponseOps,
-    ) -> FilterContext<'a, F> {
+    ) -> Self {
         FilterContext {
             filter,
             filter_ops,
@@ -122,7 +122,7 @@ where
     }
 
     /// Creates a new HTTP filter context bound to the actual Envoy ABI.
-    pub fn with_default_ops(filter: F) -> FilterContext<'a, F> {
+    pub fn with_default_ops(filter: F) -> Self {
         FilterContext::new(filter, &super::ops::Host, &http_client::ops::Host)
     }
 }

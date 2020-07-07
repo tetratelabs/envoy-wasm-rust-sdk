@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod services;
+pub use self::error::{Error, Function, Result};
 
-/// The type returned by host methods.
-pub type Result<T> = core::result::Result<T, (&'static str, proxy_wasm::types::Status)>;
+mod error;
+
+pub mod services;

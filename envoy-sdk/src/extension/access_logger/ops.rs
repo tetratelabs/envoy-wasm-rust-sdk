@@ -26,42 +26,51 @@ pub struct Host;
 
 impl ConfigureOps for Host {
     fn get_configuration(&self) -> host::Result<Option<Bytes>> {
-        hostcalls::get_configuration().map_err(|status| ("proxy_get_configuration", status))
+        hostcalls::get_configuration().map_err(|status| {
+            host::Function::new("env", "proxy_get_configuration").call_error(status)
+        })
     }
 }
 
 impl LogOps for Host {
     fn get_request_headers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpRequestHeaders)
-            .map_err(|status| ("proxy_get_header_map_pairs", status))
+        hostcalls::get_map(MapType::HttpRequestHeaders).map_err(|status| {
+            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
+        })
     }
 
     fn get_request_header(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpRequestHeaders, &name)
-            .map_err(|status| ("proxy_get_header_map_value", status))
+        hostcalls::get_map_value(MapType::HttpRequestHeaders, &name).map_err(|status| {
+            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
+        })
     }
 
     fn get_response_headers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpResponseHeaders)
-            .map_err(|status| ("proxy_get_header_map_pairs", status))
+        hostcalls::get_map(MapType::HttpResponseHeaders).map_err(|status| {
+            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
+        })
     }
 
     fn get_response_header(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpResponseHeaders, &name)
-            .map_err(|status| ("proxy_get_header_map_value", status))
+        hostcalls::get_map_value(MapType::HttpResponseHeaders, &name).map_err(|status| {
+            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
+        })
     }
 
     fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpResponseTrailers)
-            .map_err(|status| ("proxy_get_header_map_pairs", status))
+        hostcalls::get_map(MapType::HttpResponseTrailers).map_err(|status| {
+            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
+        })
     }
 
     fn get_response_trailer(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpResponseTrailers, &name)
-            .map_err(|status| ("proxy_get_header_map_value", status))
+        hostcalls::get_map_value(MapType::HttpResponseTrailers, &name).map_err(|status| {
+            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
+        })
     }
 
     fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
-        hostcalls::get_property(path).map_err(|status| ("proxy_get_property", status))
+        hostcalls::get_property(path)
+            .map_err(|status| host::Function::new("env", "proxy_get_property").call_error(status))
     }
 }

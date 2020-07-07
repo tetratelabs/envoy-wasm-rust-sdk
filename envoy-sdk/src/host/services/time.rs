@@ -34,8 +34,9 @@ pub mod ops {
 
     impl Service for Host {
         fn get_current_time(&self) -> host::Result<SystemTime> {
-            hostcalls::get_current_time()
-                .map_err(|status| ("proxy_get_current_time_nanoseconds", status))
+            hostcalls::get_current_time().map_err(|status| {
+                host::Function::new("env", "proxy_get_current_time_nanoseconds").call_error(status)
+            })
         }
     }
 }
