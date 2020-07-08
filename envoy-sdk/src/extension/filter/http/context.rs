@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use proxy_wasm::types::Action;
+use crate::abi::proxy_wasm_ext::types::Action;
 
 use super::{Filter, Ops};
 use crate::host::http::client as http_client;
@@ -123,6 +123,6 @@ where
 
     /// Creates a new HTTP filter context bound to the actual Envoy ABI.
     pub fn with_default_ops(filter: F) -> Self {
-        FilterContext::new(filter, &super::ops::Host, &http_client::ops::Host)
+        FilterContext::new(filter, Ops::default(), http_client::ResponseOps::default())
     }
 }

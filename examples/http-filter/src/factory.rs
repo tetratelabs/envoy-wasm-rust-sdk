@@ -63,7 +63,11 @@ impl<'a> SampleHttpFilterFactory<'a> {
 
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn with_default_ops() -> Result<Self> {
-        SampleHttpFilterFactory::new(&time::ops::Host, &http_client::ops::Host, &stats::ops::Host)
+        SampleHttpFilterFactory::new(
+            time::Service::default(),
+            http_client::Client::default(),
+            stats::Service::default(),
+        )
     }
 }
 

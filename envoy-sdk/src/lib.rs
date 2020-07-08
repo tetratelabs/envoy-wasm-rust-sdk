@@ -14,7 +14,8 @@
 
 #![doc(html_root_url = "https://docs.rs/envoy-sdk/0.0.2")]
 
-pub use proxy_wasm;
+pub(crate) mod abi;
 
 pub mod extension;
 pub mod host;
+pub mod proxy_wasm;

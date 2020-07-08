@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub use self::error::{Error, Function, Result};
+//! `Envoy` `Host API`.
 
-mod error;
+pub(crate) use self::error::function;
+pub use self::error::{Error, Result};
 
+pub mod error;
 pub mod http;
-pub mod info;
 pub mod log;
 pub mod shared_data;
 pub mod shared_queue;
 pub mod stats;
+pub mod stream_info;
 pub mod time;

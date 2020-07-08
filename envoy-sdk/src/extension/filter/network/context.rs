@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use proxy_wasm::types::{Action, PeerType};
-
 use super::{Filter, Ops};
+use crate::abi::proxy_wasm_ext::types::{Action, PeerType};
 use crate::host::http::client as http_client;
 
 pub struct FilterContext<'a, F>
@@ -111,6 +110,6 @@ where
 
     /// Creates a new network filter context bound to the actual Envoy ABI.
     pub fn with_default_ops(filter: F) -> Self {
-        FilterContext::new(filter, &super::ops::Host, &http_client::ops::Host)
+        FilterContext::new(filter, Ops::default(), http_client::ResponseOps::default())
     }
 }

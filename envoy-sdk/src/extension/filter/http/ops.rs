@@ -12,198 +12,119 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
-
-use std::prelude::v1::*;
-
-use proxy_wasm::hostcalls;
-use proxy_wasm::types::{BufferType, Bytes, MapType};
-
 use super::{
     RequestBodyOps, RequestFlowOps, RequestHeadersOps, RequestTrailersOps, ResponseBodyOps,
     ResponseFlowOps, ResponseHeadersOps, ResponseTrailersOps,
 };
+use crate::abi::proxy_wasm_ext::hostcalls;
+use crate::abi::proxy_wasm_ext::types::{BufferType, Bytes, MapType};
 use crate::host;
 
-pub struct Host;
+pub(super) struct Host;
 
 impl RequestHeadersOps for Host {
     fn get_request_headers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpRequestHeaders).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-        })
+        hostcalls::get_map(MapType::HttpRequestHeaders)
     }
 
     fn set_request_headers(&self, headers: Vec<(&str, &str)>) -> host::Result<()> {
-        hostcalls::set_map(MapType::HttpRequestHeaders, headers).map_err(|status| {
-            host::Function::new("env", "proxy_set_header_map_pairs").call_error(status)
-        })
+        hostcalls::set_map(MapType::HttpRequestHeaders, headers)
     }
 
     fn get_request_header(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpRequestHeaders, &name).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
-        })
+        hostcalls::get_map_value(MapType::HttpRequestHeaders, name)
     }
 
     fn set_request_header(&self, name: &str, value: Option<&str>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpRequestHeaders, &name, value).map_err(|status| {
-            match value {
-                Some(_) => {
-                    host::Function::new("env", "proxy_replace_header_map_value").call_error(status)
-                }
-                None => {
-                    host::Function::new("env", "proxy_remove_header_map_value").call_error(status)
-                }
-            }
-        })
+        hostcalls::set_map_value(MapType::HttpRequestHeaders, name, value)
     }
 
     fn add_request_header(&self, name: &str, value: &str) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpRequestHeaders, &name, value).map_err(|status| {
-            host::Function::new("env", "proxy_add_header_map_value").call_error(status)
-        })
+        hostcalls::add_map_value(MapType::HttpRequestHeaders, name, value)
     }
 }
 
 impl RequestBodyOps for Host {
     fn get_request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
-        hostcalls::get_buffer(BufferType::HttpRequestBody, start, max_size).map_err(|status| {
-            host::Function::new("env", "proxy_get_buffer_bytes").call_error(status)
-        })
+        hostcalls::get_buffer(BufferType::HttpRequestBody, start, max_size)
     }
 }
 
 impl RequestTrailersOps for Host {
     fn get_request_trailers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpRequestTrailers).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-        })
+        hostcalls::get_map(MapType::HttpRequestTrailers)
     }
 
     fn set_request_trailers(&self, trailers: Vec<(&str, &str)>) -> host::Result<()> {
-        hostcalls::set_map(MapType::HttpRequestTrailers, trailers).map_err(|status| {
-            host::Function::new("env", "proxy_set_header_map_pairs").call_error(status)
-        })
+        hostcalls::set_map(MapType::HttpRequestTrailers, trailers)
     }
 
     fn get_request_trailer(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpRequestTrailers, &name).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
-        })
+        hostcalls::get_map_value(MapType::HttpRequestTrailers, name)
     }
 
     fn set_request_trailer(&self, name: &str, value: Option<&str>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpRequestTrailers, &name, value).map_err(|status| {
-            match value {
-                Some(_) => {
-                    host::Function::new("env", "proxy_replace_header_map_value").call_error(status)
-                }
-                None => {
-                    host::Function::new("env", "proxy_remove_header_map_value").call_error(status)
-                }
-            }
-        })
+        hostcalls::set_map_value(MapType::HttpRequestTrailers, name, value)
     }
 
     fn add_request_trailer(&self, name: &str, value: &str) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpRequestTrailers, &name, value).map_err(|status| {
-            host::Function::new("env", "proxy_add_header_map_value").call_error(status)
-        })
+        hostcalls::add_map_value(MapType::HttpRequestTrailers, name, value)
     }
 }
 
 impl ResponseHeadersOps for Host {
     fn get_response_headers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpResponseHeaders).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-        })
+        hostcalls::get_map(MapType::HttpResponseHeaders)
     }
 
     fn set_response_headers(&self, headers: Vec<(&str, &str)>) -> host::Result<()> {
-        hostcalls::set_map(MapType::HttpResponseHeaders, headers).map_err(|status| {
-            host::Function::new("env", "proxy_set_header_map_pairs").call_error(status)
-        })
+        hostcalls::set_map(MapType::HttpResponseHeaders, headers)
     }
 
     fn get_response_header(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpResponseHeaders, &name).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
-        })
+        hostcalls::get_map_value(MapType::HttpResponseHeaders, name)
     }
 
     fn set_response_header(&self, name: &str, value: Option<&str>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpResponseHeaders, &name, value).map_err(|status| {
-            match value {
-                Some(_) => {
-                    host::Function::new("env", "proxy_replace_header_map_value").call_error(status)
-                }
-                None => {
-                    host::Function::new("env", "proxy_remove_header_map_value").call_error(status)
-                }
-            }
-        })
+        hostcalls::set_map_value(MapType::HttpResponseHeaders, name, value)
     }
 
     fn add_response_header(&self, name: &str, value: &str) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpResponseHeaders, &name, value).map_err(|status| {
-            host::Function::new("env", "proxy_add_header_map_value").call_error(status)
-        })
+        hostcalls::add_map_value(MapType::HttpResponseHeaders, name, value)
     }
 }
 
 impl ResponseBodyOps for Host {
     fn get_response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
-        hostcalls::get_buffer(BufferType::HttpResponseBody, start, max_size).map_err(|status| {
-            host::Function::new("env", "proxy_get_buffer_bytes").call_error(status)
-        })
+        hostcalls::get_buffer(BufferType::HttpResponseBody, start, max_size)
     }
 }
 
 impl ResponseTrailersOps for Host {
     fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpResponseTrailers).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-        })
+        hostcalls::get_map(MapType::HttpResponseTrailers)
     }
 
     fn set_response_trailers(&self, headers: Vec<(&str, &str)>) -> host::Result<()> {
-        hostcalls::set_map(MapType::HttpResponseTrailers, headers).map_err(|status| {
-            host::Function::new("env", "proxy_set_header_map_pairs").call_error(status)
-        })
+        hostcalls::set_map(MapType::HttpResponseTrailers, headers)
     }
 
     fn get_response_trailer(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpResponseTrailers, &name).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
-        })
+        hostcalls::get_map_value(MapType::HttpResponseTrailers, name)
     }
 
     fn set_response_trailer(&self, name: &str, value: Option<&str>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpResponseTrailers, &name, value).map_err(|status| {
-            match value {
-                Some(_) => {
-                    host::Function::new("env", "proxy_replace_header_map_value").call_error(status)
-                }
-                None => {
-                    host::Function::new("env", "proxy_remove_header_map_value").call_error(status)
-                }
-            }
-        })
+        hostcalls::set_map_value(MapType::HttpResponseTrailers, name, value)
     }
 
     fn add_response_trailer(&self, name: &str, value: &str) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpResponseTrailers, &name, value).map_err(|status| {
-            host::Function::new("env", "proxy_add_header_map_value").call_error(status)
-        })
+        hostcalls::add_map_value(MapType::HttpResponseTrailers, name, value)
     }
 }
 
 impl RequestFlowOps for Host {
     fn resume_request(&self) -> host::Result<()> {
-        hostcalls::resume_http_request().map_err(|status| {
-            host::Function::new("env", "proxy_continue_request").call_error(status)
-        })
+        hostcalls::resume_http_request()
     }
 
     fn send_response(
@@ -212,22 +133,16 @@ impl RequestFlowOps for Host {
         headers: Vec<(&str, &str)>,
         body: Option<&[u8]>,
     ) -> host::Result<()> {
-        hostcalls::send_http_response(status_code, headers, body).map_err(|status| {
-            host::Function::new("env", "proxy_send_local_response").call_error(status)
-        })
+        hostcalls::send_http_response(status_code, headers, body)
     }
 
     fn clear_route_cache(&self) -> host::Result<()> {
-        hostcalls::clear_http_route_cache().map_err(|status| {
-            host::Function::new("env", "proxy_clear_route_cache").call_error(status)
-        })
+        hostcalls::clear_http_route_cache()
     }
 }
 
 impl ResponseFlowOps for Host {
     fn resume_response(&self) -> host::Result<()> {
-        hostcalls::resume_http_response().map_err(|status| {
-            host::Function::new("env", "proxy_continue_response").call_error(status)
-        })
+        hostcalls::resume_http_response()
     }
 }

@@ -12,20 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! `Envoy` `Extension API`.
+
 use std::fmt;
 
 pub use self::error::{Error, Result};
 pub use factory::Factory;
 
-mod error;
+mod module;
 
 pub mod access_logger;
+pub mod error;
 pub mod factory;
 pub mod filter;
-pub mod module;
 
 /// Opaque identifier of an extension instance.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct InstanceId(u32);
 
 impl From<u32> for InstanceId {

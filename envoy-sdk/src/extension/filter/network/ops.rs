@@ -12,26 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use proxy_wasm::hostcalls;
-use proxy_wasm::types::{BufferType, Bytes};
+use crate::abi::proxy_wasm_ext::hostcalls;
+use crate::abi::proxy_wasm_ext::types::{BufferType, Bytes};
 
 use super::{DownstreamDataOps, UpstreamDataOps};
 use crate::host;
 
-pub struct Host;
+pub(super) struct Host;
 
 impl DownstreamDataOps for Host {
     fn get_downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
-        hostcalls::get_buffer(BufferType::DownstreamData, start, max_size).map_err(|status| {
-            host::Function::new("env", "proxy_get_buffer_bytes").call_error(status)
-        })
+        hostcalls::get_buffer(BufferType::DownstreamData, start, max_size)
     }
 }
 
 impl UpstreamDataOps for Host {
     fn get_upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
-        hostcalls::get_buffer(BufferType::UpstreamData, start, max_size).map_err(|status| {
-            host::Function::new("env", "proxy_get_buffer_bytes").call_error(status)
-        })
+        hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
     }
 }

@@ -12,65 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
-
-use std::prelude::v1::*;
-
-use proxy_wasm::hostcalls;
-use proxy_wasm::types::{Bytes, MapType};
-
 use super::{ConfigureOps, LogOps};
+use crate::abi::proxy_wasm_ext::hostcalls;
+use crate::abi::proxy_wasm_ext::types::{Bytes, MapType};
 use crate::host;
 
-pub struct Host;
+pub(super) struct Host;
 
 impl ConfigureOps for Host {
     fn get_configuration(&self) -> host::Result<Option<Bytes>> {
-        hostcalls::get_configuration().map_err(|status| {
-            host::Function::new("env", "proxy_get_configuration").call_error(status)
-        })
+        hostcalls::get_configuration()
     }
 }
 
 impl LogOps for Host {
     fn get_request_headers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpRequestHeaders).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-        })
+        hostcalls::get_map(MapType::HttpRequestHeaders)
     }
 
     fn get_request_header(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpRequestHeaders, &name).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
-        })
+        hostcalls::get_map_value(MapType::HttpRequestHeaders, name)
     }
 
     fn get_response_headers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpResponseHeaders).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-        })
+        hostcalls::get_map(MapType::HttpResponseHeaders)
     }
 
     fn get_response_header(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpResponseHeaders, &name).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
-        })
+        hostcalls::get_map_value(MapType::HttpResponseHeaders, name)
     }
 
     fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
-        hostcalls::get_map(MapType::HttpResponseTrailers).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-        })
+        hostcalls::get_map(MapType::HttpResponseTrailers)
     }
 
     fn get_response_trailer(&self, name: &str) -> host::Result<Option<String>> {
-        hostcalls::get_map_value(MapType::HttpResponseTrailers, &name).map_err(|status| {
-            host::Function::new("env", "proxy_get_header_map_value").call_error(status)
-        })
+        hostcalls::get_map_value(MapType::HttpResponseTrailers, &name)
     }
 
     fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
         hostcalls::get_property(path)
-            .map_err(|status| host::Function::new("env", "proxy_get_property").call_error(status))
     }
 }

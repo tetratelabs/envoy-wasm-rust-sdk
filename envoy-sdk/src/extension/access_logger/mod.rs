@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
+//! `Envoy` `Access Logger API`.
 
-use std::prelude::v1::*;
-
-use proxy_wasm::types::Bytes;
+use crate::abi::proxy_wasm_ext::types::Bytes;
 
 use crate::extension::Result;
 use crate::host;
 use crate::host::http::client as http_client;
 
+mod ops;
+
 pub mod context;
-pub mod ops;
 pub use context::LoggerContext;
 
 pub trait Logger {
@@ -89,5 +88,11 @@ where
 
     fn as_log_ops(&self) -> &dyn LogOps {
         self
+    }
+}
+
+impl dyn Ops {
+    pub fn default() -> &'static dyn Ops {
+        &ops::Host
     }
 }

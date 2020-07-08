@@ -12,7 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` filter APIs.
-
-pub mod http;
-pub mod network;
+pub mod proxy_wasm_ext;

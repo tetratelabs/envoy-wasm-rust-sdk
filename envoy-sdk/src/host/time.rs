@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
+//! `Envoy` `Time API`.
 
 use std::time::SystemTime;
 
@@ -22,21 +22,25 @@ pub trait Service {
     fn get_current_time(&self) -> host::Result<SystemTime>;
 }
 
-pub mod ops {
+impl dyn Service {
+    pub fn default() -> &'static dyn Service {
+        &impls::Host
+    }
+}
+
+mod impls {
     use std::time::SystemTime;
 
-    use proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm_ext::hostcalls;
 
     use super::Service;
     use crate::host;
 
-    pub struct Host;
+    pub(super) struct Host;
 
     impl Service for Host {
         fn get_current_time(&self) -> host::Result<SystemTime> {
-            hostcalls::get_current_time().map_err(|status| {
-                host::Function::new("env", "proxy_get_current_time_nanoseconds").call_error(status)
-            })
+            hostcalls::get_current_time()
         }
     }
 }

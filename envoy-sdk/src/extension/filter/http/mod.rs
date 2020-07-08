@@ -12,12 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
+//! `Envoy` `HTTP Filter API`.
 
-use std::prelude::v1::*;
-
-use proxy_wasm::types::{Action, Bytes};
-
+use crate::abi::proxy_wasm_ext::types::{Action, Bytes};
 use crate::extension::Result;
 use crate::host;
 use crate::host::http::client as http_client;
@@ -225,5 +222,11 @@ where
 
     fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps {
         self
+    }
+}
+
+impl dyn Ops {
+    pub fn default() -> &'static dyn Ops {
+        &ops::Host
     }
 }

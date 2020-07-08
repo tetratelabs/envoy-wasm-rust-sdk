@@ -54,9 +54,7 @@ where
     F: Factory,
 {
     fn on_done(&mut self) -> bool {
-        self.factory
-            .on_drain(self.factory_ops.as_done_ops())
-            .unwrap()
+        self.factory.on_drain().unwrap()
     }
 }
 
@@ -81,6 +79,6 @@ where
         factory: F,
         child_context_factory: fn(&mut F, InstanceId) -> proxy_wasm::traits::ChildContext,
     ) -> Self {
-        FactoryContext::new(factory, &super::ops::Host, child_context_factory)
+        FactoryContext::new(factory, Ops::default(), child_context_factory)
     }
 }
