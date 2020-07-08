@@ -15,11 +15,11 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use log::error;
+use envoy::host::services::log::error;
 
-use envoy_sdk::extension;
-use envoy_sdk::extension::{InstanceId, Result};
-use envoy_sdk::host::services::{clients, metrics, time};
+use envoy::extension;
+use envoy::extension::{InstanceId, Result};
+use envoy::host::services::{clients, metrics, time};
 
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;

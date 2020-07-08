@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use envoy::proxy_wasm;
 use proxy_wasm::traits::{ChildContext, RootContext};
 use proxy_wasm::types::LogLevel;
 
-use envoy_sdk::extension;
-use envoy_sdk::extension::factory;
-use envoy_sdk::extension::filter::network;
-use envoy_sdk::start;
+use envoy::extension;
+use envoy::extension::factory;
+use envoy::extension::filter::network;
+use envoy::start;
 
 use network_filter::SampleNetworkFilterFactory;
 

@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use envoy::proxy_wasm;
 use proxy_wasm::traits::RootContext;
 use proxy_wasm::types::LogLevel;
 
-use envoy_sdk::extension;
-use envoy_sdk::start;
+use envoy::extension;
+use envoy::start;
 
 use access_logger::SampleAccessLogger;
 

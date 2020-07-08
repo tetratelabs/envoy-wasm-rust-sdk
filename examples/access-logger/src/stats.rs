@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy_sdk::host::services::metrics::{Counter, Gauge};
+use envoy::host::services::metrics::{Counter, Gauge};
 
 // Sample stats.
 pub struct SampleAccessLoggerStats {

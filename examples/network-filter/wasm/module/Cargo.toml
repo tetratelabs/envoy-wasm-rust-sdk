@@ -12,6 +12,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 network-filter = { path = "../.." }
-envoy-sdk = { path = "../../../../envoy-sdk" }
-proxy-wasm = { package="proxy-wasm-experimental", version = "0.1.0-alpha.3" }
-log = "0.4"
+envoy = { path = "../../../../envoy-sdk", package = "envoy-sdk" }

@@ -16,7 +16,7 @@ use std::convert::TryFrom;
 
 use serde::Deserialize;
 
-use envoy_sdk::extension;
+use envoy::extension;
 
 /// Configuration for a sample network filter.
 #[derive(Deserialize, Debug)]
