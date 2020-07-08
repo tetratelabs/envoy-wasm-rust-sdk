@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use super::{Logger, Ops};
-use crate::host::services::clients::http as http_client;
+use crate::host::http::client as http_client;
 
 pub struct LoggerContext<'a, L>
 where

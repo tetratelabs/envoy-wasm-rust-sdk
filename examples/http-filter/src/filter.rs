@@ -15,12 +15,11 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::host::services::log::info;
+use envoy::host::log::info;
 
 use envoy::extension::filter::http;
 use envoy::extension::{InstanceId, Result};
-use envoy::host::services::clients;
-use envoy::host::services::time;
+use envoy::host::{http::client as http_client, time};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -40,9 +39,9 @@ pub struct SampleHttpFilter<'a> {
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
     time_service: &'a dyn time::Service,
-    http_client: &'a dyn clients::http::Client,
+    http_client: &'a dyn http_client::Client,
 
-    active_request: Option<clients::http::RequestHandle>,
+    active_request: Option<http_client::RequestHandle>,
     response_body_size: u64,
 }
 
@@ -53,7 +52,7 @@ impl<'a> SampleHttpFilter<'a> {
         stats: Rc<SampleHttpFilterStats>,
         instance_id: InstanceId,
         time_service: &'a dyn time::Service,
-        http_client: &'a dyn clients::http::Client,
+        http_client: &'a dyn http_client::Client,
     ) -> Self {
         // Inject dependencies on Envoy host APIs
         SampleHttpFilter {
@@ -178,12 +177,12 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
     /// Use filter_ops to amend and resume HTTP exchange.
     fn on_http_call_response(
         &mut self,
-        request: clients::http::RequestHandle,
+        request: http_client::RequestHandle,
         num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
         filter_ops: &dyn http::Ops,
-        http_client_ops: &dyn clients::http::ResponseOps,
+        http_client_ops: &dyn http_client::ResponseOps,
     ) -> Result<()> {
         info!(
             "#{} received response on authorization request: @{}",

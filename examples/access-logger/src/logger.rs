@@ -15,11 +15,11 @@
 use std::convert::TryFrom;
 use std::time::Duration;
 
-use envoy::host::services::log::{error, info};
+use envoy::host::log::{error, info};
 
 use envoy::extension::access_logger;
 use envoy::extension::Result;
-use envoy::host::services::{clients, metrics, time};
+use envoy::host::{http::client as http_client, stats, time};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -34,17 +34,17 @@ pub struct SampleAccessLogger<'a> {
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
     time_service: &'a dyn time::Service,
-    http_client: &'a dyn clients::http::Client,
+    http_client: &'a dyn http_client::Client,
 
-    active_request: Option<clients::http::RequestHandle>,
+    active_request: Option<http_client::RequestHandle>,
 }
 
 impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of sample access logger.
     pub fn new(
         time_service: &'a dyn time::Service,
-        http_client: &'a dyn clients::http::Client,
-        metrics_service: &'a dyn metrics::Service,
+        http_client: &'a dyn http_client::Client,
+        metrics_service: &'a dyn stats::Service,
     ) -> Result<Self> {
         let stats = SampleAccessLoggerStats::new(
             metrics_service.counter("examples.access_logger.requests_total")?,
@@ -64,11 +64,7 @@ impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of sample access logger
     /// bound to the actual Envoy ABI.
     pub fn with_default_ops() -> Result<Self> {
-        SampleAccessLogger::new(
-            &time::ops::Host,
-            &clients::http::ops::Host,
-            &metrics::ops::Host,
-        )
+        SampleAccessLogger::new(&time::ops::Host, &http_client::ops::Host, &stats::ops::Host)
     }
 }
 
@@ -158,11 +154,11 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
     /// Use http_client_ops to get ahold of response headers, body, etc.
     fn on_http_call_response(
         &mut self,
-        request: clients::http::RequestHandle,
+        request: http_client::RequestHandle,
         num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
-        http_client_ops: &dyn clients::http::ResponseOps,
+        http_client_ops: &dyn http_client::ResponseOps,
     ) -> Result<()> {
         info!(
             "received response from a log collector on request: @{}",

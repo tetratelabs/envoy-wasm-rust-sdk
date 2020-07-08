@@ -18,7 +18,7 @@ use proxy_wasm::types::{Action, Bytes, PeerType};
 
 use crate::extension::Result;
 use crate::host;
-use crate::host::services::clients::http as http_client;
+use crate::host::http::client as http_client;
 
 pub use context::FilterContext;
 

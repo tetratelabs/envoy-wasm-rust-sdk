@@ -15,11 +15,11 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use envoy::host::services::log::error;
+use envoy::host::log::error;
 
 use envoy::extension;
 use envoy::extension::{InstanceId, Result};
-use envoy::host::services::{clients, metrics, time};
+use envoy::host::{http::client as http_client, stats, time};
 
 use super::config::SampleNetworkFilterConfig;
 use super::filter::SampleNetworkFilter;
@@ -37,15 +37,15 @@ pub struct SampleNetworkFilterFactory<'a> {
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
     time_service: &'a dyn time::Service,
-    http_client: &'a dyn clients::http::Client,
+    http_client: &'a dyn http_client::Client,
 }
 
 impl<'a> SampleNetworkFilterFactory<'a> {
     /// Creates a new factory.
     pub fn new(
         time_service: &'a dyn time::Service,
-        http_client: &'a dyn clients::http::Client,
-        metrics_service: &'a dyn metrics::Service,
+        http_client: &'a dyn http_client::Client,
+        metrics_service: &'a dyn stats::Service,
     ) -> Result<Self> {
         let stats = SampleNetworkFilterStats::new(
             metrics_service.counter("examples.network_filter.requests_total")?,
@@ -65,8 +65,8 @@ impl<'a> SampleNetworkFilterFactory<'a> {
     pub fn with_default_ops() -> Result<Self> {
         SampleNetworkFilterFactory::new(
             &time::ops::Host,
-            &clients::http::ops::Host,
-            &metrics::ops::Host,
+            &http_client::ops::Host,
+            &stats::ops::Host,
         )
     }
 }

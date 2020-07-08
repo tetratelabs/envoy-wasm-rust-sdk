@@ -20,7 +20,7 @@ use proxy_wasm::types::Bytes;
 
 use crate::extension::Result;
 use crate::host;
-use crate::host::services::clients::http as http_client;
+use crate::host::http::client as http_client;
 
 pub mod context;
 pub mod ops;
