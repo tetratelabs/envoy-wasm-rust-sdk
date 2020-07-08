@@ -18,4 +18,3 @@ pub use proxy_wasm;
 
 pub mod extension;
 pub mod host;
-pub mod vm;

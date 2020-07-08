@@ -15,7 +15,7 @@
 use proxy_wasm::types::{Action, PeerType};
 
 use super::{Filter, Ops};
-use crate::host::services::clients::http as http_client;
+use crate::host::http::client as http_client;
 
 pub struct FilterContext<'a, F>
 where
