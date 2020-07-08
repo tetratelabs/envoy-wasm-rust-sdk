@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy_sdk::host::services::metrics::{Counter, Gauge, Histogram};
+use envoy::host::services::metrics::{Counter, Gauge, Histogram};
 
 // Sample stats.
 pub struct SampleHttpFilterStats {

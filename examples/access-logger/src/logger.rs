@@ -15,11 +15,11 @@
 use std::convert::TryFrom;
 use std::time::Duration;
 
-use log::{error, info};
+use envoy::host::services::log::{error, info};
 
-use envoy_sdk::extension::access_logger;
-use envoy_sdk::extension::Result;
-use envoy_sdk::host::services::{clients, metrics, time};
+use envoy::extension::access_logger;
+use envoy::extension::Result;
+use envoy::host::services::{clients, metrics, time};
 
 use chrono::offset::Local;
 use chrono::DateTime;

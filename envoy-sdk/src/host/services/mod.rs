@@ -14,6 +14,7 @@
 
 pub mod clients;
 pub mod info;
+pub mod log;
 pub mod metrics;
 pub mod shared_data;
 pub mod shared_queue;

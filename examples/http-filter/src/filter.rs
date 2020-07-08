@@ -15,12 +15,12 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use log::info;
+use envoy::host::services::log::info;
 
-use envoy_sdk::extension::filter::http;
-use envoy_sdk::extension::{InstanceId, Result};
-use envoy_sdk::host::services::clients;
-use envoy_sdk::host::services::time;
+use envoy::extension::filter::http;
+use envoy::extension::{InstanceId, Result};
+use envoy::host::services::clients;
+use envoy::host::services::time;
 
 use chrono::offset::Local;
 use chrono::DateTime;

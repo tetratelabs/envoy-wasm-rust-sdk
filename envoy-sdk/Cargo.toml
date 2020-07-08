@@ -15,8 +15,16 @@ edition = "2018"
 [lib]
 crate-type = ["rlib"]
 
+[features]
+# Default set of optional packages.
+# Most people will want to use these packages, but they are strictly optional.
+default = ["log"]
+
 [dependencies]
 proxy-wasm = { package="proxy-wasm-experimental", version = "0.1.0-alpha.3" }
+
+# List of optional dependencies that get enabled by `features`.
+log = { version = "0.4", optional = true }
 
 [dev-dependencies]
 version-sync = "0.9"
