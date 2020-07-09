@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Errors specific to `Envoy` host APIs.
+
 use std::fmt;
 
-use proxy_wasm::types::Status;
+use crate::abi::proxy_wasm_ext::types::Status;
 
-// Represents a host ABI function.
+pub(crate) fn function(module: &'static str, function: &'static str) -> Function {
+    Function::new(module, function)
+}
+
+/// Represents a host ABI function.
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Function {
     module: &'static str,
@@ -39,7 +45,7 @@ impl Function {
     }
 }
 
-// Represents an error that can occur when calling one of the host ABI functions.
+/// The error type for host API functions.
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Error {
     function: Function,
@@ -67,7 +73,7 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-/// A specialized [`Result`] type for host ABI functions.
+/// A specialized [`Result`] type for use in host API functions.
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub type Result<T> = core::result::Result<T, Error>;

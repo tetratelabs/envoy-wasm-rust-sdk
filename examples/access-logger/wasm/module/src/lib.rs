@@ -17,16 +17,16 @@ use proxy_wasm::traits::RootContext;
 use proxy_wasm::types::LogLevel;
 
 use envoy::extension;
-use envoy::start;
+use envoy::on_module_load;
 
 use access_logger::SampleAccessLogger;
 
-// Generate a `_start` function that is called by Envoy
-// when a new instance of WebAssembly module is created.
-start! { on_module_start(); }
+// Generate a `_start` function with a given code that will be called by Envoy
+// to let WebAssembly module initialize itself.
+on_module_load! { initialize(); }
 
 /// Does one-time initialization.
-fn on_module_start() {
+fn initialize() {
     proxy_wasm::set_log_level(LogLevel::Info);
 
     // Register Access logger extension
@@ -47,7 +47,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn should_start() {
-        on_module_start()
+    fn should_initialize() {
+        initialize()
     }
 }

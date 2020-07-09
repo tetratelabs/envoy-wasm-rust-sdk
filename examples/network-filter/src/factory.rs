@@ -64,9 +64,9 @@ impl<'a> SampleNetworkFilterFactory<'a> {
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn with_default_ops() -> Result<Self> {
         SampleNetworkFilterFactory::new(
-            &time::ops::Host,
-            &http_client::ops::Host,
-            &stats::ops::Host,
+            time::Service::default(),
+            http_client::Client::default(),
+            stats::Service::default(),
         )
     }
 }

@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
+//! `Envoy` `Network Filter API`.
 
-use proxy_wasm::types::{Action, Bytes, PeerType};
-
+use crate::abi::proxy_wasm_ext::types::{Action, Bytes, PeerType};
 use crate::extension::Result;
 use crate::host;
 use crate::host::http::client as http_client;
@@ -101,5 +100,11 @@ where
 
     fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps {
         self
+    }
+}
+
+impl dyn Ops {
+    pub fn default() -> &'static dyn Ops {
+        &ops::Host
     }
 }

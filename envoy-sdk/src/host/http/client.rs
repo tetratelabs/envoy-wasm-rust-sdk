@@ -12,31 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
+//! `Envoy` `HTTP Client API`.
 
-use std::fmt;
-use std::prelude::v1::*;
 use std::time::Duration;
 
-use proxy_wasm::types::Bytes;
-
+use crate::abi::proxy_wasm_ext::types::Bytes;
+pub use crate::abi::proxy_wasm_ext::types::HttpRequestHandle as RequestHandle;
 use crate::host;
-
-/// Opaque identifier of an initiated HTTP request.
-#[derive(Debug, PartialEq, Eq)]
-pub struct RequestHandle(u32);
-
-impl From<u32> for RequestHandle {
-    fn from(token_id: u32) -> Self {
-        RequestHandle(token_id)
-    }
-}
-
-impl fmt::Display for RequestHandle {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
 
 pub trait Client {
     fn send_request(
@@ -47,6 +29,12 @@ pub trait Client {
         trailers: Vec<(&str, &str)>,
         timeout: Duration,
     ) -> host::Result<RequestHandle>;
+}
+
+impl dyn Client {
+    pub fn default() -> &'static dyn Client {
+        &impls::Host
+    }
 }
 
 pub trait ResponseOps {
@@ -61,11 +49,17 @@ pub trait ResponseOps {
     fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 }
 
-pub mod ops {
+impl dyn ResponseOps {
+    pub fn default() -> &'static dyn ResponseOps {
+        &impls::Host
+    }
+}
+
+mod impls {
     use std::time::Duration;
 
-    use proxy_wasm::hostcalls;
-    use proxy_wasm::types::{BufferType, Bytes, MapType};
+    use crate::abi::proxy_wasm_ext::hostcalls;
+    use crate::abi::proxy_wasm_ext::types::{BufferType, Bytes, MapType};
 
     use super::{Client, RequestHandle, ResponseOps};
     use crate::host;
@@ -82,16 +76,12 @@ pub mod ops {
             timeout: Duration,
         ) -> host::Result<RequestHandle> {
             hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
-                .map_err(|status| host::Function::new("env", "proxy_http_call").call_error(status))
-                .map(RequestHandle::from)
         }
     }
 
     impl ResponseOps for Host {
         fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
-            hostcalls::get_map(MapType::HttpCallResponseHeaders).map_err(|status| {
-                host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-            })
+            hostcalls::get_map(MapType::HttpCallResponseHeaders)
         }
 
         fn get_http_call_response_body(
@@ -99,15 +89,11 @@ pub mod ops {
             start: usize,
             max_size: usize,
         ) -> host::Result<Option<Bytes>> {
-            hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size).map_err(
-                |status| host::Function::new("env", "proxy_get_buffer_bytes").call_error(status),
-            )
+            hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size)
         }
 
         fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
-            hostcalls::get_map(MapType::HttpCallResponseTrailers).map_err(|status| {
-                host::Function::new("env", "proxy_get_header_map_pairs").call_error(status)
-            })
+            hostcalls::get_map(MapType::HttpCallResponseTrailers)
         }
     }
 }

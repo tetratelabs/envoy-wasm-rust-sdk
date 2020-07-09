@@ -12,5 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! `Envoy` `Log API`.
+
 #[cfg(feature = "log")]
 pub use log::{debug, error, info, trace, warn};

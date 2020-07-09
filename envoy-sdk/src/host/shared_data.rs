@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use proxy_wasm::types::Bytes;
+//! `Envoy` `Shared Data API`.
 
+use crate::abi::proxy_wasm_ext::types::Bytes;
 use crate::host;
 
 pub trait Service {
@@ -22,26 +23,27 @@ pub trait Service {
     fn set_data(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()>;
 }
 
-pub mod ops {
-    use proxy_wasm::hostcalls;
-    use proxy_wasm::types::Bytes;
+impl dyn Service {
+    pub fn default() -> &'static dyn Service {
+        &impls::Host
+    }
+}
 
+mod impls {
     use super::Service;
+    use crate::abi::proxy_wasm_ext::hostcalls;
+    use crate::abi::proxy_wasm_ext::types::Bytes;
     use crate::host;
 
     pub struct Host;
 
     impl Service for Host {
         fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
-            hostcalls::get_shared_data(key).map_err(|status| {
-                host::Function::new("env", "proxy_get_shared_data").call_error(status)
-            })
+            hostcalls::get_shared_data(key)
         }
 
         fn set_data(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()> {
-            hostcalls::set_shared_data(key, value, cas).map_err(|status| {
-                host::Function::new("env", "proxy_set_shared_data").call_error(status)
-            })
+            hostcalls::set_shared_data(key, value, cas)
         }
     }
 }

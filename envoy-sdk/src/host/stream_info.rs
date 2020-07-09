@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate std;
+//! `Envoy` `Stream Info API`.
 
-use std::prelude::v1::*;
-
-use proxy_wasm::types::Bytes;
+use crate::abi::proxy_wasm_ext::types::Bytes;
 
 use crate::host;
 
@@ -26,9 +24,15 @@ pub trait Service {
     fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;
 }
 
-pub mod ops {
-    use proxy_wasm::hostcalls;
-    use proxy_wasm::types::Bytes;
+impl dyn Service {
+    pub fn default() -> &'static dyn Service {
+        &impls::Host
+    }
+}
+
+mod impls {
+    use crate::abi::proxy_wasm_ext::hostcalls;
+    use crate::abi::proxy_wasm_ext::types::Bytes;
 
     use super::Service;
     use crate::host;
@@ -37,15 +41,11 @@ pub mod ops {
 
     impl Service for Host {
         fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
-            hostcalls::get_property(path).map_err(|status| {
-                host::Function::new("env", "proxy_get_property").call_error(status)
-            })
+            hostcalls::get_property(path)
         }
 
         fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()> {
-            hostcalls::set_property(path, value).map_err(|status| {
-                host::Function::new("env", "proxy_set_property").call_error(status)
-            })
+            hostcalls::set_property(path, value)
         }
     }
 }

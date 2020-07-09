@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Errors specific to extension callback methods.
+
 use std::fmt;
 
 use crate::host;
 
-// Represents an error that can occur inside one of extension callback methods.
+/// The error type for extension callback methods.
 #[derive(Debug)]
 pub enum Error {
     HostCall(host::Error),
@@ -64,7 +66,7 @@ impl std::error::Error for Error {
     }
 }
 
-/// A specialized [`Result`] type for extension callback methods.
+/// A specialized [`Result`] type for use in extension callback methods.
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub type Result<T> = core::result::Result<T, Error>;

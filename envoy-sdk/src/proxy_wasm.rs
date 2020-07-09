@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` filter APIs.
+//! Re-exported part of [`proxy_wasm`] API.
+//!
+//! [`proxy_wasm`]: https://docs.rs/proxy-wasm/
 
-pub mod http;
-pub mod network;
+pub use crate::abi::proxy_wasm_ext::types;
+pub use ::proxy_wasm::traits;
+pub use ::proxy_wasm::{set_log_level, set_root_context};
