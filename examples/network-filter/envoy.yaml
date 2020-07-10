@@ -34,10 +34,10 @@ static_resources:
           config:
             configuration: |
               {"param":"value"}
-            name: "envoy-sdk-samples"
-            root_id: examples.network-filter
+            name: examples.network_filter
+            root_id: examples.network_filter
             vm_config:
-              vm_id: "vm-with-network-filter"
+              vm_id: vm.examples.network_filter
               runtime: "envoy.wasm.runtime.v8"
               code:
                 local:

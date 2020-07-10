@@ -12,48 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy::proxy_wasm;
-use proxy_wasm::traits::{ChildContext, RootContext};
-use proxy_wasm::types::LogLevel;
-
-use envoy::extension;
-use envoy::extension::factory;
-use envoy::extension::filter::network;
-use envoy::on_module_load;
+use envoy::{extension, extension::Registry, on_module_load};
 
 use network_filter::SampleNetworkFilterFactory;
 
-// Generate a `_start` function with a given code that will be called by Envoy
-// to let WebAssembly module initialize itself.
-on_module_load! { initialize(); }
+// Generate the `_start` function that will be called by `Envoy` to let
+// WebAssembly module initialize itself.
+on_module_load! { initialize }
 
 /// Does one-time initialization.
-fn initialize() {
-    proxy_wasm::set_log_level(LogLevel::Info);
-
-    // Register network filter extension
-    proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
-        // Inject dependencies on Envoy host APIs
-        let network_filter_factory =
-            SampleNetworkFilterFactory::with_default_ops().expect("unable to initialize extension");
-
-        // Bridge between network filter factory abstraction and Envoy ABI
-        Box::new(factory::FactoryContext::with_default_ops(
-            network_filter_factory,
-            |network_filter_factory, instance_id| -> ChildContext {
-                let network_filter = <_ as extension::factory::Factory>::new_extension(
-                    network_filter_factory,
-                    instance_id,
-                )
-                .unwrap();
-
-                // Bridge between network filter abstraction and Envoy ABI
-                ChildContext::StreamContext(Box::new(network::FilterContext::with_default_ops(
-                    network_filter,
-                )))
-            },
-        ))
-    })
+///
+/// Returns a registry of extensions provided by this module.
+fn initialize() -> extension::Result<Registry> {
+    Ok(Registry::new().add_network_filter(|_instance_id| SampleNetworkFilterFactory::default()))
 }
 
 #[cfg(test)]
@@ -62,6 +33,6 @@ mod tests {
 
     #[test]
     fn should_initialize() {
-        initialize()
+        assert!(initialize().is_ok());
     }
 }

@@ -63,7 +63,7 @@ impl<'a> SampleAccessLogger<'a> {
 
     /// Creates a new instance of sample access logger
     /// bound to the actual Envoy ABI.
-    pub fn with_default_ops() -> Result<Self> {
+    pub fn default() -> Result<Self> {
         SampleAccessLogger::new(
             time::Service::default(),
             http_client::Client::default(),
@@ -73,6 +73,11 @@ impl<'a> SampleAccessLogger<'a> {
 }
 
 impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
+    /// The reference name for sample access logger.
+    ///
+    /// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.
+    const NAME: &'static str = "examples.access_logger";
+
     /// Is called when Envoy creates a new Listener that uses sample access logger.
     ///
     /// Use logger_ops to get ahold of configuration.

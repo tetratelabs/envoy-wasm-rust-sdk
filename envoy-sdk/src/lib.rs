@@ -18,4 +18,3 @@ pub(crate) mod abi;
 
 pub mod extension;
 pub mod host;
-pub mod proxy_wasm;

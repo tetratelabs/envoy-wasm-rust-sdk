@@ -19,10 +19,10 @@ use crate::abi::proxy_wasm_ext::types::Bytes;
 use crate::extension::{InstanceId, Result};
 use crate::host;
 
-pub use context::FactoryContext;
+pub(crate) use context::FactoryContext;
 
-pub mod context;
-pub mod ops;
+mod context;
+mod ops;
 
 pub trait Factory {
     type Extension;

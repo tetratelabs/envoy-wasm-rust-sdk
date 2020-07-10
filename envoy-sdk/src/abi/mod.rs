@@ -12,4 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! ABI between Envoy and Wasm extensions.
+//!
+//! At the moment, [`proxy-wasm`] is the only such ABI.
+//!
+//! In the long term, we anticipate `Envoy` will also get feature-specific ABIs,
+//! e.g. one for HTTP Tracers, another for custom Clusters, etc.
+//!
+//! [`proxy-wasm`]: https://github.com/proxy-wasm/spec
+
 pub mod proxy_wasm_ext;

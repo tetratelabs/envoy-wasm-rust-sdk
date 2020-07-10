@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use super::{Filter, Ops};
+use crate::abi::proxy_wasm_ext::traits::{Context, StreamContext};
 use crate::abi::proxy_wasm_ext::types::{Action, PeerType};
 use crate::host::http::client as http_client;
 
@@ -25,7 +26,7 @@ where
     http_client_ops: &'a dyn http_client::ResponseOps,
 }
 
-impl<'a, F> proxy_wasm::traits::StreamContext for FilterContext<'a, F>
+impl<'a, F> StreamContext for FilterContext<'a, F>
 where
     F: Filter,
 {
@@ -66,7 +67,7 @@ where
     }
 }
 
-impl<'a, F> proxy_wasm::traits::Context for FilterContext<'a, F>
+impl<'a, F> Context for FilterContext<'a, F>
 where
     F: Filter,
 {

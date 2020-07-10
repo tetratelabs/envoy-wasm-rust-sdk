@@ -20,12 +20,14 @@ use crate::extension::Result;
 use crate::host;
 use crate::host::http::client as http_client;
 
+pub(crate) use context::LoggerContext;
+
+mod context;
 mod ops;
 
-pub mod context;
-pub use context::LoggerContext;
-
 pub trait Logger {
+    const NAME: &'static str;
+
     fn on_configure(
         &mut self,
         _configuration_size: usize,

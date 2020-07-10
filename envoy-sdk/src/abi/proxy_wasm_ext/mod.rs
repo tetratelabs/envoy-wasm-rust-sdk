@@ -12,5 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Extensions to [`proxy-wasm`] SDK.
+//!
+//! The rest of the code in this crate should use this module instead of
+//! the original [`proxy-wasm`].
+//!
+//! [`proxy-wasm`]: https://docs.rs/proxy-wasm/
+
+pub use proxy_wasm::{set_log_level, set_root_context, traits};
+
 pub mod hostcalls;
 pub mod types;

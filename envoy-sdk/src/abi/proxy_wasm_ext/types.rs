@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Extensions to [`proxy_wasm::types`].
+//!
+//! [`proxy_wasm::types`]: https://docs.rs/proxy-wasm/*/proxy_wasm/types/index.html
+
 use std::fmt;
 
 pub use proxy_wasm::types::*;

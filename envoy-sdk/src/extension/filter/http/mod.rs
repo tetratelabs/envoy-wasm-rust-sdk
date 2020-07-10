@@ -19,9 +19,10 @@ use crate::extension::Result;
 use crate::host;
 use crate::host::http::client as http_client;
 
-pub mod context;
-pub mod ops;
-pub use context::FilterContext;
+pub(crate) use context::FilterContext;
+
+mod context;
+mod ops;
 
 pub type FilterHeadersStatus = Action;
 pub type FilterDataStatus = Action;

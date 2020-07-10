@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use super::{Logger, Ops};
+use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
 use crate::host::http::client as http_client;
 
 pub struct LoggerContext<'a, L>
@@ -24,7 +25,7 @@ where
     http_client_ops: &'a dyn http_client::ResponseOps,
 }
 
-impl<'a, L> proxy_wasm::traits::RootContext for LoggerContext<'a, L>
+impl<'a, L> RootContext for LoggerContext<'a, L>
 where
     L: Logger,
 {
@@ -42,7 +43,7 @@ where
     }
 }
 
-impl<'a, L> proxy_wasm::traits::Context for LoggerContext<'a, L>
+impl<'a, L> Context for LoggerContext<'a, L>
 where
     L: Logger,
 {

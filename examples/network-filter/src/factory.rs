@@ -62,7 +62,7 @@ impl<'a> SampleNetworkFilterFactory<'a> {
     }
 
     /// Creates a new factory bound to the actual Envoy ABI.
-    pub fn with_default_ops() -> Result<Self> {
+    pub fn default() -> Result<Self> {
         SampleNetworkFilterFactory::new(
             time::Service::default(),
             http_client::Client::default(),
@@ -77,7 +77,7 @@ impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
     /// The reference name for sample network filter.
     ///
     /// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.
-    const NAME: &'static str = "examples.network-filter";
+    const NAME: &'static str = "examples.network_filter";
 
     /// Is called when Envoy creates a new Listener that uses sample network filter.
     fn on_configure(
@@ -101,7 +101,7 @@ impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
 
     /// Is called to create a unique instance of sample network filter
     /// for each TCP connection.
-    fn new_extension(&mut self, instance_id: InstanceId) -> Result<SampleNetworkFilter<'a>> {
+    fn new_extension(&mut self, instance_id: InstanceId) -> Result<Self::Extension> {
         Ok(SampleNetworkFilter::new(
             Rc::clone(&self.config),
             Rc::clone(&self.stats),
