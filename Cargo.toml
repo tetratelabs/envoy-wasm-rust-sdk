@@ -9,3 +9,11 @@ members = [
     "examples/network-filter",
     "examples/network-filter/wasm/module",
 ]
+
+[profile.dev]
+lto = "fat"     # Performs "fat" LTO which attempts to perform optimizations across all crates within the dependency graph
+
+[profile.release]
+opt-level = "z" # optimize for binary size, but also turn off loop vectorization
+debug = 0       # no debug info at all (NOTE: unfortunately, this setting has no effect)
+lto = "fat"     # Performs "fat" LTO which attempts to perform optimizations across all crates within the dependency graph
