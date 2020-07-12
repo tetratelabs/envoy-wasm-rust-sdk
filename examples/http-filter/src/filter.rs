@@ -15,7 +15,7 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::host::log::info;
+use envoy::host::log;
 
 use envoy::extension::filter::http;
 use envoy::extension::{InstanceId, Result};
@@ -82,16 +82,16 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         let current_time = self.time_service.get_current_time()?;
         let datetime: DateTime<Local> = current_time.into();
 
-        info!(
+        log::info!(
             "#{} new http exchange starts at {} with config: {:?}",
             self.instance_id,
             datetime.format("%+"),
             self.config,
         );
 
-        info!("#{} observing request headers", self.instance_id);
+        log::info!("#{} observing request headers", self.instance_id);
         for (name, value) in &filter_ops.get_request_headers()? {
-            info!("#{} -> {}: {}", self.instance_id, name, value);
+            log::info!("#{} -> {}: {}", self.instance_id, name, value);
         }
 
         match filter_ops.get_request_header(":path")? {
@@ -115,12 +115,12 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                     vec![],
                     Duration::from_secs(3),
                 )?);
-                info!(
+                log::info!(
                     "#{} sent authorization request: @{}",
                     self.instance_id,
                     self.active_request.as_ref().unwrap()
                 );
-                info!("#{} suspending http exchange processing", self.instance_id);
+                log::info!("#{} suspending http exchange processing", self.instance_id);
                 Ok(http::FilterHeadersStatus::Pause)
             }
             _ => Ok(http::FilterHeadersStatus::Continue),
@@ -135,9 +135,9 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         _num_headers: usize,
         filter_ops: &dyn http::ResponseHeadersOps,
     ) -> Result<http::FilterHeadersStatus> {
-        info!("#{} observing response headers", self.instance_id);
+        log::info!("#{} observing response headers", self.instance_id);
         for (name, value) in &filter_ops.get_response_headers()? {
-            info!("#{} <- {}: {}", self.instance_id, name, value);
+            log::info!("#{} <- {}: {}", self.instance_id, name, value);
         }
         Ok(http::FilterHeadersStatus::Continue)
     }
@@ -163,7 +163,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
             .response_body_size_bytes()
             .record(self.response_body_size)?;
 
-        info!("#{} http exchange complete", self.instance_id);
+        log::info!("#{} http exchange complete", self.instance_id);
         Ok(())
     }
 
@@ -184,20 +184,21 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         filter_ops: &dyn http::Ops,
         http_client_ops: &dyn http_client::ResponseOps,
     ) -> Result<()> {
-        info!(
+        log::info!(
             "#{} received response on authorization request: @{}",
-            self.instance_id, request
+            self.instance_id,
+            request
         );
         assert!(self.active_request == Some(request));
         self.active_request = None;
 
-        info!("     headers[count={}]:", num_headers);
+        log::info!("     headers[count={}]:", num_headers);
         let response_headers = http_client_ops.get_http_call_response_headers()?;
         for (name, value) in &response_headers {
-            info!("       {}: {}", name, value);
+            log::info!("       {}: {}", name, value);
         }
 
-        info!("#{} resuming http exchange processing", self.instance_id);
+        log::info!("#{} resuming http exchange processing", self.instance_id);
         filter_ops.resume_request()?;
         Ok(())
     }
