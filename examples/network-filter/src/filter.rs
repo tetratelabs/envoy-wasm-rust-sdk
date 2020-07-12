@@ -15,7 +15,7 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::host::log::info;
+use envoy::host::log;
 
 use envoy::extension::filter::network;
 use envoy::extension::{InstanceId, Result};
@@ -76,7 +76,7 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
         let current_time = self.time_service.get_current_time()?;
         let datetime: DateTime<Local> = current_time.into();
 
-        info!(
+        log::info!(
             "#{} new TCP connection starts at {} with config: {:?}",
             self.instance_id,
             datetime.format("%+"),
@@ -94,7 +94,7 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
             vec![],
             Duration::from_secs(3),
         )?);
-        info!(
+        log::info!(
             "#{} sent outgoing request: @{}",
             self.instance_id,
             self.active_request.as_ref().unwrap()
@@ -124,7 +124,7 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
             .response_body_size_bytes()
             .record(self.response_body_size)?;
 
-        info!("#{} TCP connection ended", self.instance_id);
+        log::info!("#{} TCP connection ended", self.instance_id);
         Ok(())
     }
 
@@ -145,17 +145,18 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
         _filter_ops: &dyn network::Ops,
         http_client_ops: &dyn http_client::ResponseOps,
     ) -> Result<()> {
-        info!(
+        log::info!(
             "#{} received response on outgoing request: @{}",
-            self.instance_id, request
+            self.instance_id,
+            request
         );
         assert!(self.active_request == Some(request));
         self.active_request = None;
 
-        info!("     headers[count={}]:", num_headers);
+        log::info!("     headers[count={}]:", num_headers);
         let response_headers = http_client_ops.get_http_call_response_headers()?;
         for (name, value) in &response_headers {
-            info!("       {}: {}", name, value);
+            log::info!("       {}: {}", name, value);
         }
 
         // TODO: no way to resume tcp stream

@@ -15,7 +15,7 @@
 use std::convert::TryFrom;
 use std::time::Duration;
 
-use envoy::host::log::{error, info};
+use envoy::host::log;
 
 use envoy::extension::access_logger;
 use envoy::extension::Result;
@@ -85,7 +85,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
             Some(bytes) => match SampleAccessLoggerConfig::try_from(bytes.as_ref()) {
                 Ok(value) => value,
                 Err(err) => {
-                    error!("failed to parse extension configuration: {}", err);
+                    log::error!("failed to parse extension configuration: {}", err);
                     return Ok(false);
                 }
             },
@@ -105,28 +105,28 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         let current_time = self.time_service.get_current_time()?;
         let datetime: DateTime<Local> = current_time.into();
 
-        info!(
+        log::info!(
             "logging at {} with config: {:?}",
             datetime.format("%+"),
             self.config,
         );
 
-        info!("  request headers:");
+        log::info!("  request headers:");
         let request_headers = logger_ops.get_request_headers()?;
         for (name, value) in &request_headers {
-            info!("    {}: {}", name, value);
+            log::info!("    {}: {}", name, value);
         }
-        info!("  response headers:");
+        log::info!("  response headers:");
         let response_headers = logger_ops.get_response_headers()?;
         for (name, value) in &response_headers {
-            info!("    {}: {}", name, value);
+            log::info!("    {}: {}", name, value);
         }
         let upstream_address = logger_ops.get_property(vec!["upstream", "address"])?;
         let upstream_address = upstream_address
             .map(|value| String::from_utf8(value).unwrap())
             .unwrap_or_else(String::new);
-        info!("  upstream info:");
-        info!("    {}: {}", "upstream.address", upstream_address);
+        log::info!("  upstream info:");
+        log::info!("    {}: {}", "upstream.address", upstream_address);
 
         // simulate sending a log entry off
         self.active_request = Some(self.http_client.send_request(
@@ -140,7 +140,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
             vec![],
             Duration::from_secs(3),
         )?);
-        info!(
+        log::info!(
             "sent request to a log collector: @{}",
             self.active_request.as_ref().unwrap()
         );
@@ -164,7 +164,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         _num_trailers: usize,
         http_client_ops: &dyn http_client::ResponseOps,
     ) -> Result<()> {
-        info!(
+        log::info!(
             "received response from a log collector on request: @{}",
             request
         );
@@ -175,10 +175,10 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         self.stats.reports_active().dec()?;
         self.stats.reports_total().inc()?;
 
-        info!("  headers[count={}]:", num_headers);
+        log::info!("  headers[count={}]:", num_headers);
         let response_headers = http_client_ops.get_http_call_response_headers()?;
         for (name, value) in &response_headers {
-            info!("    {}: {}", name, value);
+            log::info!("    {}: {}", name, value);
         }
 
         Ok(())

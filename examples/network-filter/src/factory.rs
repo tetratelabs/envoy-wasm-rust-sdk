@@ -15,7 +15,7 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use envoy::host::log::error;
+use envoy::host::log;
 
 use envoy::extension;
 use envoy::extension::{InstanceId, Result};
@@ -89,7 +89,7 @@ impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
             Some(bytes) => match SampleNetworkFilterConfig::try_from(bytes.as_ref()) {
                 Ok(value) => value,
                 Err(err) => {
-                    error!("failed to parse extension configuration: {}", err);
+                    log::error!("failed to parse extension configuration: {}", err);
                     return Ok(false);
                 }
             },
