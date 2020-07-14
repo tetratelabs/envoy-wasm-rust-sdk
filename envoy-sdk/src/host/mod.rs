@@ -16,7 +16,7 @@
 
 pub(crate) use self::error::function;
 
-pub use crate::common::{Error, Result};
+pub use self::error::{Error, Result};
 
 pub mod error;
 pub mod http;

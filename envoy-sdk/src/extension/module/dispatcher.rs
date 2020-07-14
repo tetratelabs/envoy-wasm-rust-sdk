@@ -19,9 +19,9 @@ use super::ContextFactoryHashMap;
 use crate::abi::proxy_wasm_ext;
 use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
 use crate::extension::error::ConfigurationError;
+use crate::extension::error::ErrorSink;
 use crate::extension::{Error, Result};
 use crate::host::error::function;
-use crate::host::log;
 use crate::host::stream_info::Service;
 
 pub(crate) struct ContextSelector<'a> {
@@ -85,7 +85,7 @@ impl ContextSelector<'static> {
             // call will be followed by `proxy_on_configure` where we can legally
             // report back to Envoy that configuration is not valid.
             self.new_root_context(context_id)
-                .unwrap_or_else(|e| Box::new(VoidRootContext(e)))
+                .unwrap_or_else(|e| Box::new(VoidRootContext::with_default_ops(e)))
         });
     }
 }
@@ -104,16 +104,30 @@ impl ContextSelector<'static> {
 /// [`RootContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.RootContext.html
 /// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
 /// [`proxy_on_configure`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_configure
-struct VoidRootContext(Error);
+struct VoidRootContext<'a> {
+    err: Error,
+    error_sink: &'a dyn ErrorSink,
+}
 
-impl RootContext for VoidRootContext {
+impl<'a> VoidRootContext<'a> {
+    fn new(err: Error, error_sink: &'a dyn ErrorSink) -> Self {
+        VoidRootContext { err, error_sink }
+    }
+
+    fn with_default_ops(err: Error) -> Self {
+        Self::new(err, ErrorSink::default())
+    }
+}
+
+impl<'a> RootContext for VoidRootContext<'a> {
     fn on_configure(&mut self, _plugin_configuration_size: usize) -> bool {
-        log::error!("failed to create Proxy Wasm Root Context: {}", self.0);
+        self.error_sink
+            .observe("failed to create Proxy Wasm Root Context", &self.err);
         false // indicate to Envoy that configuration is not valid
     }
 }
 
-impl Context for VoidRootContext {}
+impl<'a> Context for VoidRootContext<'a> {}
 
 pub(crate) struct VoidContextSelector {
     err: Error,
@@ -138,7 +152,7 @@ impl VoidContextSelector {
             // Specifically, we're relying on the fact that `_start`
             // call will be followed by `proxy_on_vm_start` where we can legally
             // report back to Envoy that VM state is not valid.
-            Box::new(VoidVmContext(Rc::clone(&err)))
+            Box::new(VoidVmContext::with_default_ops(Rc::clone(&err)))
         });
     }
 }
@@ -157,13 +171,27 @@ impl VoidContextSelector {
 /// [`RootContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.RootContext.html
 /// [`_start`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#_start
 /// [`proxy_on_vm_start`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_vm_start
-struct VoidVmContext(Rc<Error>);
+struct VoidVmContext<'a> {
+    err: Rc<Error>,
+    error_sink: &'a dyn ErrorSink,
+}
 
-impl RootContext for VoidVmContext {
+impl<'a> VoidVmContext<'a> {
+    fn new(err: Rc<Error>, error_sink: &'a dyn ErrorSink) -> Self {
+        VoidVmContext { err, error_sink }
+    }
+
+    fn with_default_ops(err: Rc<Error>) -> Self {
+        Self::new(err, ErrorSink::default())
+    }
+}
+
+impl<'a> RootContext for VoidVmContext<'a> {
     fn on_vm_start(&mut self, _vm_configuration_size: usize) -> bool {
-        log::error!("failed to initialize WebAssembly module: {}", self.0);
+        self.error_sink
+            .observe("failed to initialize WebAssembly module", &self.err);
         false // indicate to Envoy that WebAssembly module is in invalid state
     }
 }
 
-impl Context for VoidVmContext {}
+impl<'a> Context for VoidVmContext<'a> {}

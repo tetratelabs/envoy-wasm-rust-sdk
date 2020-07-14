@@ -16,6 +16,9 @@
 
 use std::fmt;
 
+pub use crate::common::{Error, Result};
+pub use crate::host::log;
+
 /// An error at the initialization stage of the WebAssembly module.
 #[derive(Debug)]
 pub(crate) enum ModuleError {
@@ -70,5 +73,27 @@ impl fmt::Display for ConfigurationError {
 impl std::error::Error for ConfigurationError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
+    }
+}
+
+pub(crate) trait ErrorSink {
+    fn observe<'a>(&self, context: &'a str, err: &Error);
+}
+
+impl dyn ErrorSink {
+    pub fn default() -> &'static dyn ErrorSink {
+        &impls::DefaultErrorSink
+    }
+}
+
+mod impls {
+    use super::{Error, ErrorSink};
+
+    pub(super) struct DefaultErrorSink;
+
+    impl ErrorSink for DefaultErrorSink {
+        fn observe<'a>(&self, context: &'a str, err: &Error) {
+            log::error!("{}: {}", context, err);
+        }
     }
 }

@@ -15,6 +15,7 @@
 use super::{Filter, Ops};
 use crate::abi::proxy_wasm_ext::traits::{Context, StreamContext};
 use crate::abi::proxy_wasm_ext::types::{Action, PeerType};
+use crate::extension::error::ErrorSink;
 use crate::extension::Error;
 use crate::host::http::client as http_client;
 
@@ -134,22 +135,28 @@ where
 pub(crate) struct VoidFilterContext<'a> {
     err: Error,
     _filter_ops: &'a dyn Ops,
+    error_sink: &'a dyn ErrorSink,
 }
 
 impl<'a> VoidFilterContext<'a> {
-    pub fn new(err: Error, _filter_ops: &'a dyn Ops) -> Self {
-        VoidFilterContext { err, _filter_ops }
+    pub fn new(err: Error, _filter_ops: &'a dyn Ops, error_sink: &'a dyn ErrorSink) -> Self {
+        VoidFilterContext {
+            err,
+            _filter_ops,
+            error_sink,
+        }
     }
 
     /// Creates a new HTTP filter context bound to the actual Envoy ABI.
     pub fn with_default_ops(err: Error) -> Self {
-        Self::new(err, Ops::default())
+        Self::new(err, Ops::default(), ErrorSink::default())
     }
 }
 
 impl<'a> StreamContext for VoidFilterContext<'a> {
     fn on_new_connection(&mut self) -> Action {
-        log::error!("failed to create Proxy Wasm Stream Context: {}", self.err);
+        self.error_sink
+            .observe("failed to create Proxy Wasm Stream Context", &self.err);
         // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
         // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
         Action::Pause

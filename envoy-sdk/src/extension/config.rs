@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Possible outcomes of the extension (re-)configuration.
+/// Possible responses to the request to (re-)configure the extension.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum ConfigStatus {
-    /// Extension accepted the new configuration.
+    /// Extension has accepted the new configuration.
     Accepted,
-    /// Extension rejected the new configuration.
+    /// Extension has rejected the new configuration.
     Rejected,
 }
 

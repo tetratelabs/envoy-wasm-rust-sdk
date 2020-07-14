@@ -142,10 +142,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
             Duration::from_secs(3),
         )?);
         if let Some(request) = self.active_request {
-            info!(
-                "sent request to a log collector: @{}",
-                request,
-            );
+            info!("sent request to a log collector: @{}", request,);
         }
         // Update stats
         self.stats.reports_active().inc()?;

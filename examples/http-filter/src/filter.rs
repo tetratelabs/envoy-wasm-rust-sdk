@@ -118,8 +118,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                 if let Some(request) = self.active_request {
                     info!(
                         "#{} sent authorization request: @{}",
-                        self.instance_id,
-                        request,
+                        self.instance_id, request,
                     );
                 }
                 info!("#{} suspending http exchange processing", self.instance_id);

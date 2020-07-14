@@ -14,8 +14,9 @@
 
 use super::{Logger, Ops};
 use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
+use crate::extension::error::ErrorSink;
+use crate::extension::ConfigStatus;
 use crate::host::http::client as http_client;
-use crate::host::log;
 
 pub(crate) struct LoggerContext<'a, L>
 where
@@ -24,6 +25,7 @@ where
     logger: L,
     logger_ops: &'a dyn Ops,
     http_client_ops: &'a dyn http_client::ResponseOps,
+    error_sink: &'a dyn ErrorSink,
 }
 
 impl<'a, L> RootContext for LoggerContext<'a, L>
@@ -37,15 +39,16 @@ where
         ) {
             Ok(status) => status.as_bool(),
             Err(err) => {
-                log::error!("failed to configure extension \"{}\": {}", L::NAME, err);
-                false
+                self.error_sink
+                    .observe("failed to configure extension", &err);
+                ConfigStatus::Rejected.as_bool()
             }
         }
     }
 
     fn on_log(&mut self) {
         if let Err(err) = self.logger.on_log(self.logger_ops.as_log_ops()) {
-            log::error!("failed to log a request: {}", err);
+            self.error_sink.observe("failed to log a request", &err);
         }
     }
 }
@@ -63,15 +66,18 @@ where
         body_size: usize,
         num_trailers: usize,
     ) {
-        self.logger
-            .on_http_call_response(
-                http_client::RequestHandle::from(token_id),
-                num_headers,
-                body_size,
-                num_trailers,
-                self.http_client_ops,
-            )
-            .unwrap()
+        if let Err(err) = self.logger.on_http_call_response(
+            http_client::RequestHandle::from(token_id),
+            num_headers,
+            body_size,
+            num_trailers,
+            self.http_client_ops,
+        ) {
+            self.error_sink.observe(
+                "failed to process the response to an HTTP request made by the extension",
+                &err,
+            );
+        }
     }
 }
 
@@ -83,16 +89,23 @@ where
         logger: L,
         logger_ops: &'a dyn Ops,
         http_client_ops: &'a dyn http_client::ResponseOps,
-    ) -> LoggerContext<'a, L> {
+        error_sink: &'a dyn ErrorSink,
+    ) -> Self {
         LoggerContext {
             logger,
             logger_ops,
             http_client_ops,
+            error_sink,
         }
     }
 
     /// Creates a new Access logger context bound to the actual Envoy ABI.
     pub fn with_default_ops(logger: L) -> Self {
-        Self::new(logger, Ops::default(), http_client::ResponseOps::default())
+        Self::new(
+            logger,
+            Ops::default(),
+            http_client::ResponseOps::default(),
+            ErrorSink::default(),
+        )
     }
 }

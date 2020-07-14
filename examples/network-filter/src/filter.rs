@@ -95,11 +95,7 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
             Duration::from_secs(3),
         )?);
         if let Some(request) = self.active_request {
-            info!(
-                "#{} sent outgoing request: @{}",
-                self.instance_id,
-                request,
-            );
+            info!("#{} sent outgoing request: @{}", self.instance_id, request,);
         }
 
         Ok(network::FilterStatus::Pause)
