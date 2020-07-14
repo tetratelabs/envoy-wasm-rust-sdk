@@ -22,15 +22,15 @@ use crate::extension::error::ConfigurationError;
 use crate::extension::error::ErrorSink;
 use crate::extension::{Error, Result};
 use crate::host::error::function;
-use crate::host::stream_info::Service;
+use crate::host::stream_info::StreamInfo;
 
 pub(crate) struct ContextSelector<'a> {
     factories: ContextFactoryHashMap,
-    stream_info: &'a dyn Service,
+    stream_info: &'a dyn StreamInfo,
 }
 
 impl<'a> ContextSelector<'a> {
-    pub fn new(factories: ContextFactoryHashMap, stream_info: &'a dyn Service) -> Self {
+    pub fn new(factories: ContextFactoryHashMap, stream_info: &'a dyn StreamInfo) -> Self {
         ContextSelector {
             factories,
             stream_info,
@@ -38,7 +38,7 @@ impl<'a> ContextSelector<'a> {
     }
 
     pub fn with_default_ops(factories: ContextFactoryHashMap) -> Self {
-        Self::new(factories, Service::default())
+        Self::new(factories, StreamInfo::default())
     }
 
     fn new_root_context(&mut self, context_id: u32) -> Result<Box<dyn RootContext>> {
