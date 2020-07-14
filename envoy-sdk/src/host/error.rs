@@ -16,7 +16,7 @@
 
 use std::fmt;
 
-use crate::abi::proxy_wasm_ext::types::Status;
+use crate::abi::proxy_wasm::types::Status;
 
 pub use crate::common::{Error, Result};
 

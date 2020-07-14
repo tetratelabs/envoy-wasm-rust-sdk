@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use super::{Logger, Ops};
-use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
+use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::ConfigStatus;
 use crate::host::http::client as http_client;

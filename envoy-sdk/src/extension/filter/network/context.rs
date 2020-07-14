@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use super::{Filter, Ops};
-use crate::abi::proxy_wasm_ext::traits::{Context, StreamContext};
-use crate::abi::proxy_wasm_ext::types::{Action, PeerType};
+use crate::abi::proxy_wasm::traits::{Context, StreamContext};
+use crate::abi::proxy_wasm::types::{Action, PeerType};
 use crate::extension::error::ErrorSink;
 use crate::extension::Error;
 use crate::host::http::client as http_client;

@@ -14,7 +14,7 @@
 
 use std::collections::HashMap;
 
-use crate::abi::proxy_wasm_ext::traits::RootContext;
+use crate::abi::proxy_wasm::traits::RootContext;
 use crate::extension::Result;
 
 pub use self::start::install;

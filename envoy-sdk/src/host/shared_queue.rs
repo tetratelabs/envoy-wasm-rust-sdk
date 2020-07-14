@@ -14,7 +14,7 @@
 
 //! `Envoy` `Shared Queue API`.
 
-use crate::abi::proxy_wasm_ext::types::{Bytes, SharedQueueHandle};
+use crate::abi::proxy_wasm::types::{Bytes, SharedQueueHandle};
 use crate::host;
 
 pub trait Service {
@@ -35,8 +35,8 @@ impl dyn Service {
 
 mod impls {
     use super::Service;
-    use crate::abi::proxy_wasm_ext::hostcalls;
-    use crate::abi::proxy_wasm_ext::types::{Bytes, SharedQueueHandle};
+    use crate::abi::proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm::types::{Bytes, SharedQueueHandle};
     use crate::host;
 
     pub(super) struct Host;

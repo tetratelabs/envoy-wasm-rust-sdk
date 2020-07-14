@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::abi::proxy_wasm_ext::hostcalls;
-use crate::abi::proxy_wasm_ext::types::{BufferType, Bytes};
+use crate::abi::proxy_wasm::hostcalls;
+use crate::abi::proxy_wasm::types::{BufferType, Bytes};
 
 use super::{DownstreamDataOps, UpstreamDataOps};
 use crate::host;

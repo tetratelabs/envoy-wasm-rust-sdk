@@ -31,7 +31,7 @@ impl dyn Service {
 mod impls {
     use std::time::SystemTime;
 
-    use crate::abi::proxy_wasm_ext::hostcalls;
+    use crate::abi::proxy_wasm::hostcalls;
 
     use super::Service;
     use crate::host;

@@ -14,7 +14,7 @@
 
 //! `Envoy` `Stream Info API`.
 
-use crate::abi::proxy_wasm_ext::types::Bytes;
+use crate::abi::proxy_wasm::types::Bytes;
 
 use crate::host;
 
@@ -31,8 +31,8 @@ impl dyn Service {
 }
 
 mod impls {
-    use crate::abi::proxy_wasm_ext::hostcalls;
-    use crate::abi::proxy_wasm_ext::types::Bytes;
+    use crate::abi::proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm::types::Bytes;
 
     use super::Service;
     use crate::host;

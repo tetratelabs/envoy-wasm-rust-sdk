@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use super::{DrainStatus, Factory, Ops};
-use crate::abi::proxy_wasm_ext::traits::{ChildContext, Context, RootContext};
+use crate::abi::proxy_wasm::traits::{ChildContext, Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::{ConfigStatus, InstanceId};
 

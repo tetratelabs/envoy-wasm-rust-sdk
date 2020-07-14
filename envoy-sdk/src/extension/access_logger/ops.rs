@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use super::{ConfigureOps, LogOps};
-use crate::abi::proxy_wasm_ext::hostcalls;
-use crate::abi::proxy_wasm_ext::types::{Bytes, MapType};
+use crate::abi::proxy_wasm::hostcalls;
+use crate::abi::proxy_wasm::types::{Bytes, MapType};
 use crate::host;
 
 pub(super) struct Host;

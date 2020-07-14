@@ -14,7 +14,7 @@
 
 //! Extension Factory API.
 
-use crate::abi::proxy_wasm_ext::types::Bytes;
+use crate::abi::proxy_wasm::types::Bytes;
 
 use crate::extension::{ConfigStatus, InstanceId, Result};
 use crate::host;
