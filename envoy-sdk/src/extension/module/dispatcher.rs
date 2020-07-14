@@ -23,7 +23,7 @@ use crate::extension::error::ConfigurationError;
 use crate::extension::error::ErrorSink;
 use crate::extension::{Error, Result};
 use crate::host::error::function;
-use crate::host::stream_info::StreamInfo;
+use crate::host::StreamInfo;
 
 pub(crate) struct ContextSelector<'a> {
     factories: ContextFactoryHashMap,

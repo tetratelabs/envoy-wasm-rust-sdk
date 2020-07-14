@@ -17,6 +17,8 @@
 pub(crate) use self::error::function;
 
 pub use self::error::{Error, ErrorContext, Result};
+pub use stream_info::StreamInfo;
+pub use time::Clock;
 
 pub mod error;
 pub mod http;
