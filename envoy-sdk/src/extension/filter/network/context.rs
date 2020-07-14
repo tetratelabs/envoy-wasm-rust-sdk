@@ -15,6 +15,7 @@
 use super::{Filter, Ops};
 use crate::abi::proxy_wasm_ext::traits::{Context, StreamContext};
 use crate::abi::proxy_wasm_ext::types::{Action, PeerType};
+use crate::extension::Error;
 use crate::host::http::client as http_client;
 
 pub struct FilterContext<'a, F>
@@ -111,6 +112,39 @@ where
 
     /// Creates a new network filter context bound to the actual Envoy ABI.
     pub fn with_default_ops(filter: F) -> Self {
-        FilterContext::new(filter, Ops::default(), http_client::ResponseOps::default())
+        Self::new(filter, Ops::default(), http_client::ResponseOps::default())
     }
 }
+
+/// Fake `Proxy Wasm` [`StreamContext`] that is used to postpone reporting an error that
+/// occurred inside [`proxy_on_context_create`] until [`proxy_on_new_connection`]
+/// where it's safe to do so.
+///
+/// [`StreamContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.StreamContext.html
+/// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
+/// [`proxy_on_new_connection`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_new_connection
+pub struct InvalidFilterContext<'a> {
+    err: Error,
+    _filter_ops: &'a dyn Ops,
+}
+
+impl<'a> InvalidFilterContext<'a> {
+    pub fn new(err: Error, _filter_ops: &'a dyn Ops) -> Self {
+        InvalidFilterContext { err, _filter_ops }
+    }
+
+    /// Creates a new HTTP filter context bound to the actual Envoy ABI.
+    pub fn with_default_ops(err: Error) -> Self {
+        Self::new(err, Ops::default())
+    }
+}
+
+impl<'a> StreamContext for InvalidFilterContext<'a> {
+    fn on_new_connection(&mut self) -> Action {
+        log::error!("failed to create Proxy Wasm stream context: {}", self.err);
+        // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
+        Action::Pause
+    }
+}
+
+impl<'a> Context for InvalidFilterContext<'a> {}

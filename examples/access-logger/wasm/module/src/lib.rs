@@ -24,7 +24,7 @@ on_module_load! { initialize }
 ///
 /// Returns a registry of extensions provided by this module.
 fn initialize() -> extension::Result<Registry> {
-    Ok(Registry::new().add_access_logger(|_instance_id| SampleAccessLogger::default()))
+    Registry::new().add_access_logger(|_instance_id| SampleAccessLogger::default())
 }
 
 #[cfg(test)]

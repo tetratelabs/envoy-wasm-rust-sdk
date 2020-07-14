@@ -16,57 +16,55 @@
 
 use std::fmt;
 
-use crate::host;
-
-/// The error type for extension callback methods.
+/// An error while WebAssembly module is being initialized.
 #[derive(Debug)]
-pub enum Error {
-    HostCall(host::Error),
-    Extension(Box<dyn std::error::Error>),
+pub(crate) enum ModuleError {
+    DuplicateRegistration(String),
 }
 
-impl Error {
-    pub fn new<E>(error: E) -> Self
-    where
-        E: Into<Box<dyn std::error::Error>>,
-    {
-        Error::Extension(error.into())
-    }
-}
-
-impl From<host::Error> for Error {
-    fn from(err: host::Error) -> Self {
-        Error::HostCall(err)
-    }
-}
-
-impl From<Box<dyn std::error::Error>> for Error {
-    fn from(err: Box<dyn std::error::Error>) -> Self {
-        Error::Extension(err)
-    }
-}
-
-impl fmt::Display for Error {
+impl fmt::Display for ModuleError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use Error::*;
-        match self {
-            HostCall(ref e) => e.fmt(f),
-            Extension(ref e) => e.fmt(f),
+        use ModuleError::*;
+        match &self {
+            DuplicateRegistration(name) => write!(
+                f,
+                "WebAssembly module attempted to register 2 different extensions under the same `root_id` \"{}\"",
+                name,
+            ),
         }
     }
 }
 
-impl std::error::Error for Error {
+impl std::error::Error for ModuleError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        use Error::*;
-        match self {
-            HostCall(ref e) => Some(e),
-            Extension(ref e) => Some(e.as_ref()),
+        None
+    }
+}
+
+/// An error in the configuration of Envoy extension.
+#[derive(Debug)]
+pub(crate) enum ConfigurationError {
+    UnknownExtension {
+        requested: String,
+        available: Vec<String>,
+    },
+}
+
+impl fmt::Display for ConfigurationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use ConfigurationError::*;
+        match &self {
+            UnknownExtension { requested, available } => write!(
+                f,
+                "WebAssembly module has no extension with `root_id` \"{}\"; valid `root_id` values are: {:?}",
+                requested, available
+            ),
         }
     }
 }
 
-/// A specialized [`Result`] type for use in extension callback methods.
-///
-/// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
-pub type Result<T> = core::result::Result<T, Error>;
+impl std::error::Error for ConfigurationError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}

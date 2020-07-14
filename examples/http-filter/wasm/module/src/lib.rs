@@ -24,7 +24,7 @@ on_module_load! { initialize }
 ///
 /// Returns a registry of extensions provided by this module.
 fn initialize() -> extension::Result<Registry> {
-    Ok(Registry::new().add_http_filter(|_instance_id| SampleHttpFilterFactory::default()))
+    Registry::new().add_http_filter(|_instance_id| SampleHttpFilterFactory::default())
 }
 
 #[cfg(test)]

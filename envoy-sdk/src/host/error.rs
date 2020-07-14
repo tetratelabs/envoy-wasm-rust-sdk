@@ -18,12 +18,68 @@ use std::fmt;
 
 use crate::abi::proxy_wasm_ext::types::Status;
 
-pub(crate) fn function(module: &'static str, function: &'static str) -> Function {
-    Function::new(module, function)
+use crate::common::Error;
+
+/// An error returned from the call to Envoy ABI.
+#[derive(Debug)]
+pub(crate) struct CallError {
+    function: Function,
+    status: Status,
+}
+
+impl CallError {
+    fn new(function: Function, status: Status) -> Self {
+        CallError { function, status }
+    }
+}
+
+impl fmt::Display for CallError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "call to the host ABI function \"{}\" has failed with the status code {}",
+            self.function, self.status as u32
+        )
+    }
+}
+
+impl std::error::Error for CallError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+/// An error while parsing the returned value from a call to Envoy ABI.
+#[derive(Debug)]
+pub(crate) struct ParseError {
+    function: Function,
+    err: Error,
+}
+
+impl ParseError {
+    fn new(function: Function, err: Error) -> Self {
+        ParseError { function, err }
+    }
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "unable to parse a value returned by the host ABI function \"{}\": {}",
+            self.function, self.err,
+        )
+    }
+}
+
+impl std::error::Error for ParseError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&*self.err)
+    }
 }
 
 /// Represents a host ABI function.
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub(crate) struct Function {
     module: &'static str,
     function: &'static str,
@@ -36,44 +92,19 @@ impl fmt::Display for Function {
 }
 
 impl Function {
-    pub(crate) fn new(module: &'static str, function: &'static str) -> Self {
+    fn new(module: &'static str, function: &'static str) -> Self {
         Function { module, function }
     }
 
-    pub(crate) fn call_error(&self, status: Status) -> Error {
-        Error::new(self, status)
+    pub(crate) fn into_call_error(self, status: Status) -> CallError {
+        CallError::new(self, status)
+    }
+
+    pub(crate) fn into_parse_error(self, err: Error) -> ParseError {
+        ParseError::new(self, err)
     }
 }
 
-/// The error type for host API functions.
-#[derive(Eq, PartialEq, Clone, Debug)]
-pub struct Error {
-    function: Function,
-    status: Status,
+pub(crate) fn function(module: &'static str, function: &'static str) -> Function {
+    Function::new(module, function)
 }
-
-impl Error {
-    pub(crate) fn new(function: &Function, status: Status) -> Self {
-        Error {
-            function: function.clone(),
-            status,
-        }
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "call to host ABI function '{}' failed with status code {}",
-            self.function, self.status as u32
-        )
-    }
-}
-
-impl std::error::Error for Error {}
-
-/// A specialized [`Result`] type for host API.
-///
-/// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
-pub type Result<T> = core::result::Result<T, Error>;

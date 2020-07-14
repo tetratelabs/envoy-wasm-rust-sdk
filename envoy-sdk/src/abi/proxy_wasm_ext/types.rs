@@ -14,7 +14,7 @@
 
 //! Extensions to [`proxy_wasm::types`].
 //!
-//! [`proxy_wasm::types`]: https://docs.rs/proxy-wasm/*/proxy_wasm/types/index.html
+//! [`proxy_wasm::types`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/types/index.html
 
 use std::fmt;
 

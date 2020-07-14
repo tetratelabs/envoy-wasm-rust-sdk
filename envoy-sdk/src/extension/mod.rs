@@ -16,8 +16,8 @@
 
 use std::fmt;
 
-pub use self::error::{Error, Result};
 pub use self::module::{install, registry::Registry};
+pub use crate::common::{Error, Result};
 pub use factory::Factory;
 
 mod module;

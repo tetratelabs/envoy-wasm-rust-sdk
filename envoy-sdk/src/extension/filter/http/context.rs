@@ -16,6 +16,7 @@ use crate::abi::proxy_wasm_ext::traits::{Context, HttpContext};
 use crate::abi::proxy_wasm_ext::types::Action;
 
 use super::{Filter, Ops};
+use crate::extension::Error;
 use crate::host::http::client as http_client;
 
 pub struct FilterContext<'a, F>
@@ -124,6 +125,41 @@ where
 
     /// Creates a new HTTP filter context bound to the actual Envoy ABI.
     pub fn with_default_ops(filter: F) -> Self {
-        FilterContext::new(filter, Ops::default(), http_client::ResponseOps::default())
+        Self::new(filter, Ops::default(), http_client::ResponseOps::default())
     }
 }
+
+/// Fake `Proxy Wasm` [`HttpContext`] that is used to postpone reporting an error that
+/// occurred inside [`proxy_on_context_create`] until [`proxy_on_new_connection`]
+/// where it's safe to do so.
+///
+/// [`StreamContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.HttpContext.html
+/// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
+/// [`proxy_on_http_request_headers`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_http_request_headers
+pub struct InvalidFilterContext<'a> {
+    err: Error,
+    filter_ops: &'a dyn Ops,
+}
+
+impl<'a> InvalidFilterContext<'a> {
+    pub fn new(err: Error, filter_ops: &'a dyn Ops) -> Self {
+        InvalidFilterContext { err, filter_ops }
+    }
+
+    /// Creates a new HTTP filter context bound to the actual Envoy ABI.
+    pub fn with_default_ops(err: Error) -> Self {
+        Self::new(err, Ops::default())
+    }
+}
+
+impl<'a> HttpContext for InvalidFilterContext<'a> {
+    fn on_http_request_headers(&mut self, _num_headers: usize) -> Action {
+        log::error!("failed to create Proxy Wasm http context: {}", self.err);
+        if let Err(err) = self.filter_ops.send_response(500, vec![], None) {
+            log::error!("failed to terminate processing of the HTTP request: failed to send a direct reply: {}", err);
+        }
+        Action::Pause
+    }
+}
+
+impl<'a> Context for InvalidFilterContext<'a> {}

@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![doc(html_root_url = "https://docs.rs/envoy-sdk/0.0.2")]
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
-mod abi;
-mod common;
-
-pub mod extension;
-pub mod host;
+/// A specialized [`Result`] type.
+///
+/// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
+pub type Result<T> = core::result::Result<T, Error>;

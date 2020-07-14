@@ -15,6 +15,7 @@
 use super::{Logger, Ops};
 use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
 use crate::host::http::client as http_client;
+use crate::host::log;
 
 pub struct LoggerContext<'a, L>
 where
@@ -30,16 +31,22 @@ where
     L: Logger,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
-        self.logger
-            .on_configure(
-                plugin_configuration_size,
-                self.logger_ops.as_configure_ops(),
-            )
-            .unwrap()
+        match self.logger.on_configure(
+            plugin_configuration_size,
+            self.logger_ops.as_configure_ops(),
+        ) {
+            Ok(success) => success,
+            Err(err) => {
+                log::error!("failed to configure extension \"{}\": {}", L::NAME, err);
+                false
+            }
+        }
     }
 
     fn on_log(&mut self) {
-        self.logger.on_log(self.logger_ops.as_log_ops()).unwrap();
+        if let Err(err) = self.logger.on_log(self.logger_ops.as_log_ops()) {
+            log::error!("failed to log a request: {}", err);
+        }
     }
 }
 
@@ -86,6 +93,6 @@ where
 
     /// Creates a new Access logger context bound to the actual Envoy ABI.
     pub fn with_default_ops(logger: L) -> Self {
-        LoggerContext::new(logger, Ops::default(), http_client::ResponseOps::default())
+        Self::new(logger, Ops::default(), http_client::ResponseOps::default())
     }
 }

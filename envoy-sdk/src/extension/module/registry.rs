@@ -12,116 +12,120 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::abi::proxy_wasm_ext;
-use crate::abi::proxy_wasm_ext::traits::{ChildContext, RootContext};
-use crate::extension::{access_logger, factory, filter::http, filter::network};
-use crate::extension::{InstanceId, Result};
+use super::{ContextFactory, ContextFactoryHashMap};
 
-type NewRootContextFn = dyn FnMut(u32) -> Box<dyn RootContext>;
+use crate::abi::proxy_wasm_ext::traits::{ChildContext, HttpContext, RootContext, StreamContext};
+use crate::extension::access_logger::{Logger, LoggerContext};
+use crate::extension::{error::ModuleError, factory, filter::http, filter::network};
+use crate::extension::{InstanceId, Result};
 
 /// Registry of extensions provided by the WebAssembly module.
 pub struct Registry {
-    access_logger: Option<Box<NewRootContextFn>>,
-    network_filter: Option<Box<NewRootContextFn>>,
-    http_filter: Option<Box<NewRootContextFn>>,
+    factories: ContextFactoryHashMap,
 }
 
 impl Default for Registry {
     fn default() -> Self {
-        Registry::new()
+        Self::new()
     }
 }
 
 impl Registry {
     pub fn new() -> Self {
         Registry {
-            access_logger: None,
-            network_filter: None,
-            http_filter: None,
+            factories: ContextFactoryHashMap::new(),
         }
     }
 
-    pub fn add_access_logger<T, F>(mut self, mut new: F) -> Self
-    where
-        T: access_logger::Logger + 'static,
-        F: FnMut(InstanceId) -> Result<T> + 'static,
-    {
-        self.access_logger = Some(Box::new(move |context_id| {
-            let logger =
-                new(InstanceId::from(context_id)).expect("unable to initialize Access Logger");
-
-            // Bridge between Access Logger abstraction and Envoy ABI
-            Box::new(access_logger::LoggerContext::with_default_ops(logger))
-        }));
-        self
+    fn add_extension(mut self, name: &'static str, factory: Box<ContextFactory>) -> Result<Self> {
+        if self.factories.insert(name.to_string(), factory).is_some() {
+            Err(ModuleError::DuplicateRegistration(name.to_string()).into())
+        } else {
+            Ok(self)
+        }
     }
 
-    pub fn add_network_filter<T, F>(mut self, mut new: F) -> Self
+    pub fn add_access_logger<T, F>(self, mut new: F) -> Result<Self>
+    where
+        T: Logger + 'static,
+        F: FnMut(InstanceId) -> Result<T> + 'static,
+    {
+        let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
+            let logger = new(InstanceId::from(context_id))?;
+
+            // Bridge between Access Logger abstraction and Proxy Wasm ABI
+            Ok(Box::new(LoggerContext::with_default_ops(logger)))
+        });
+        self.add_extension(T::NAME, factory)
+    }
+
+    pub fn add_network_filter<T, F>(self, mut new: F) -> Result<Self>
     where
         T: factory::Factory + 'static,
         T::Extension: network::Filter,
         F: FnMut(InstanceId) -> Result<T> + 'static,
     {
-        self.network_filter = Some(Box::new(move |context_id| {
-            let network_filter_factory = new(InstanceId::from(context_id))
-                .expect("unable to initialize Network Filter factory");
+        let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
+            let network_filter_factory = new(InstanceId::from(context_id))?;
 
-            // Bridge between Network Filter Factory abstraction and Envoy ABI
-            Box::new(factory::FactoryContext::with_default_ops(
+            // Bridge between Network Filter Factory abstraction and Proxy Wasm ABI
+            Ok(Box::new(factory::FactoryContext::with_default_ops(
                 network_filter_factory,
                 |network_filter_factory, instance_id| -> ChildContext {
-                    let network_filter =
-                        <_ as factory::Factory>::new_extension(network_filter_factory, instance_id)
-                            .unwrap();
-
-                    // Bridge between Network Filter abstraction and Envoy ABI
-                    ChildContext::StreamContext(Box::new(network::FilterContext::with_default_ops(
-                        network_filter,
-                    )))
+                    let stream_context: Box<dyn StreamContext> =
+                        match <T as factory::Factory>::new_extension(
+                            network_filter_factory,
+                            instance_id,
+                        ) {
+                            Ok(network_filter) => {
+                                Box::new(network::FilterContext::with_default_ops(network_filter))
+                            }
+                            Err(err) => {
+                                Box::new(network::InvalidFilterContext::with_default_ops(err))
+                            }
+                        };
+                    // Bridge between Network Filter abstraction and Proxy Wasm ABI
+                    ChildContext::StreamContext(stream_context)
                 },
-            ))
-        }));
-        self
+            )))
+        });
+        self.add_extension(T::NAME, factory)
     }
 
-    pub fn add_http_filter<T, F>(mut self, mut new: F) -> Self
+    pub fn add_http_filter<T, F>(self, mut new: F) -> Result<Self>
     where
         T: factory::Factory + 'static,
         T::Extension: http::Filter,
         F: FnMut(InstanceId) -> Result<T> + 'static,
     {
-        self.http_filter = Some(Box::new(move |context_id| {
-            let http_filter_factory = new(InstanceId::from(context_id))
-                .expect("unable to initialize HTTP Filter factory");
+        let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
+            let http_filter_factory = new(InstanceId::from(context_id))?;
 
-            // Bridge between HTTP Filter Factory abstraction and Envoy ABI
-            Box::new(factory::FactoryContext::with_default_ops(
+            // Bridge between HTTP Filter Factory abstraction and Proxy Wasm ABI
+            Ok(Box::new(factory::FactoryContext::with_default_ops(
                 http_filter_factory,
                 |http_filter_factory, instance_id| -> ChildContext {
-                    let http_filter =
-                        <_ as factory::Factory>::new_extension(http_filter_factory, instance_id)
-                            .unwrap();
-
-                    // Bridge between HTTP Filter abstraction and Envoy ABI
-                    ChildContext::HttpContext(Box::new(http::FilterContext::with_default_ops(
-                        http_filter,
-                    )))
+                    let http_context: Box<dyn HttpContext> =
+                        match <T as factory::Factory>::new_extension(
+                            http_filter_factory,
+                            instance_id,
+                        ) {
+                            Ok(http_filter) => {
+                                Box::new(http::FilterContext::with_default_ops(http_filter))
+                            }
+                            Err(err) => Box::new(http::InvalidFilterContext::with_default_ops(err)),
+                        };
+                    // Bridge between HTTP Filter abstraction and Proxy Wasm ABI
+                    ChildContext::HttpContext(http_context)
                 },
-            ))
-        }));
-        self
+            )))
+        });
+        self.add_extension(T::NAME, factory)
     }
+}
 
-    pub(super) fn install(self) -> Result<()> {
-        if let Some(access_logger) = self.access_logger {
-            proxy_wasm_ext::set_root_context(access_logger);
-        }
-        if let Some(network_filter) = self.network_filter {
-            proxy_wasm_ext::set_root_context(network_filter);
-        }
-        if let Some(http_filter) = self.http_filter {
-            proxy_wasm_ext::set_root_context(http_filter);
-        }
-        Ok(())
+impl Into<ContextFactoryHashMap> for Registry {
+    fn into(self) -> ContextFactoryHashMap {
+        self.factories
     }
 }

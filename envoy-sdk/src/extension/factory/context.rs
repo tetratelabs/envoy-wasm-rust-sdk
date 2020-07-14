@@ -15,6 +15,7 @@
 use super::{Factory, Ops};
 use crate::abi::proxy_wasm_ext::traits::{ChildContext, Context, RootContext};
 use crate::extension::InstanceId;
+use crate::host::log;
 
 pub struct FactoryContext<'a, F>
 where
@@ -30,12 +31,16 @@ where
     F: Factory,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
-        self.factory
-            .on_configure(
-                plugin_configuration_size,
-                self.factory_ops.as_configure_ops(),
-            )
-            .unwrap()
+        match self.factory.on_configure(
+            plugin_configuration_size,
+            self.factory_ops.as_configure_ops(),
+        ) {
+            Ok(success) => success,
+            Err(err) => {
+                log::error!("failed to configure extension \"{}\": {}", F::NAME, err);
+                false
+            }
+        }
     }
 
     fn on_create_child_context(&mut self, context_id: u32) -> Option<ChildContext> {
@@ -77,6 +82,6 @@ where
         factory: F,
         child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
     ) -> Self {
-        FactoryContext::new(factory, Ops::default(), child_context_factory)
+        Self::new(factory, Ops::default(), child_context_factory)
     }
 }

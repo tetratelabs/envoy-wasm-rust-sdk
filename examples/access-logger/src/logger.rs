@@ -64,7 +64,7 @@ impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of sample access logger
     /// bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        SampleAccessLogger::new(
+        Self::new(
             time::Service::default(),
             http_client::Client::default(),
             stats::Service::default(),
