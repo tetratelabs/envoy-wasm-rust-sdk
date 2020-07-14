@@ -16,7 +16,7 @@ use std::convert::TryFrom;
 use std::rc::Rc;
 
 use envoy::extension::{self, ConfigStatus, InstanceId, Result};
-use envoy::host::{http::client as http_client, Clock, Stats};
+use envoy::host::{Clock, HttpClient, Stats};
 
 use super::config::SampleNetworkFilterConfig;
 use super::filter::SampleNetworkFilter;
@@ -34,14 +34,14 @@ pub struct SampleNetworkFilterFactory<'a> {
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
     clock: &'a dyn Clock,
-    http_client: &'a dyn http_client::Client,
+    http_client: &'a dyn HttpClient,
 }
 
 impl<'a> SampleNetworkFilterFactory<'a> {
     /// Creates a new factory.
     pub fn new(
         clock: &'a dyn Clock,
-        http_client: &'a dyn http_client::Client,
+        http_client: &'a dyn HttpClient,
         stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleNetworkFilterStats::new(
@@ -60,11 +60,7 @@ impl<'a> SampleNetworkFilterFactory<'a> {
 
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        Self::new(
-            Clock::default(),
-            http_client::Client::default(),
-            Stats::default(),
-        )
+        Self::new(Clock::default(), HttpClient::default(), Stats::default())
     }
 }
 

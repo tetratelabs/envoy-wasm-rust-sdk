@@ -19,7 +19,7 @@ use envoy::host::log::info;
 
 use envoy::extension::access_logger;
 use envoy::extension::{ConfigStatus, Result};
-use envoy::host::{http::client as http_client, Clock, Stats};
+use envoy::host::{Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -34,16 +34,16 @@ pub struct SampleAccessLogger<'a> {
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
     clock: &'a dyn Clock,
-    http_client: &'a dyn http_client::Client,
+    http_client: &'a dyn HttpClient,
 
-    active_request: Option<http_client::RequestHandle>,
+    active_request: Option<HttpClientRequestHandle>,
 }
 
 impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of Sample Access Logger.
     pub fn new(
         clock: &'a dyn Clock,
-        http_client: &'a dyn http_client::Client,
+        http_client: &'a dyn HttpClient,
         stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleAccessLoggerStats::new(
@@ -64,11 +64,7 @@ impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of Sample Access Logger
     /// bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        Self::new(
-            Clock::default(),
-            http_client::Client::default(),
-            Stats::default(),
-        )
+        Self::new(Clock::default(), HttpClient::default(), Stats::default())
     }
 }
 
@@ -157,11 +153,11 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
     /// Use http_client_ops to get ahold of response headers, body, etc.
     fn on_http_call_response(
         &mut self,
-        request: http_client::RequestHandle,
+        request: HttpClientRequestHandle,
         num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
-        http_client_ops: &dyn http_client::ResponseOps,
+        http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         info!(
             "received response from a log collector on request: @{}",

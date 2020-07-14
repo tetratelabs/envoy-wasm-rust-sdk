@@ -17,7 +17,7 @@
 use crate::abi::proxy_wasm::types::{Action, Bytes, PeerType};
 use crate::extension::Result;
 use crate::host;
-use crate::host::http::client as http_client;
+use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) use self::context::{FilterContext, VoidFilterContext};
 
@@ -65,12 +65,12 @@ pub trait Filter {
 
     fn on_http_call_response(
         &mut self,
-        _request: http_client::RequestHandle,
+        _request: HttpClientRequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
         _filter_ops: &dyn Ops,
-        _http_client_ops: &dyn http_client::ResponseOps,
+        _http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         Ok(())
     }
