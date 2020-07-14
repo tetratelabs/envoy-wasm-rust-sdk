@@ -18,14 +18,14 @@ use crate::abi::proxy_wasm::types::Bytes;
 
 use crate::host;
 
-pub trait Service {
+pub trait StreamInfo {
     fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
 
     fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;
 }
 
-impl dyn Service {
-    pub fn default() -> &'static dyn Service {
+impl dyn StreamInfo {
+    pub fn default() -> &'static dyn StreamInfo {
         &impls::Host
     }
 }
@@ -34,12 +34,12 @@ mod impls {
     use crate::abi::proxy_wasm::hostcalls;
     use crate::abi::proxy_wasm::types::Bytes;
 
-    use super::Service;
+    use super::StreamInfo;
     use crate::host;
 
     pub(super) struct Host;
 
-    impl Service for Host {
+    impl StreamInfo for Host {
         fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
             hostcalls::get_property(path)
         }
