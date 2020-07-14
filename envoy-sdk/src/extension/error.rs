@@ -77,7 +77,7 @@ impl std::error::Error for ConfigurationError {
 }
 
 pub(crate) trait ErrorSink {
-    fn observe<'a>(&self, context: &'a str, err: &Error);
+    fn observe(&self, context: &str, err: &Error);
 }
 
 impl dyn ErrorSink {
@@ -92,7 +92,7 @@ mod impls {
     pub(super) struct DefaultErrorSink;
 
     impl ErrorSink for DefaultErrorSink {
-        fn observe<'a>(&self, context: &'a str, err: &Error) {
+        fn observe(&self, context: &str, err: &Error) {
             log::error!("{}: {}", context, err);
         }
     }
