@@ -16,13 +16,33 @@
 
 use crate::abi::proxy_wasm::types::Bytes;
 
-use crate::extension::{ConfigStatus, InstanceId, Result};
+use crate::extension::{InstanceId, Result};
 use crate::host;
 
-pub(crate) use self::context::FactoryContext;
+pub(crate) use self::context::ExtensionFactoryContext;
+pub use ConfigureOps as ExtensionFactoryConfigureOps;
+pub use DrainOps as ExtensionFactoryDrainOps;
 
 mod context;
 mod ops;
+
+/// Possible responses to the request to (re-)configure the extension.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum ConfigStatus {
+    /// Extension has accepted the new configuration.
+    Accepted,
+    /// Extension has rejected the new configuration.
+    Rejected,
+}
+
+impl ConfigStatus {
+    pub(crate) fn as_bool(&self) -> bool {
+        match self {
+            ConfigStatus::Accepted => true,
+            ConfigStatus::Rejected => false,
+        }
+    }
+}
 
 /// Possible responses to the the request to drain the extension.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -42,7 +62,7 @@ impl DrainStatus {
     }
 }
 
-pub trait Factory {
+pub trait ExtensionFactory {
     type Extension;
 
     const NAME: &'static str;
@@ -50,7 +70,7 @@ pub trait Factory {
     fn on_configure(
         &mut self,
         _configuration_size: usize,
-        _ops: &dyn ConfigureOps,
+        _ops: &dyn ExtensionFactoryConfigureOps,
     ) -> Result<ConfigStatus> {
         Ok(ConfigStatus::Accepted)
     }
