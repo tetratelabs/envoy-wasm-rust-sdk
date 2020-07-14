@@ -14,7 +14,7 @@
 
 //! `Envoy` `HTTP Filter API`.
 
-use crate::abi::proxy_wasm_ext::types::{Action, Bytes};
+use crate::abi::proxy_wasm::types::{Action, Bytes};
 use crate::extension::Result;
 use crate::host;
 use crate::host::http::client as http_client;

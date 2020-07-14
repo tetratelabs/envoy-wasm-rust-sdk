@@ -57,8 +57,8 @@ mod impls {
     use std::cmp;
 
     use super::Service;
-    use crate::abi::proxy_wasm_ext::hostcalls;
-    use crate::abi::proxy_wasm_ext::types::{MetricHandle, MetricType};
+    use crate::abi::proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm::types::{MetricHandle, MetricType};
     use crate::host;
 
     pub(super) struct Host;

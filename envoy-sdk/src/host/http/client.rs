@@ -16,10 +16,10 @@
 
 use std::time::Duration;
 
-use crate::abi::proxy_wasm_ext::types::Bytes;
+use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
-pub use crate::abi::proxy_wasm_ext::types::HttpRequestHandle as RequestHandle;
+pub use crate::abi::proxy_wasm::types::HttpRequestHandle as RequestHandle;
 
 pub trait Client {
     fn send_request(
@@ -59,8 +59,8 @@ impl dyn ResponseOps {
 mod impls {
     use std::time::Duration;
 
-    use crate::abi::proxy_wasm_ext::hostcalls;
-    use crate::abi::proxy_wasm_ext::types::{BufferType, Bytes, MapType};
+    use crate::abi::proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm::types::{BufferType, Bytes, MapType};
 
     use super::{Client, RequestHandle, ResponseOps};
     use crate::host;

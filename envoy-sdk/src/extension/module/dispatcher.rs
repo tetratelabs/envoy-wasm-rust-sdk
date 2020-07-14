@@ -16,8 +16,8 @@ use std::rc::Rc;
 
 use super::ContextFactoryHashMap;
 
-use crate::abi::proxy_wasm_ext;
-use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
+use crate::abi::proxy_wasm;
+use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::error::format_err;
 use crate::extension::error::ConfigurationError;
 use crate::extension::error::ErrorSink;
@@ -71,7 +71,7 @@ impl<'a> ContextSelector<'a> {
 
 impl ContextSelector<'static> {
     pub fn install(mut self) {
-        proxy_wasm_ext::set_root_context(move |context_id| {
+        proxy_wasm::set_root_context(move |context_id| {
             // At the moment, `wasm32-unknown-unknown` and `wasm32-wasi` targets
             // do not support stack unwinding.
             // Consequently, in the case of a panic, memory on heap will not be released.
@@ -139,7 +139,7 @@ impl VoidContextSelector {
 
     pub fn install(self) {
         let err = Rc::new(self.err);
-        proxy_wasm_ext::set_root_context(move |_| {
+        proxy_wasm::set_root_context(move |_| {
             // At the moment, `wasm32-unknown-unknown` and `wasm32-wasi` targets
             // do not support stack unwinding.
             // Consequently, in the case of a panic, memory on heap will not be released.

@@ -16,8 +16,8 @@ use super::{
     RequestBodyOps, RequestFlowOps, RequestHeadersOps, RequestTrailersOps, ResponseBodyOps,
     ResponseFlowOps, ResponseHeadersOps, ResponseTrailersOps,
 };
-use crate::abi::proxy_wasm_ext::hostcalls;
-use crate::abi::proxy_wasm_ext::types::{BufferType, Bytes, MapType};
+use crate::abi::proxy_wasm::hostcalls;
+use crate::abi::proxy_wasm::types::{BufferType, Bytes, MapType};
 use crate::host;
 
 pub(super) struct Host;

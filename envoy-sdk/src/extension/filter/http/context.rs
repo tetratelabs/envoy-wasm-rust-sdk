@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::abi::proxy_wasm_ext::traits::{Context, HttpContext};
-use crate::abi::proxy_wasm_ext::types::Action;
+use crate::abi::proxy_wasm::traits::{Context, HttpContext};
+use crate::abi::proxy_wasm::types::Action;
 
 use super::{Filter, Ops};
 use crate::extension::error::ErrorSink;

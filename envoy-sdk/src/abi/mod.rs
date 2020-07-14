@@ -21,4 +21,4 @@
 //!
 //! [`proxy-wasm`]: https://github.com/proxy-wasm/spec
 
-pub mod proxy_wasm_ext;
+pub mod proxy_wasm;

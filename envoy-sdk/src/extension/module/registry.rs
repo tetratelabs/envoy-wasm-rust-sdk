@@ -14,7 +14,7 @@
 
 use super::{ContextFactory, ContextFactoryHashMap};
 
-use crate::abi::proxy_wasm_ext::traits::{ChildContext, HttpContext, RootContext, StreamContext};
+use crate::abi::proxy_wasm::traits::{ChildContext, HttpContext, RootContext, StreamContext};
 use crate::extension::access_logger::{Logger, LoggerContext};
 use crate::extension::{error::ModuleError, factory, filter::http, filter::network};
 use crate::extension::{InstanceId, Result};
