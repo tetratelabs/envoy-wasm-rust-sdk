@@ -24,7 +24,7 @@ use crate::extension::{Registry, Result};
 ///
 /// ```
 /// # use envoy_sdk as envoy;
-/// # use envoy::extension::{access_logger, filter::network, filter::http, InstanceId, Result};
+/// # use envoy::extension::{access_logger, filter::network, filter::http, InstanceId, Result, ExtensionFactory};
 /// #
 /// # struct MyHttpFilter;
 /// # impl http::Filter for MyHttpFilter {}
@@ -33,7 +33,7 @@ use crate::extension::{Registry, Result};
 /// # impl MyHttpFilterFactory {
 /// #     fn default() -> Result<Self> { Ok(MyHttpFilterFactory) }
 /// # }
-/// # impl envoy::extension::Factory for MyHttpFilterFactory {
+/// # impl ExtensionFactory for MyHttpFilterFactory {
 /// #     type Extension = MyHttpFilter;
 /// #
 /// #     const NAME: &'static str = "my.http_filter";
@@ -50,7 +50,7 @@ use crate::extension::{Registry, Result};
 /// # impl MyNetworkFilterFactory {
 /// #     fn default() -> Result<Self> { Ok(MyNetworkFilterFactory) }
 /// # }
-/// # impl envoy::extension::Factory for MyNetworkFilterFactory {
+/// # impl ExtensionFactory for MyNetworkFilterFactory {
 /// #     type Extension = MyNetworkFilter;
 /// #
 /// #     const NAME: &'static str = "my.network_filter";
