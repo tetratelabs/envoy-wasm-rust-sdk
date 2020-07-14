@@ -39,8 +39,7 @@ where
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle connection opening", &err);
-                // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
-                // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
+                self.handle_error(err);
                 Action::Pause
             }
         }
@@ -56,8 +55,7 @@ where
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle data from the downstream", &err);
-                // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
-                // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
+                self.handle_error(err);
                 Action::Pause
             }
         }
@@ -68,6 +66,7 @@ where
             self.error_sink
                 .observe("failed to handle connection close by the downstream", &err);
             // TODO(yskopets): do we still need to do anything to terminate the connection?
+            self.handle_error(err);
         }
     }
 
@@ -81,8 +80,7 @@ where
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle data from the upstream", &err);
-                // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
-                // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
+                self.handle_error(err);
                 Action::Pause
             }
         }
@@ -93,13 +91,15 @@ where
             self.error_sink
                 .observe("failed to handle connection close by the upstream", &err);
             // TODO(yskopets): do we still need to do anything to terminate the connection?
+            self.handle_error(err);
         }
     }
 
     fn on_log(&mut self) {
         if let Err(err) = self.filter.on_connection_complete() {
             self.error_sink
-                .observe("failed to handle connection comptetion", &err);
+                .observe("failed to handle completion of a connection", &err);
+            // connection is already being terminated, so there is no need to do it explicitly
         }
     }
 }
@@ -129,6 +129,7 @@ where
                 "failed to process a response to an HTTP request made by the extension",
                 &err,
             );
+            self.handle_error(err);
         }
     }
 }
@@ -159,6 +160,11 @@ where
             http_client::ResponseOps::default(),
             ErrorSink::default(),
         )
+    }
+
+    fn handle_error(&self, _err: Error) {
+        // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
+        // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
     }
 }
 

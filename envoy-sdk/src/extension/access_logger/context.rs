@@ -49,6 +49,8 @@ where
     fn on_log(&mut self) {
         if let Err(err) = self.logger.on_log(self.logger_ops.as_log_ops()) {
             self.error_sink.observe("failed to log a request", &err);
+
+            // TODO(yskopets): can we do anything other than crashing Envoy ?
         }
     }
 }
@@ -77,6 +79,8 @@ where
                 "failed to process a response to an HTTP request made by the extension",
                 &err,
             );
+
+            // TODO(yskopets): can we do anything other than crashing Envoy ?
         }
     }
 }
