@@ -22,18 +22,18 @@ pub use crate::error::{Error, ErrorContext, Result};
 
 /// An error returned from the call to Envoy ABI.
 #[derive(Debug)]
-pub(crate) struct CallError {
+pub(crate) struct HostCallError {
     function: Function,
     status: Status,
 }
 
-impl CallError {
+impl HostCallError {
     fn new(function: Function, status: Status) -> Self {
-        CallError { function, status }
+        HostCallError { function, status }
     }
 }
 
-impl fmt::Display for CallError {
+impl fmt::Display for HostCallError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -43,7 +43,7 @@ impl fmt::Display for CallError {
     }
 }
 
-impl std::error::Error for CallError {
+impl std::error::Error for HostCallError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }
@@ -51,18 +51,18 @@ impl std::error::Error for CallError {
 
 /// An error at parsing a return value from a call to Envoy ABI.
 #[derive(Debug)]
-pub(crate) struct ParseError {
+pub(crate) struct HostResponseError {
     function: Function,
     err: Error,
 }
 
-impl ParseError {
+impl HostResponseError {
     fn new(function: Function, err: Error) -> Self {
-        ParseError { function, err }
+        HostResponseError { function, err }
     }
 }
 
-impl fmt::Display for ParseError {
+impl fmt::Display for HostResponseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -72,7 +72,7 @@ impl fmt::Display for ParseError {
     }
 }
 
-impl std::error::Error for ParseError {
+impl std::error::Error for HostResponseError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(&*self.err)
     }
@@ -96,12 +96,12 @@ impl Function {
         Function { module, function }
     }
 
-    pub fn into_call_error(self, status: Status) -> CallError {
-        CallError::new(self, status)
+    pub fn into_call_error(self, status: Status) -> HostCallError {
+        HostCallError::new(self, status)
     }
 
-    pub fn into_parse_error(self, err: Error) -> ParseError {
-        ParseError::new(self, err)
+    pub fn into_parse_error(self, err: Error) -> HostResponseError {
+        HostResponseError::new(self, err)
     }
 }
 
