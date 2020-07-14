@@ -16,7 +16,7 @@ use super::{Logger, Ops};
 use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::ConfigStatus;
-use crate::host::http::client as http_client;
+use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) struct LoggerContext<'a, L>
 where
@@ -24,7 +24,7 @@ where
 {
     logger: L,
     logger_ops: &'a dyn Ops,
-    http_client_ops: &'a dyn http_client::ResponseOps,
+    http_client_ops: &'a dyn HttpClientResponseOps,
     error_sink: &'a dyn ErrorSink,
 }
 
@@ -69,7 +69,7 @@ where
         num_trailers: usize,
     ) {
         if let Err(err) = self.logger.on_http_call_response(
-            http_client::RequestHandle::from(token_id),
+            HttpClientRequestHandle::from(token_id),
             num_headers,
             body_size,
             num_trailers,
@@ -92,7 +92,7 @@ where
     pub fn new(
         logger: L,
         logger_ops: &'a dyn Ops,
-        http_client_ops: &'a dyn http_client::ResponseOps,
+        http_client_ops: &'a dyn HttpClientResponseOps,
         error_sink: &'a dyn ErrorSink,
     ) -> Self {
         LoggerContext {
@@ -108,7 +108,7 @@ where
         Self::new(
             logger,
             Ops::default(),
-            http_client::ResponseOps::default(),
+            HttpClientResponseOps::default(),
             ErrorSink::default(),
         )
     }

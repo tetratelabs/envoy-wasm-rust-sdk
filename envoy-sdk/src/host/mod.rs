@@ -17,6 +17,7 @@
 pub(crate) use self::error::function;
 
 pub use self::error::{Error, ErrorContext, Result};
+pub use http::client::{HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
 pub use shared_data::SharedData;
 pub use shared_queue::SharedQueue;
 pub use stats::Stats;

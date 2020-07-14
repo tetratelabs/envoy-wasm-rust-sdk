@@ -19,9 +19,9 @@ use std::time::Duration;
 use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
-pub use crate::abi::proxy_wasm::types::HttpRequestHandle as RequestHandle;
+pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHandle;
 
-pub trait Client {
+pub trait HttpClient {
     fn send_request(
         &self,
         upstream: &str,
@@ -29,16 +29,16 @@ pub trait Client {
         body: Option<&[u8]>,
         trailers: Vec<(&str, &str)>,
         timeout: Duration,
-    ) -> host::Result<RequestHandle>;
+    ) -> host::Result<HttpClientRequestHandle>;
 }
 
-impl dyn Client {
-    pub fn default() -> &'static dyn Client {
+impl dyn HttpClient {
+    pub fn default() -> &'static dyn HttpClient {
         &impls::Host
     }
 }
 
-pub trait ResponseOps {
+pub trait HttpClientResponseOps {
     fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>>;
 
     fn get_http_call_response_body(
@@ -50,8 +50,8 @@ pub trait ResponseOps {
     fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 }
 
-impl dyn ResponseOps {
-    pub fn default() -> &'static dyn ResponseOps {
+impl dyn HttpClientResponseOps {
+    pub fn default() -> &'static dyn HttpClientResponseOps {
         &impls::Host
     }
 }
@@ -62,12 +62,12 @@ mod impls {
     use crate::abi::proxy_wasm::hostcalls;
     use crate::abi::proxy_wasm::types::{BufferType, Bytes, MapType};
 
-    use super::{Client, RequestHandle, ResponseOps};
+    use super::{HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
     use crate::host;
 
     pub(super) struct Host;
 
-    impl Client for Host {
+    impl HttpClient for Host {
         fn send_request(
             &self,
             upstream: &str,
@@ -75,12 +75,12 @@ mod impls {
             body: Option<&[u8]>,
             trailers: Vec<(&str, &str)>,
             timeout: Duration,
-        ) -> host::Result<RequestHandle> {
+        ) -> host::Result<HttpClientRequestHandle> {
             hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
         }
     }
 
-    impl ResponseOps for Host {
+    impl HttpClientResponseOps for Host {
         fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
             hostcalls::get_map(MapType::HttpCallResponseHeaders)
         }

@@ -17,7 +17,7 @@ use std::time::Duration;
 
 use envoy::extension::filter::network;
 use envoy::extension::{InstanceId, Result};
-use envoy::host::{http::client as http_client, log, Clock};
+use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -37,9 +37,9 @@ pub struct SampleNetworkFilter<'a> {
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
     clock: &'a dyn Clock,
-    http_client: &'a dyn http_client::Client,
+    http_client: &'a dyn HttpClient,
 
-    active_request: Option<http_client::RequestHandle>,
+    active_request: Option<HttpClientRequestHandle>,
     response_body_size: u64,
 }
 
@@ -50,7 +50,7 @@ impl<'a> SampleNetworkFilter<'a> {
         stats: Rc<SampleNetworkFilterStats>,
         instance_id: InstanceId,
         clock: &'a dyn Clock,
-        http_client: &'a dyn http_client::Client,
+        http_client: &'a dyn HttpClient,
     ) -> Self {
         // Inject dependencies on Envoy host APIs
         SampleNetworkFilter {
@@ -133,12 +133,12 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
     /// Use filter_ops to amend and resume TCP flow.
     fn on_http_call_response(
         &mut self,
-        request: http_client::RequestHandle,
+        request: HttpClientRequestHandle,
         num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
         _filter_ops: &dyn network::Ops,
-        http_client_ops: &dyn http_client::ResponseOps,
+        http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         log::info!(
             "#{} received response on outgoing request: @{}",
