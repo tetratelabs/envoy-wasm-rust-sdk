@@ -19,7 +19,7 @@ use envoy::host::log::info;
 
 use envoy::extension::filter::network;
 use envoy::extension::{InstanceId, Result};
-use envoy::host::{http::client as http_client, time};
+use envoy::host::{http::client as http_client, Clock};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -38,7 +38,7 @@ pub struct SampleNetworkFilter<'a> {
     instance_id: InstanceId,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
+    clock: &'a dyn Clock,
     http_client: &'a dyn http_client::Client,
 
     active_request: Option<http_client::RequestHandle>,
@@ -51,7 +51,7 @@ impl<'a> SampleNetworkFilter<'a> {
         config: Rc<SampleNetworkFilterConfig>,
         stats: Rc<SampleNetworkFilterStats>,
         instance_id: InstanceId,
-        time_service: &'a dyn time::Service,
+        clock: &'a dyn Clock,
         http_client: &'a dyn http_client::Client,
     ) -> Self {
         // Inject dependencies on Envoy host APIs
@@ -59,7 +59,7 @@ impl<'a> SampleNetworkFilter<'a> {
             config,
             stats,
             instance_id,
-            time_service,
+            clock,
             http_client,
             active_request: None,
             response_body_size: 0,
@@ -73,13 +73,12 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
         // Update stats
         self.stats.requests_active().inc()?;
 
-        let current_time = self.time_service.get_current_time()?;
-        let datetime: DateTime<Local> = current_time.into();
+        let now: DateTime<Local> = self.clock.now()?.into();
 
         info!(
             "#{} new TCP connection starts at {} with config: {:?}",
             self.instance_id,
-            datetime.format("%+"),
+            now.format("%+"),
             self.config,
         );
 

@@ -17,7 +17,7 @@ use std::rc::Rc;
 
 use envoy::extension;
 use envoy::extension::{ConfigStatus, InstanceId, Result};
-use envoy::host::{http::client as http_client, stats, time};
+use envoy::host::{http::client as http_client, stats, Clock};
 
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
@@ -34,14 +34,14 @@ pub struct SampleHttpFilterFactory<'a> {
     stats: Rc<SampleHttpFilterStats>,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
+    clock: &'a dyn Clock,
     http_client: &'a dyn http_client::Client,
 }
 
 impl<'a> SampleHttpFilterFactory<'a> {
     /// Creates a new factory.
     pub fn new(
-        time_service: &'a dyn time::Service,
+        clock: &'a dyn Clock,
         http_client: &'a dyn http_client::Client,
         metrics_service: &'a dyn stats::Service,
     ) -> Result<Self> {
@@ -54,7 +54,7 @@ impl<'a> SampleHttpFilterFactory<'a> {
         Ok(SampleHttpFilterFactory {
             config: Rc::new(SampleHttpFilterConfig::default()),
             stats: Rc::new(stats),
-            time_service,
+            clock,
             http_client,
         })
     }
@@ -62,7 +62,7 @@ impl<'a> SampleHttpFilterFactory<'a> {
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
         Self::new(
-            time::Service::default(),
+            Clock::default(),
             http_client::Client::default(),
             stats::Service::default(),
         )
@@ -99,7 +99,7 @@ impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
             Rc::clone(&self.config),
             Rc::clone(&self.stats),
             instance_id,
-            self.time_service,
+            self.clock,
             self.http_client,
         ))
     }

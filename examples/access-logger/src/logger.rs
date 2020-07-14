@@ -19,7 +19,7 @@ use envoy::host::log::info;
 
 use envoy::extension::access_logger;
 use envoy::extension::{ConfigStatus, Result};
-use envoy::host::{http::client as http_client, stats, time};
+use envoy::host::{http::client as http_client, stats, Clock};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -33,7 +33,7 @@ pub struct SampleAccessLogger<'a> {
     stats: SampleAccessLoggerStats,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
+    clock: &'a dyn Clock,
     http_client: &'a dyn http_client::Client,
 
     active_request: Option<http_client::RequestHandle>,
@@ -42,7 +42,7 @@ pub struct SampleAccessLogger<'a> {
 impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of Sample Access Logger.
     pub fn new(
-        time_service: &'a dyn time::Service,
+        clock: &'a dyn Clock,
         http_client: &'a dyn http_client::Client,
         metrics_service: &'a dyn stats::Service,
     ) -> Result<Self> {
@@ -55,7 +55,7 @@ impl<'a> SampleAccessLogger<'a> {
         Ok(SampleAccessLogger {
             config: SampleAccessLoggerConfig::default(),
             stats,
-            time_service,
+            clock,
             http_client,
             active_request: None,
         })
@@ -65,7 +65,7 @@ impl<'a> SampleAccessLogger<'a> {
     /// bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
         Self::new(
-            time::Service::default(),
+            Clock::default(),
             http_client::Client::default(),
             stats::Service::default(),
         )
@@ -102,12 +102,11 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         // Update stats
         self.stats.requests_total().inc()?;
 
-        let current_time = self.time_service.get_current_time()?;
-        let datetime: DateTime<Local> = current_time.into();
+        let now: DateTime<Local> = self.clock.now()?.into();
 
         info!(
             "logging at {} with config: {:?}",
-            datetime.format("%+"),
+            now.format("%+"),
             self.config,
         );
 
