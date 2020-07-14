@@ -16,7 +16,7 @@ use std::convert::TryFrom;
 use std::rc::Rc;
 
 use envoy::extension::{self, ConfigStatus, InstanceId, Result};
-use envoy::host::{http::client as http_client, stats, Clock};
+use envoy::host::{http::client as http_client, Clock, Stats};
 
 use super::config::SampleNetworkFilterConfig;
 use super::filter::SampleNetworkFilter;
@@ -42,12 +42,12 @@ impl<'a> SampleNetworkFilterFactory<'a> {
     pub fn new(
         clock: &'a dyn Clock,
         http_client: &'a dyn http_client::Client,
-        metrics_service: &'a dyn stats::Service,
+        stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleNetworkFilterStats::new(
-            metrics_service.counter("examples.network_filter.requests_total")?,
-            metrics_service.gauge("examples.network_filter.requests_active")?,
-            metrics_service.histogram("examples.network_filter.response_body_size_bytes")?,
+            stats.counter("examples.network_filter.requests_total")?,
+            stats.gauge("examples.network_filter.requests_active")?,
+            stats.histogram("examples.network_filter.response_body_size_bytes")?,
         );
         // Inject dependencies on Envoy host APIs
         Ok(SampleNetworkFilterFactory {
@@ -63,7 +63,7 @@ impl<'a> SampleNetworkFilterFactory<'a> {
         Self::new(
             Clock::default(),
             http_client::Client::default(),
-            stats::Service::default(),
+            Stats::default(),
         )
     }
 }
