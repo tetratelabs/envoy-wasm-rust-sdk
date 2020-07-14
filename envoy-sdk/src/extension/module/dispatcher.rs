@@ -24,7 +24,7 @@ use crate::host::error::function;
 use crate::host::log;
 use crate::host::stream_info::Service;
 
-pub struct ContextSelector<'a> {
+pub(crate) struct ContextSelector<'a> {
     factories: ContextFactoryHashMap,
     stream_info: &'a dyn Service,
 }
@@ -85,41 +85,47 @@ impl ContextSelector<'static> {
             // call will be followed by `proxy_on_configure` where we can legally
             // report back to Envoy that configuration is not valid.
             self.new_root_context(context_id)
-                .unwrap_or_else(|e| Box::new(InvalidRootContext(e)))
+                .unwrap_or_else(|e| Box::new(VoidRootContext(e)))
         });
     }
 }
 
-/// Fake `Proxy Wasm` [`RootContext`] that is used to postpone reporting an error that
-/// occurred inside [`proxy_on_context_create`] until [`proxy_on_configure`]
-/// where it's safe to do so.
+/// Fake `Proxy Wasm` [`RootContext`] that is used to postpone error handling
+/// until a proper moment in the extension lifecycle.
+///
+/// E.g., if an error occurres inside [`proxy_on_context_create`] callback
+/// where an Extension Factory instance is supposed to be created,
+/// we cannot reject invalid Envoy configuration right away - `Envoy` doesn't expect it
+/// at this point.
+///
+/// Instead, we have to memorize the error and wait until [`proxy_on_configure`]
+/// callback when it will be possible to signal back that configuration is not valid.
 ///
 /// [`RootContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.RootContext.html
 /// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
 /// [`proxy_on_configure`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_configure
-struct InvalidRootContext(Error);
+struct VoidRootContext(Error);
 
-impl RootContext for InvalidRootContext {
+impl RootContext for VoidRootContext {
     fn on_configure(&mut self, _plugin_configuration_size: usize) -> bool {
-        log::error!("failed to create Proxy Wasm root context: {}", self.0);
+        log::error!("failed to create Proxy Wasm Root Context: {}", self.0);
         false // indicate to Envoy that configuration is not valid
     }
 }
 
-impl Context for InvalidRootContext {}
+impl Context for VoidRootContext {}
 
-/// Fake `Proxy Wasm` [`RootContext`] that is used to postpone reporting an error that
-/// occurred inside [`_start`] until [`proxy_on_vm_start`]
-/// where it's safe to do so.
-///
-/// [`RootContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.RootContext.html
-/// [`_start`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#_start
-/// [`proxy_on_vm_start`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_vm_start
-pub(crate) struct InvalidVmContext(Rc<Error>);
+pub(crate) struct VoidContextSelector {
+    err: Error,
+}
 
-impl InvalidVmContext {
-    pub(crate) fn install(err: Error) {
-        let err = Rc::new(err);
+impl VoidContextSelector {
+    pub fn new(err: Error) -> Self {
+        VoidContextSelector { err }
+    }
+
+    pub fn install(self) {
+        let err = Rc::new(self.err);
         proxy_wasm_ext::set_root_context(move |_| {
             // At the moment, `wasm32-unknown-unknown` and `wasm32-wasi` targets
             // do not support stack unwinding.
@@ -132,16 +138,32 @@ impl InvalidVmContext {
             // Specifically, we're relying on the fact that `_start`
             // call will be followed by `proxy_on_vm_start` where we can legally
             // report back to Envoy that VM state is not valid.
-            Box::new(InvalidVmContext(Rc::clone(&err)))
+            Box::new(VoidVmContext(Rc::clone(&err)))
         });
     }
 }
 
-impl RootContext for InvalidVmContext {
+/// Fake `Proxy Wasm` [`RootContext`] that is used to postpone error handling
+/// until a proper moment in the extension lifecycle.
+///
+/// E.g., if an error occurres inside [`_start`] callback where a WebAssembly module
+/// is expected to register all the extensions it provides,
+/// we cannot reject invalid Envoy configuration right away - `Envoy` doesn't expect it
+/// at this point.
+///
+/// Instead, we have to memorize the error and wait until [`proxy_on_vm_start`]
+/// callback when it will be possible to signal back that extension is not functional.
+///
+/// [`RootContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.RootContext.html
+/// [`_start`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#_start
+/// [`proxy_on_vm_start`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_vm_start
+struct VoidVmContext(Rc<Error>);
+
+impl RootContext for VoidVmContext {
     fn on_vm_start(&mut self, _vm_configuration_size: usize) -> bool {
         log::error!("failed to initialize WebAssembly module: {}", self.0);
         false // indicate to Envoy that WebAssembly module is in invalid state
     }
 }
 
-impl Context for InvalidVmContext {}
+impl Context for VoidVmContext {}

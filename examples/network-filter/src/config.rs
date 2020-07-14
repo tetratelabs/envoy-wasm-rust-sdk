@@ -18,7 +18,7 @@ use serde::Deserialize;
 
 use envoy::extension;
 
-/// Configuration for a sample network filter.
+/// Configuration for a Sample Network Filter.
 #[derive(Deserialize, Debug)]
 pub struct SampleNetworkFilterConfig {
     #[serde(default)]

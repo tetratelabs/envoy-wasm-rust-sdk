@@ -17,7 +17,7 @@ use crate::abi::proxy_wasm_ext::traits::{ChildContext, Context, RootContext};
 use crate::extension::InstanceId;
 use crate::host::log;
 
-pub struct FactoryContext<'a, F>
+pub(crate) struct FactoryContext<'a, F>
 where
     F: Factory,
 {
@@ -35,7 +35,7 @@ where
             plugin_configuration_size,
             self.factory_ops.as_configure_ops(),
         ) {
-            Ok(success) => success,
+            Ok(status) => status.as_bool(),
             Err(err) => {
                 log::error!("failed to configure extension \"{}\": {}", F::NAME, err);
                 false

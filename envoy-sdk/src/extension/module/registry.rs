@@ -80,9 +80,7 @@ impl Registry {
                             Ok(network_filter) => {
                                 Box::new(network::FilterContext::with_default_ops(network_filter))
                             }
-                            Err(err) => {
-                                Box::new(network::InvalidFilterContext::with_default_ops(err))
-                            }
+                            Err(err) => Box::new(network::VoidFilterContext::with_default_ops(err)),
                         };
                     // Bridge between Network Filter abstraction and Proxy Wasm ABI
                     ChildContext::StreamContext(stream_context)
@@ -113,7 +111,7 @@ impl Registry {
                             Ok(http_filter) => {
                                 Box::new(http::FilterContext::with_default_ops(http_filter))
                             }
-                            Err(err) => Box::new(http::InvalidFilterContext::with_default_ops(err)),
+                            Err(err) => Box::new(http::VoidFilterContext::with_default_ops(err)),
                         };
                     // Bridge between HTTP Filter abstraction and Proxy Wasm ABI
                     ChildContext::HttpContext(http_context)

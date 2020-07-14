@@ -39,7 +39,7 @@ mod impls {
     use crate::abi::proxy_wasm_ext::types::{Bytes, SharedQueueHandle};
     use crate::host;
 
-    pub struct Host;
+    pub(super) struct Host;
 
     impl Service for Host {
         fn register_queue(&self, name: &str) -> host::Result<SharedQueueHandle> {

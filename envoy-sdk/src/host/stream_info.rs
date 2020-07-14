@@ -37,7 +37,7 @@ mod impls {
     use super::Service;
     use crate::host;
 
-    pub struct Host;
+    pub(super) struct Host;
 
     impl Service for Host {
         fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {

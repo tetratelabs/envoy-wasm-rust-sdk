@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// A boxed [`Error`].
+///
+/// [`Error`]: https://doc.rust-lang.org/std/fmt/struct.Error.html
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
 /// A specialized [`Result`] type.
 ///
-/// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
+/// [`Result`]: https://doc.rust-lang.org/core/result/enum.Result.html
 pub type Result<T> = core::result::Result<T, Error>;

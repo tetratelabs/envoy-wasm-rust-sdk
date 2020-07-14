@@ -27,7 +27,7 @@ use chrono::DateTime;
 use super::config::SampleHttpFilterConfig;
 use super::stats::SampleHttpFilterStats;
 
-// Sample HTTP filter.
+// Sample HTTP Filter.
 pub struct SampleHttpFilter<'a> {
     // This example shows how multiple filter instances could share
     // the same configuration.
@@ -46,7 +46,7 @@ pub struct SampleHttpFilter<'a> {
 }
 
 impl<'a> SampleHttpFilter<'a> {
-    /// Creates a new instance of sample HTTP filter.
+    /// Creates a new instance of Sample HTTP Filter.
     pub fn new(
         config: Rc<SampleHttpFilterConfig>,
         stats: Rc<SampleHttpFilterStats>,
@@ -115,11 +115,13 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                     vec![],
                     Duration::from_secs(3),
                 )?);
-                info!(
-                    "#{} sent authorization request: @{}",
-                    self.instance_id,
-                    self.active_request.as_ref().unwrap()
-                );
+                if let Some(request) = self.active_request {
+                    info!(
+                        "#{} sent authorization request: @{}",
+                        self.instance_id,
+                        request,
+                    );
+                }
                 info!("#{} suspending http exchange processing", self.instance_id);
                 Ok(http::FilterHeadersStatus::Pause)
             }

@@ -16,10 +16,12 @@
 
 use std::fmt;
 
+pub use self::config::ConfigStatus;
+pub use self::factory::Factory;
 pub use self::module::{install, registry::Registry};
 pub use crate::common::{Error, Result};
-pub use factory::Factory;
 
+mod config;
 mod module;
 
 pub mod access_logger;

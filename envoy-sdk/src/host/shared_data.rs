@@ -35,7 +35,7 @@ mod impls {
     use crate::abi::proxy_wasm_ext::types::Bytes;
     use crate::host;
 
-    pub struct Host;
+    pub(super) struct Host;
 
     impl Service for Host {
         fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {

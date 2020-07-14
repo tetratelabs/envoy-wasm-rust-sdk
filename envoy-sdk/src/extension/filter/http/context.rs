@@ -19,7 +19,7 @@ use super::{Filter, Ops};
 use crate::extension::Error;
 use crate::host::http::client as http_client;
 
-pub struct FilterContext<'a, F>
+pub(crate) struct FilterContext<'a, F>
 where
     F: Filter,
 {
@@ -129,21 +129,29 @@ where
     }
 }
 
-/// Fake `Proxy Wasm` [`HttpContext`] that is used to postpone reporting an error that
-/// occurred inside [`proxy_on_context_create`] until [`proxy_on_new_connection`]
-/// where it's safe to do so.
+/// Fake `Proxy Wasm` [`HttpContext`] that is used to postpone error handling
+/// until a proper moment in the request lifecycle.
 ///
-/// [`StreamContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.HttpContext.html
+/// E.g., if an error occurres inside [`proxy_on_context_create`] callback
+/// where a new HTTP Filter instance is supposed to be created,
+/// we cannot terminate the HTTP request right away - `Envoy` doesn't expect it
+/// at this point.
+///
+/// Instead, we have to memorize the error and wait until [`proxy_on_http_request_headers`]
+/// callback when it will be safe to use [`proxy_send_http_response`] to stop further processing.
+///
+/// [`HttpContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.HttpContext.html
 /// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
 /// [`proxy_on_http_request_headers`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_http_request_headers
-pub struct InvalidFilterContext<'a> {
+/// [`proxy_send_http_response`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_send_http_response
+pub(crate) struct VoidFilterContext<'a> {
     err: Error,
     filter_ops: &'a dyn Ops,
 }
 
-impl<'a> InvalidFilterContext<'a> {
+impl<'a> VoidFilterContext<'a> {
     pub fn new(err: Error, filter_ops: &'a dyn Ops) -> Self {
-        InvalidFilterContext { err, filter_ops }
+        VoidFilterContext { err, filter_ops }
     }
 
     /// Creates a new HTTP filter context bound to the actual Envoy ABI.
@@ -152,9 +160,9 @@ impl<'a> InvalidFilterContext<'a> {
     }
 }
 
-impl<'a> HttpContext for InvalidFilterContext<'a> {
+impl<'a> HttpContext for VoidFilterContext<'a> {
     fn on_http_request_headers(&mut self, _num_headers: usize) -> Action {
-        log::error!("failed to create Proxy Wasm http context: {}", self.err);
+        log::error!("failed to create Proxy Wasm Http Context: {}", self.err);
         if let Err(err) = self.filter_ops.send_response(500, vec![], None) {
             log::error!("failed to terminate processing of the HTTP request: failed to send a direct reply: {}", err);
         }
@@ -162,4 +170,4 @@ impl<'a> HttpContext for InvalidFilterContext<'a> {
     }
 }
 
-impl<'a> Context for InvalidFilterContext<'a> {}
+impl<'a> Context for VoidFilterContext<'a> {}

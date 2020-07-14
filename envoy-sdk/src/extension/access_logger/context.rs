@@ -17,7 +17,7 @@ use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
 use crate::host::http::client as http_client;
 use crate::host::log;
 
-pub struct LoggerContext<'a, L>
+pub(crate) struct LoggerContext<'a, L>
 where
     L: Logger,
 {
@@ -35,7 +35,7 @@ where
             plugin_configuration_size,
             self.logger_ops.as_configure_ops(),
         ) {
-            Ok(success) => success,
+            Ok(status) => status.as_bool(),
             Err(err) => {
                 log::error!("failed to configure extension \"{}\": {}", L::NAME, err);
                 false

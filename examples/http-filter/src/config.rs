@@ -18,7 +18,7 @@ use serde::Deserialize;
 
 use envoy::extension;
 
-/// Configuration for a sample HTTP filter.
+/// Configuration for a Sample HTTP Filter.
 #[derive(Deserialize, Debug)]
 pub struct SampleHttpFilterConfig {
     #[serde(default)]

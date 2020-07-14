@@ -18,7 +18,7 @@ use crate::abi::proxy_wasm_ext::types::{Action, PeerType};
 use crate::extension::Error;
 use crate::host::http::client as http_client;
 
-pub struct FilterContext<'a, F>
+pub(crate) struct FilterContext<'a, F>
 where
     F: Filter,
 {
@@ -116,21 +116,29 @@ where
     }
 }
 
-/// Fake `Proxy Wasm` [`StreamContext`] that is used to postpone reporting an error that
-/// occurred inside [`proxy_on_context_create`] until [`proxy_on_new_connection`]
-/// where it's safe to do so.
+/// Fake `Proxy Wasm` [`StreamContext`] that is used to postpone error handling
+/// until a proper moment in the connection lifecycle.
+///
+/// E.g., if an error occurres inside [`proxy_on_context_create`] callback
+/// where a new Network Filter instance is supposed to be created,
+/// we cannot terminate the L4 connection right away - `Envoy` doesn't expect it
+/// at this point.
+///
+/// Instead, we have to memorize the error and wait until [`proxy_on_new_connection`]
+/// callback when it will be safe to use [`not yet supported ABI`] to stop further processing.
 ///
 /// [`StreamContext`]: https://docs.rs/proxy-wasm/0.1.0/proxy_wasm/traits/trait.StreamContext.html
 /// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
 /// [`proxy_on_new_connection`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_new_connection
-pub struct InvalidFilterContext<'a> {
+/// [`not yet supported ABI`]: https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
+pub(crate) struct VoidFilterContext<'a> {
     err: Error,
     _filter_ops: &'a dyn Ops,
 }
 
-impl<'a> InvalidFilterContext<'a> {
+impl<'a> VoidFilterContext<'a> {
     pub fn new(err: Error, _filter_ops: &'a dyn Ops) -> Self {
-        InvalidFilterContext { err, _filter_ops }
+        VoidFilterContext { err, _filter_ops }
     }
 
     /// Creates a new HTTP filter context bound to the actual Envoy ABI.
@@ -139,12 +147,13 @@ impl<'a> InvalidFilterContext<'a> {
     }
 }
 
-impl<'a> StreamContext for InvalidFilterContext<'a> {
+impl<'a> StreamContext for VoidFilterContext<'a> {
     fn on_new_connection(&mut self) -> Action {
-        log::error!("failed to create Proxy Wasm stream context: {}", self.err);
+        log::error!("failed to create Proxy Wasm Stream Context: {}", self.err);
         // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
+        // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
         Action::Pause
     }
 }
 
-impl<'a> Context for InvalidFilterContext<'a> {}
+impl<'a> Context for VoidFilterContext<'a> {}

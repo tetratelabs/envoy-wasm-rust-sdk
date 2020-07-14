@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Errors specific to `Envoy` host APIs.
+//! Errors specific to interaction with `Envoy` host ABI.
 
 use std::fmt;
 
 use crate::abi::proxy_wasm_ext::types::Status;
-
 use crate::common::Error;
 
 /// An error returned from the call to Envoy ABI.
@@ -49,7 +48,7 @@ impl std::error::Error for CallError {
     }
 }
 
-/// An error while parsing the returned value from a call to Envoy ABI.
+/// An error at parsing a return value from a call to Envoy ABI.
 #[derive(Debug)]
 pub(crate) struct ParseError {
     function: Function,
@@ -66,7 +65,7 @@ impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "unable to parse a value returned by the host ABI function \"{}\": {}",
+            "failed to parse a value returned by the host ABI function \"{}\": {}",
             self.function, self.err,
         )
     }
@@ -96,11 +95,11 @@ impl Function {
         Function { module, function }
     }
 
-    pub(crate) fn into_call_error(self, status: Status) -> CallError {
+    pub fn into_call_error(self, status: Status) -> CallError {
         CallError::new(self, status)
     }
 
-    pub(crate) fn into_parse_error(self, err: Error) -> ParseError {
+    pub fn into_parse_error(self, err: Error) -> ParseError {
         ParseError::new(self, err)
     }
 }

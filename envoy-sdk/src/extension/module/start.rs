@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::dispatcher::{ContextSelector, InvalidVmContext};
+use super::dispatcher::{ContextSelector, VoidContextSelector};
 use crate::extension::{Registry, Result};
 
 /// Generates the [`_start`] function that will be called by `Envoy` to let
@@ -129,6 +129,6 @@ macro_rules! on_module_load {
 pub fn install(config: Result<Registry>) {
     match config {
         Ok(registry) => ContextSelector::with_default_ops(registry.into()).install(),
-        Err(err) => InvalidVmContext::install(err),
+        Err(err) => VoidContextSelector::new(err).install(),
     }
 }

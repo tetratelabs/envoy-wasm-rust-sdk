@@ -16,16 +16,18 @@
 
 use std::fmt;
 
-/// An error while WebAssembly module is being initialized.
+/// An error at the initialization stage of the WebAssembly module.
 #[derive(Debug)]
 pub(crate) enum ModuleError {
+    /// WebAssembly module attempted to register 2 different extensions
+    /// under the same `root_id`.
     DuplicateRegistration(String),
 }
 
 impl fmt::Display for ModuleError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use ModuleError::*;
-        match &self {
+        match self {
             DuplicateRegistration(name) => write!(
                 f,
                 "WebAssembly module attempted to register 2 different extensions under the same `root_id` \"{}\"",
@@ -41,9 +43,11 @@ impl std::error::Error for ModuleError {
     }
 }
 
-/// An error in the configuration of Envoy extension.
+/// An error at the extension configuration stage.
 #[derive(Debug)]
 pub(crate) enum ConfigurationError {
+    /// Envoy configuration uses a `root_id` value that is not present
+    /// in this WebAssembly module.
     UnknownExtension {
         requested: String,
         available: Vec<String>,
@@ -53,7 +57,7 @@ pub(crate) enum ConfigurationError {
 impl fmt::Display for ConfigurationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use ConfigurationError::*;
-        match &self {
+        match self {
             UnknownExtension { requested, available } => write!(
                 f,
                 "WebAssembly module has no extension with `root_id` \"{}\"; valid `root_id` values are: {:?}",

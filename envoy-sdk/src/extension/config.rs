@@ -12,17 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` `Host API`.
+/// Possible outcomes of the extension (re-)configuration.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum ConfigStatus {
+    /// Extension accepted the new configuration.
+    Accepted,
+    /// Extension rejected the new configuration.
+    Rejected,
+}
 
-pub(crate) use self::error::function;
-
-pub use crate::common::{Error, Result};
-
-pub mod error;
-pub mod http;
-pub mod log;
-pub mod shared_data;
-pub mod shared_queue;
-pub mod stats;
-pub mod stream_info;
-pub mod time;
+impl ConfigStatus {
+    pub(crate) fn as_bool(&self) -> bool {
+        match self {
+            ConfigStatus::Accepted => true,
+            ConfigStatus::Rejected => false,
+        }
+    }
+}

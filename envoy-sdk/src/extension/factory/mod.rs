@@ -16,10 +16,10 @@
 
 use crate::abi::proxy_wasm_ext::types::Bytes;
 
-use crate::extension::{InstanceId, Result};
+use crate::extension::{ConfigStatus, InstanceId, Result};
 use crate::host;
 
-pub(crate) use context::FactoryContext;
+pub(crate) use self::context::FactoryContext;
 
 mod context;
 mod ops;
@@ -33,8 +33,8 @@ pub trait Factory {
         &mut self,
         _configuration_size: usize,
         _ops: &dyn ConfigureOps,
-    ) -> Result<bool> {
-        Ok(true)
+    ) -> Result<ConfigStatus> {
+        Ok(ConfigStatus::Accepted)
     }
 
     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension>;

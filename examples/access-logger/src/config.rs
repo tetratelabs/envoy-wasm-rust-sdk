@@ -18,7 +18,7 @@ use serde::Deserialize;
 
 use envoy::extension;
 
-/// Configuration for a sample access logger.
+/// Configuration for a Sample Access Logger.
 #[derive(Deserialize, Debug)]
 pub struct SampleAccessLoggerConfig {
     #[serde(default)]
