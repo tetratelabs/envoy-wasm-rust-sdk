@@ -74,7 +74,7 @@ where
             self.http_client_ops,
         ) {
             self.error_sink.observe(
-                "failed to process the response to an HTTP request made by the extension",
+                "failed to process a response to an HTTP request made by the extension",
                 &err,
             );
         }

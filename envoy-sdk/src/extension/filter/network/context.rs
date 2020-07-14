@@ -26,6 +26,7 @@ where
     filter: F,
     logger_ops: &'a dyn Ops,
     http_client_ops: &'a dyn http_client::ResponseOps,
+    error_sink: &'a dyn ErrorSink,
 }
 
 impl<'a, F> StreamContext for FilterContext<'a, F>
@@ -33,39 +34,73 @@ where
     F: Filter,
 {
     fn on_new_connection(&mut self) -> Action {
-        self.filter.on_new_connection().unwrap()
+        match self.filter.on_new_connection() {
+            Ok(action) => action,
+            Err(err) => {
+                self.error_sink
+                    .observe("failed to handle connection opening", &err);
+                // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
+                // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
+                Action::Pause
+            }
+        }
     }
 
     fn on_downstream_data(&mut self, data_size: usize, end_of_stream: bool) -> Action {
-        self.filter
-            .on_downstream_data(
-                data_size,
-                end_of_stream,
-                self.logger_ops.as_downstream_data_ops(),
-            )
-            .unwrap()
+        match self.filter.on_downstream_data(
+            data_size,
+            end_of_stream,
+            self.logger_ops.as_downstream_data_ops(),
+        ) {
+            Ok(action) => action,
+            Err(err) => {
+                self.error_sink
+                    .observe("failed to handle data from the downstream", &err);
+                // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
+                // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
+                Action::Pause
+            }
+        }
     }
 
     fn on_downstream_close(&mut self, peer_type: PeerType) {
-        self.filter.on_downstream_close(peer_type).unwrap()
+        if let Err(err) = self.filter.on_downstream_close(peer_type) {
+            self.error_sink
+                .observe("failed to handle connection close by the downstream", &err);
+            // TODO(yskopets): do we still need to do anything to terminate the connection?
+        }
     }
 
     fn on_upstream_data(&mut self, data_size: usize, end_of_stream: bool) -> Action {
-        self.filter
-            .on_upstream_data(
-                data_size,
-                end_of_stream,
-                self.logger_ops.as_upstream_data_ops(),
-            )
-            .unwrap()
+        match self.filter.on_upstream_data(
+            data_size,
+            end_of_stream,
+            self.logger_ops.as_upstream_data_ops(),
+        ) {
+            Ok(action) => action,
+            Err(err) => {
+                self.error_sink
+                    .observe("failed to handle data from the upstream", &err);
+                // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
+                // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
+                Action::Pause
+            }
+        }
     }
 
     fn on_upstream_close(&mut self, peer_type: PeerType) {
-        self.filter.on_upstream_close(peer_type).unwrap()
+        if let Err(err) = self.filter.on_upstream_close(peer_type) {
+            self.error_sink
+                .observe("failed to handle connection close by the upstream", &err);
+            // TODO(yskopets): do we still need to do anything to terminate the connection?
+        }
     }
 
     fn on_log(&mut self) {
-        self.filter.on_connection_complete().unwrap()
+        if let Err(err) = self.filter.on_connection_complete() {
+            self.error_sink
+                .observe("failed to handle connection comptetion", &err);
+        }
     }
 }
 
@@ -82,16 +117,19 @@ where
         body_size: usize,
         num_trailers: usize,
     ) {
-        self.filter
-            .on_http_call_response(
-                http_client::RequestHandle::from(token_id),
-                num_headers,
-                body_size,
-                num_trailers,
-                self.logger_ops,
-                self.http_client_ops,
-            )
-            .unwrap()
+        if let Err(err) = self.filter.on_http_call_response(
+            http_client::RequestHandle::from(token_id),
+            num_headers,
+            body_size,
+            num_trailers,
+            self.logger_ops,
+            self.http_client_ops,
+        ) {
+            self.error_sink.observe(
+                "failed to process a response to an HTTP request made by the extension",
+                &err,
+            );
+        }
     }
 }
 
@@ -103,17 +141,24 @@ where
         filter: F,
         logger_ops: &'a dyn Ops,
         http_client_ops: &'a dyn http_client::ResponseOps,
+        error_sink: &'a dyn ErrorSink,
     ) -> Self {
         FilterContext {
             filter,
             logger_ops,
             http_client_ops,
+            error_sink,
         }
     }
 
     /// Creates a new network filter context bound to the actual Envoy ABI.
     pub fn with_default_ops(filter: F) -> Self {
-        Self::new(filter, Ops::default(), http_client::ResponseOps::default())
+        Self::new(
+            filter,
+            Ops::default(),
+            http_client::ResponseOps::default(),
+            ErrorSink::default(),
+        )
     }
 }
 
