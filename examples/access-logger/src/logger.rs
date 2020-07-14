@@ -19,7 +19,7 @@ use envoy::host::log::info;
 
 use envoy::extension::access_logger;
 use envoy::extension::{ConfigStatus, Result};
-use envoy::host::{http::client as http_client, stats, Clock};
+use envoy::host::{http::client as http_client, Clock, Stats};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -44,12 +44,12 @@ impl<'a> SampleAccessLogger<'a> {
     pub fn new(
         clock: &'a dyn Clock,
         http_client: &'a dyn http_client::Client,
-        metrics_service: &'a dyn stats::Service,
+        stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleAccessLoggerStats::new(
-            metrics_service.counter("examples.access_logger.requests_total")?,
-            metrics_service.gauge("examples.access_logger.reports_active")?,
-            metrics_service.counter("examples.access_logger.reports_total")?,
+            stats.counter("examples.access_logger.requests_total")?,
+            stats.gauge("examples.access_logger.reports_active")?,
+            stats.counter("examples.access_logger.reports_total")?,
         );
         // Inject dependencies on Envoy host APIs
         Ok(SampleAccessLogger {
@@ -67,7 +67,7 @@ impl<'a> SampleAccessLogger<'a> {
         Self::new(
             Clock::default(),
             http_client::Client::default(),
-            stats::Service::default(),
+            Stats::default(),
         )
     }
 }
