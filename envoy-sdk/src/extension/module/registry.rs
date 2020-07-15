@@ -15,7 +15,7 @@
 use super::{ContextFactory, ContextFactoryHashMap};
 
 use crate::abi::proxy_wasm::traits::{ChildContext, HttpContext, RootContext, StreamContext};
-use crate::extension::access_logger::{Logger, LoggerContext};
+use crate::extension::access_logger::{AccessLogger, AccessLoggerContext};
 use crate::extension::{
     error::ModuleError, factory::ExtensionFactoryContext, filter::http, filter::network,
     ExtensionFactory,
@@ -50,14 +50,14 @@ impl Registry {
 
     pub fn add_access_logger<T, F>(self, mut new: F) -> Result<Self>
     where
-        T: Logger + 'static,
+        T: AccessLogger + 'static,
         F: FnMut(InstanceId) -> Result<T> + 'static,
     {
         let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
             let logger = new(InstanceId::from(context_id))?;
 
             // Bridge between Access Logger abstraction and Proxy Wasm ABI
-            Ok(Box::new(LoggerContext::with_default_ops(logger)))
+            Ok(Box::new(AccessLoggerContext::with_default_ops(logger)))
         });
         self.add_extension(T::NAME, factory)
     }
