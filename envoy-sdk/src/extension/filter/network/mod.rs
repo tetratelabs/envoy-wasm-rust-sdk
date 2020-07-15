@@ -12,7 +12,82 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` `Network Filter API`.
+//! `Envoy` `Network Filter` extension.
+//!
+//! # Examples
+//!
+//! Basic `Network Filter`:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! use envoy::extension::NetworkFilter;
+//!
+//! /// My very own `NetworkFilter`.
+//! struct MyNetworkFilter;
+//!
+//! impl NetworkFilter for MyNetworkFilter {}
+//! ```
+//!
+//! Basic `Factory` object for `MyNetworkFilter` instances:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! # use envoy::extension::NetworkFilter;
+//! #
+//! # /// My very own `NetworkFilter`.
+//! # struct MyNetworkFilter;
+//! #
+//! # impl NetworkFilter for MyNetworkFilter {}
+//! #
+//! use envoy::extension::{ExtensionFactory, InstanceId, Result};
+//!
+//! /// `Factory` object for `MyNetworkFilter`.
+//! struct MyNetworkFilterFactory;
+//!
+//! impl ExtensionFactory for MyNetworkFilterFactory {
+//!     type Extension = MyNetworkFilter;
+//!
+//!     const NAME: &'static str = "my_network_filter";
+//!
+//!     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
+//!         Ok(MyNetworkFilter)
+//!     }
+//! }
+//! ```
+//!
+//! Basic registration of `MyNetworkFilter` on start up:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! # use envoy::extension::NetworkFilter;
+//! #
+//! # /// My very own `NetworkFilter`.
+//! # struct MyNetworkFilter;
+//! # impl NetworkFilter for MyNetworkFilter {}
+//! #
+//! # use envoy::extension::{ExtensionFactory, InstanceId, self};
+//! #
+//! # /// `Factory` object for `MyNetworkFilter`.
+//! # struct MyNetworkFilterFactory;
+//! #
+//! # impl ExtensionFactory for MyNetworkFilterFactory {
+//! #     type Extension = MyNetworkFilter;
+//! #
+//! #     const NAME: &'static str = "my_network_filter";
+//! #
+//! #     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
+//! #         Ok(MyNetworkFilter)
+//! #     }
+//! # }
+//! use envoy::extension::{entrypoint, Module, Result};
+//!
+//! entrypoint! { initialize } // put initialization logic into a function to make it unit testable
+//!
+//! fn initialize() -> Result<Module> {
+//!     Module::new()
+//!         .add_network_filter(|_instance_id| Ok(MyNetworkFilterFactory))
+//! }
+//! ```
 
 use crate::abi::proxy_wasm::types::{Action, Bytes, PeerType};
 use crate::extension::Result;

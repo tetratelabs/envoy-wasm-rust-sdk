@@ -12,7 +12,82 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` `HTTP Filter API`.
+//! `Envoy` `HTTP Filter` extension.
+//!
+//! # Examples
+//!
+//! Basic `HTTP Filter`:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! use envoy::extension::HttpFilter;
+//!
+//! /// My very own `HttpFilter`.
+//! struct MyHttpFilter;
+//!
+//! impl HttpFilter for MyHttpFilter {}
+//! ```
+//!
+//! Basic `Factory` object for `MyHttpFilter` instances:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! # use envoy::extension::HttpFilter;
+//! #
+//! # /// My very own `HttpFilter`.
+//! # struct MyHttpFilter;
+//! #
+//! # impl HttpFilter for MyHttpFilter {}
+//! #
+//! use envoy::extension::{ExtensionFactory, InstanceId, Result};
+//!
+//! /// `Factory` object for `MyHttpFilter`.
+//! struct MyHttpFilterFactory;
+//!
+//! impl ExtensionFactory for MyHttpFilterFactory {
+//!     type Extension = MyHttpFilter;
+//!
+//!     const NAME: &'static str = "my_http_filter";
+//!
+//!     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
+//!         Ok(MyHttpFilter)
+//!     }
+//! }
+//! ```
+//!
+//! Basic registration of `MyHttpFilter` on start up:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! # use envoy::extension::HttpFilter;
+//! #
+//! # /// My very own `HttpFilter`.
+//! # struct MyHttpFilter;
+//! # impl HttpFilter for MyHttpFilter {}
+//! #
+//! # use envoy::extension::{ExtensionFactory, InstanceId, self};
+//! #
+//! # /// `Factory` object for `MyHttpFilter`.
+//! # struct MyHttpFilterFactory;
+//! # impl ExtensionFactory for MyHttpFilterFactory {
+//! #     type Extension = MyHttpFilter;
+//! #
+//! #     const NAME: &'static str = "my_http_filter";
+//! #
+//! #     fn new_extension(&mut self, _instance_id: InstanceId) -> extension::Result<Self::Extension> {
+//! #         Ok(MyHttpFilter)
+//! #     }
+//! # }
+//! #
+//! use envoy::extension::{entrypoint, Module, Result};
+//!
+//! entrypoint! { initialize } // put initialization logic into a function to make it unit testable
+//!
+//! fn initialize() -> Result<Module> {
+//!     Module::new()
+//!         .add_http_filter(|_instance_id| Ok(MyHttpFilterFactory))
+//! }
+//! ```
 
 use crate::abi::proxy_wasm::types::{Action, Bytes};
 use crate::extension::Result;
