@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{Logger, Ops};
+use super::{AccessLogger, Ops};
 use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::ConfigStatus;
 use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) struct LoggerContext<'a, L>
+pub(crate) struct AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     logger: L,
     logger_ops: &'a dyn Ops,
@@ -28,9 +28,9 @@ where
     error_sink: &'a dyn ErrorSink,
 }
 
-impl<'a, L> RootContext for LoggerContext<'a, L>
+impl<'a, L> RootContext for AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
         match self.logger.on_configure(
@@ -55,9 +55,9 @@ where
     }
 }
 
-impl<'a, L> Context for LoggerContext<'a, L>
+impl<'a, L> Context for AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     // Http Client callbacks
 
@@ -85,9 +85,9 @@ where
     }
 }
 
-impl<'a, L> LoggerContext<'a, L>
+impl<'a, L> AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     pub fn new(
         logger: L,
@@ -95,7 +95,7 @@ where
         http_client_ops: &'a dyn HttpClientResponseOps,
         error_sink: &'a dyn ErrorSink,
     ) -> Self {
-        LoggerContext {
+        AccessLoggerContext {
             logger,
             logger_ops,
             http_client_ops,

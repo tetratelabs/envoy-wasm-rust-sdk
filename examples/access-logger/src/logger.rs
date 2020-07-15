@@ -17,7 +17,7 @@ use std::time::Duration;
 
 use envoy::host::log::info;
 
-use envoy::extension::access_logger;
+use envoy::extension::{AccessLogger, AccessLoggerConfigureOps, AccessLoggerLogOps};
 use envoy::extension::{ConfigStatus, Result};
 use envoy::host::{Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats};
 
@@ -68,7 +68,7 @@ impl<'a> SampleAccessLogger<'a> {
     }
 }
 
-impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
+impl<'a> AccessLogger for SampleAccessLogger<'a> {
     /// The reference name for Sample Access Logger.
     ///
     /// This name appears in `Envoy` configuration as a value of `root_id` field
@@ -81,7 +81,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
     fn on_configure(
         &mut self,
         _configuration_size: usize,
-        logger_ops: &dyn access_logger::ConfigureOps,
+        logger_ops: &dyn AccessLoggerConfigureOps,
     ) -> Result<ConfigStatus> {
         self.config = match logger_ops.get_configuration()? {
             Some(bytes) => SampleAccessLoggerConfig::try_from(bytes.as_slice())?,
@@ -94,7 +94,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
     ///
     /// Use logger_ops to get ahold of request/response headers,
     /// TCP connection properties, etc.
-    fn on_log(&mut self, logger_ops: &dyn access_logger::LogOps) -> Result<()> {
+    fn on_log(&mut self, logger_ops: &dyn AccessLoggerLogOps) -> Result<()> {
         // Update stats
         self.stats.requests_total().inc()?;
 

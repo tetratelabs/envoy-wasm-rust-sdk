@@ -16,6 +16,7 @@
 
 use std::fmt;
 
+pub use self::access_logger::{AccessLogger, AccessLoggerConfigureOps, AccessLoggerLogOps};
 pub use self::error::{Error, Result};
 pub use self::factory::{
     ConfigStatus, DrainStatus, ExtensionFactory, ExtensionFactoryConfigureOps,

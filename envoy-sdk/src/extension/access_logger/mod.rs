@@ -20,12 +20,15 @@ use crate::extension::{ConfigStatus, Result};
 use crate::host;
 use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) use self::context::LoggerContext;
+pub(crate) use self::context::AccessLoggerContext;
+
+pub use ConfigureOps as AccessLoggerConfigureOps;
+pub use LogOps as AccessLoggerLogOps;
 
 mod context;
 mod ops;
 
-pub trait Logger {
+pub trait AccessLogger {
     const NAME: &'static str;
 
     fn on_configure(
