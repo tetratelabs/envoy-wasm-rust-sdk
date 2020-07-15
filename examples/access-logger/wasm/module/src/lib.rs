@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy::extension::{on_module_load, Module, Result};
+use envoy::extension::{entrypoint, Module, Result};
 
 use access_logger::SampleAccessLogger;
 
 // Generate the `_start` function that will be called by `Envoy` to let
 // WebAssembly module initialize itself.
-on_module_load! { initialize }
+entrypoint! { initialize }
 
 /// Does one-time initialization.
 ///

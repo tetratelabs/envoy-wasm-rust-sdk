@@ -22,7 +22,7 @@ pub use self::factory::{ConfigStatus, DrainStatus, ExtensionFactory};
 pub use self::filter::http::HttpFilter;
 pub use self::filter::network::NetworkFilter;
 pub use self::module::{install, Module};
-pub use crate::on_module_load;
+pub use crate::entrypoint;
 
 mod module;
 
