@@ -1,6 +1,6 @@
 [package]
 name = "envoy-sdk"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
 description = "Rust SDK for WebAssembly-based Envoy extensions"
 license = "Apache-2.0"
