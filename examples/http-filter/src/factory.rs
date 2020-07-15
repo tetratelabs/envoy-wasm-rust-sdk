@@ -79,7 +79,7 @@ impl<'a> ExtensionFactory for SampleHttpFilterFactory<'a> {
         _configuration_size: usize,
         ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
-        let config = match ops.get_configuration()? {
+        let config = match ops.configuration()? {
             Some(bytes) => SampleHttpFilterConfig::try_from(bytes.as_slice())?,
             None => SampleHttpFilterConfig::default(),
         };

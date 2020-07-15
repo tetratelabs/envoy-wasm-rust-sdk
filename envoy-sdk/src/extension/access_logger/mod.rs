@@ -55,23 +55,23 @@ pub trait AccessLogger {
 }
 
 pub trait ConfigureOps {
-    fn get_configuration(&self) -> host::Result<Option<Bytes>>;
+    fn configuration(&self) -> host::Result<Option<Bytes>>;
 }
 
 pub trait LogOps {
-    fn get_request_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn request_headers(&self) -> host::Result<Vec<(String, String)>>;
 
-    fn get_request_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn request_header(&self, name: &str) -> host::Result<Option<String>>;
 
-    fn get_response_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_headers(&self) -> host::Result<Vec<(String, String)>>;
 
-    fn get_response_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_header(&self, name: &str) -> host::Result<Option<String>>;
 
-    fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 
-    fn get_response_trailer(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_trailer(&self, name: &str) -> host::Result<Option<String>>;
 
-    fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
+    fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
 }
 
 pub trait Ops: ConfigureOps + LogOps {

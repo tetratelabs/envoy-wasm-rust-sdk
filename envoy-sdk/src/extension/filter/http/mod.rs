@@ -115,11 +115,11 @@ pub trait HttpFilter {
 }
 
 pub trait RequestHeadersOps: RequestFlowOps {
-    fn get_request_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn request_headers(&self) -> host::Result<Vec<(String, String)>>;
 
     fn set_request_headers(&self, headers: Vec<(&str, &str)>) -> host::Result<()>;
 
-    fn get_request_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn request_header(&self, name: &str) -> host::Result<Option<String>>;
 
     fn set_request_header(&self, name: &str, value: Option<&str>) -> host::Result<()>;
 
@@ -127,15 +127,15 @@ pub trait RequestHeadersOps: RequestFlowOps {
 }
 
 pub trait RequestBodyOps: RequestFlowOps {
-    fn get_request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
 pub trait RequestTrailersOps: RequestFlowOps {
-    fn get_request_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn request_trailers(&self) -> host::Result<Vec<(String, String)>>;
 
     fn set_request_trailers(&self, trailers: Vec<(&str, &str)>) -> host::Result<()>;
 
-    fn get_request_trailer(&self, name: &str) -> host::Result<Option<String>>;
+    fn request_trailer(&self, name: &str) -> host::Result<Option<String>>;
 
     fn set_request_trailer(&self, name: &str, value: Option<&str>) -> host::Result<()>;
 
@@ -156,11 +156,11 @@ pub trait RequestFlowOps {
 }
 
 pub trait ResponseHeadersOps: ResponseFlowOps {
-    fn get_response_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_headers(&self) -> host::Result<Vec<(String, String)>>;
 
     fn set_response_headers(&self, headers: Vec<(&str, &str)>) -> host::Result<()>;
 
-    fn get_response_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_header(&self, name: &str) -> host::Result<Option<String>>;
 
     fn set_response_header(&self, name: &str, value: Option<&str>) -> host::Result<()>;
 
@@ -168,15 +168,15 @@ pub trait ResponseHeadersOps: ResponseFlowOps {
 }
 
 pub trait ResponseBodyOps: ResponseFlowOps {
-    fn get_response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
 pub trait ResponseTrailersOps: ResponseFlowOps {
-    fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 
     fn set_response_trailers(&self, headers: Vec<(&str, &str)>) -> host::Result<()>;
 
-    fn get_response_trailer(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_trailer(&self, name: &str) -> host::Result<Option<String>>;
 
     fn set_response_trailer(&self, name: &str, value: Option<&str>) -> host::Result<()>;
 

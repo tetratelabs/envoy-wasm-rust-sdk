@@ -87,11 +87,11 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
         );
 
         log::info!("#{} observing request headers", self.instance_id);
-        for (name, value) in &filter_ops.get_request_headers()? {
+        for (name, value) in &filter_ops.request_headers()? {
             log::info!("#{} -> {}: {}", self.instance_id, name, value);
         }
 
-        match filter_ops.get_request_header(":path")? {
+        match filter_ops.request_header(":path")? {
             Some(path) if path == "/ping" => {
                 filter_ops.send_response(
                     200,
@@ -135,7 +135,7 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
         filter_ops: &dyn http::ResponseHeadersOps,
     ) -> Result<http::FilterHeadersStatus> {
         log::info!("#{} observing response headers", self.instance_id);
-        for (name, value) in &filter_ops.get_response_headers()? {
+        for (name, value) in &filter_ops.response_headers()? {
             log::info!("#{} <- {}: {}", self.instance_id, name, value);
         }
         Ok(http::FilterHeadersStatus::Continue)
@@ -192,7 +192,7 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
         self.active_request = None;
 
         log::info!("     headers[count={}]:", num_headers);
-        let response_headers = http_client_ops.get_http_call_response_headers()?;
+        let response_headers = http_client_ops.http_call_response_headers()?;
         for (name, value) in &response_headers {
             log::info!("       {}: {}", name, value);
         }
