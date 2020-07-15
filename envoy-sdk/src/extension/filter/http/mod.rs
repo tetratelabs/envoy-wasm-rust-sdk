@@ -19,16 +19,32 @@ use crate::extension::Result;
 use crate::host;
 use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) use self::context::{FilterContext, VoidFilterContext};
+pub(crate) use self::context::{HttpFilterContext, VoidHttpFilterContext};
 
 mod context;
 mod ops;
 
-pub type FilterHeadersStatus = Action;
-pub type FilterDataStatus = Action;
-pub type FilterTrailersStatus = Action;
+#[repr(u32)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[non_exhaustive]
+pub enum FilterHeadersStatus {
+    Continue = 0,
+    StopIteration = 1,
+}
 
-pub trait Filter {
+impl FilterHeadersStatus {
+    pub(self) fn as_action(&self) -> Action {
+        match self {
+            FilterHeadersStatus::Continue => Action::Continue,
+            FilterHeadersStatus::StopIteration => Action::Pause,
+        }
+    }
+}
+
+pub type FilterDataStatus = FilterHeadersStatus;
+pub type FilterTrailersStatus = FilterHeadersStatus;
+
+pub trait HttpFilter {
     fn on_request_headers(
         &mut self,
         _num_headers: usize,

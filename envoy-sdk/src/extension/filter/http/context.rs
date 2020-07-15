@@ -15,14 +15,14 @@
 use crate::abi::proxy_wasm::traits::{Context, HttpContext};
 use crate::abi::proxy_wasm::types::Action;
 
-use super::{Filter, Ops};
+use super::{FilterDataStatus, FilterHeadersStatus, FilterTrailersStatus, HttpFilter, Ops};
 use crate::extension::error::ErrorSink;
 use crate::extension::Error;
 use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) struct FilterContext<'a, F>
+pub(crate) struct HttpFilterContext<'a, F>
 where
-    F: Filter,
+    F: HttpFilter,
 {
     filter: F,
     filter_ops: &'a dyn Ops,
@@ -30,21 +30,21 @@ where
     error_sink: &'a dyn ErrorSink,
 }
 
-impl<'a, F> HttpContext for FilterContext<'a, F>
+impl<'a, F> HttpContext for HttpFilterContext<'a, F>
 where
-    F: Filter,
+    F: HttpFilter,
 {
     fn on_http_request_headers(&mut self, num_headers: usize) -> Action {
         match self
             .filter
             .on_request_headers(num_headers, self.filter_ops.as_request_headers_ops())
         {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle HTTP request headers", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterHeadersStatus::StopIteration.as_action()
             }
         }
     }
@@ -55,12 +55,12 @@ where
             end_of_stream,
             self.filter_ops.as_request_body_ops(),
         ) {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle HTTP request body", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterDataStatus::StopIteration.as_action()
             }
         }
     }
@@ -70,12 +70,12 @@ where
             .filter
             .on_request_trailers(num_trailers, self.filter_ops.as_request_trailers_ops())
         {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle HTTP request trailers", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterTrailersStatus::StopIteration.as_action()
             }
         }
     }
@@ -85,12 +85,12 @@ where
             .filter
             .on_response_headers(num_headers, self.filter_ops.as_response_headers_ops())
         {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle HTTP response headers", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterHeadersStatus::StopIteration.as_action()
             }
         }
     }
@@ -101,12 +101,12 @@ where
             end_of_stream,
             self.filter_ops.as_response_body_ops(),
         ) {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle HTTP response body", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterDataStatus::StopIteration.as_action()
             }
         }
     }
@@ -116,12 +116,12 @@ where
             .filter
             .on_response_trailers(num_trailers, self.filter_ops.as_response_trailers_ops())
         {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle HTTP response trailers", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterTrailersStatus::StopIteration.as_action()
             }
         }
     }
@@ -135,9 +135,9 @@ where
     }
 }
 
-impl<'a, F> Context for FilterContext<'a, F>
+impl<'a, F> Context for HttpFilterContext<'a, F>
 where
-    F: Filter,
+    F: HttpFilter,
 {
     // Http Client callbacks
 
@@ -165,9 +165,9 @@ where
     }
 }
 
-impl<'a, F> FilterContext<'a, F>
+impl<'a, F> HttpFilterContext<'a, F>
 where
-    F: Filter,
+    F: HttpFilter,
 {
     pub fn new(
         filter: F,
@@ -175,7 +175,7 @@ where
         http_client_ops: &'a dyn HttpClientResponseOps,
         error_sink: &'a dyn ErrorSink,
     ) -> Self {
-        FilterContext {
+        HttpFilterContext {
             filter,
             filter_ops,
             http_client_ops,
@@ -218,15 +218,15 @@ where
 /// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
 /// [`proxy_on_http_request_headers`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_http_request_headers
 /// [`proxy_send_http_response`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_send_http_response
-pub(crate) struct VoidFilterContext<'a> {
+pub(crate) struct VoidHttpFilterContext<'a> {
     err: Error,
     filter_ops: &'a dyn Ops,
     error_sink: &'a dyn ErrorSink,
 }
 
-impl<'a> VoidFilterContext<'a> {
+impl<'a> VoidHttpFilterContext<'a> {
     pub fn new(err: Error, filter_ops: &'a dyn Ops, error_sink: &'a dyn ErrorSink) -> Self {
-        VoidFilterContext {
+        VoidHttpFilterContext {
             err,
             filter_ops,
             error_sink,
@@ -239,7 +239,7 @@ impl<'a> VoidFilterContext<'a> {
     }
 }
 
-impl<'a> HttpContext for VoidFilterContext<'a> {
+impl<'a> HttpContext for VoidHttpFilterContext<'a> {
     fn on_http_request_headers(&mut self, _num_headers: usize) -> Action {
         self.error_sink
             .observe("failed to create Proxy Wasm Http Context", &self.err);
@@ -249,8 +249,8 @@ impl<'a> HttpContext for VoidFilterContext<'a> {
                 &err,
             );
         }
-        Action::Pause
+        FilterHeadersStatus::StopIteration.as_action()
     }
 }
 
-impl<'a> Context for VoidFilterContext<'a> {}
+impl<'a> Context for VoidHttpFilterContext<'a> {}

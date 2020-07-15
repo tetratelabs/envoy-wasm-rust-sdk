@@ -16,11 +16,11 @@ use super::{ContextFactory, ContextFactoryHashMap};
 
 use crate::abi::proxy_wasm::traits::{ChildContext, HttpContext, RootContext, StreamContext};
 use crate::extension::access_logger::{AccessLogger, AccessLoggerContext};
+use crate::extension::error::ModuleError;
+use crate::extension::factory::{ExtensionFactory, ExtensionFactoryContext};
+use crate::extension::filter::http::{HttpFilter, HttpFilterContext, VoidHttpFilterContext};
 use crate::extension::filter::network::{
     NetworkFilter, NetworkFilterContext, VoidNetworkFilterContext,
-};
-use crate::extension::{
-    error::ModuleError, factory::ExtensionFactoryContext, filter::http, ExtensionFactory,
 };
 use crate::extension::{InstanceId, Result};
 
@@ -98,7 +98,7 @@ impl Registry {
     pub fn add_http_filter<T, F>(self, mut new: F) -> Result<Self>
     where
         T: ExtensionFactory + 'static,
-        T::Extension: http::Filter,
+        T::Extension: HttpFilter,
         F: FnMut(InstanceId) -> Result<T> + 'static,
     {
         let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
@@ -114,9 +114,9 @@ impl Registry {
                             instance_id,
                         ) {
                             Ok(http_filter) => {
-                                Box::new(http::FilterContext::with_default_ops(http_filter))
+                                Box::new(HttpFilterContext::with_default_ops(http_filter))
                             }
-                            Err(err) => Box::new(http::VoidFilterContext::with_default_ops(err)),
+                            Err(err) => Box::new(VoidHttpFilterContext::with_default_ops(err)),
                         };
                     // Bridge between HTTP Filter abstraction and Proxy Wasm ABI
                     ChildContext::HttpContext(http_context)

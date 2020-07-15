@@ -24,10 +24,10 @@ use crate::extension::{Registry, Result};
 ///
 /// ```
 /// # use envoy_sdk as envoy;
-/// # use envoy::extension::{AccessLogger, NetworkFilter, filter::http, InstanceId, Result, ExtensionFactory};
+/// # use envoy::extension::{AccessLogger, NetworkFilter, HttpFilter, InstanceId, Result, ExtensionFactory};
 /// #
 /// # struct MyHttpFilter;
-/// # impl http::Filter for MyHttpFilter {}
+/// # impl HttpFilter for MyHttpFilter {}
 /// #
 /// # struct MyHttpFilterFactory;
 /// # impl MyHttpFilterFactory {
