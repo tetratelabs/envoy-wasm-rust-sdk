@@ -22,9 +22,6 @@ use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) use self::context::AccessLoggerContext;
 
-pub use ConfigureOps as AccessLoggerConfigureOps;
-pub use LogOps as AccessLoggerLogOps;
-
 mod context;
 mod ops;
 

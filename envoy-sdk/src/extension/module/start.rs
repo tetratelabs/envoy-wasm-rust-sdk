@@ -24,7 +24,7 @@ use crate::extension::{Registry, Result};
 ///
 /// ```
 /// # use envoy_sdk as envoy;
-/// # use envoy::extension::{AccessLogger, filter::network, filter::http, InstanceId, Result, ExtensionFactory};
+/// # use envoy::extension::{AccessLogger, NetworkFilter, filter::http, InstanceId, Result, ExtensionFactory};
 /// #
 /// # struct MyHttpFilter;
 /// # impl http::Filter for MyHttpFilter {}
@@ -44,7 +44,7 @@ use crate::extension::{Registry, Result};
 /// # }
 /// #
 /// # struct MyNetworkFilter;
-/// # impl network::Filter for MyNetworkFilter {}
+/// # impl NetworkFilter for MyNetworkFilter {}
 /// #
 /// # struct MyNetworkFilterFactory;
 /// # impl MyNetworkFilterFactory {

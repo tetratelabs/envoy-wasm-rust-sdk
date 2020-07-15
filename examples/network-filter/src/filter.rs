@@ -15,8 +15,7 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::extension::filter::network;
-use envoy::extension::{InstanceId, Result};
+use envoy::extension::{filter::network, InstanceId, NetworkFilter, NetworkFilterStatus, Result};
 use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
 
 use chrono::offset::Local;
@@ -65,9 +64,9 @@ impl<'a> SampleNetworkFilter<'a> {
     }
 }
 
-impl<'a> network::Filter for SampleNetworkFilter<'a> {
+impl<'a> NetworkFilter for SampleNetworkFilter<'a> {
     /// Is called when a new TCP connection is opened.
-    fn on_new_connection(&mut self) -> Result<network::FilterStatus> {
+    fn on_new_connection(&mut self) -> Result<NetworkFilterStatus> {
         // Update stats
         self.stats.requests_active().inc()?;
 
@@ -95,7 +94,7 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
             log::info!("#{} sent outgoing request: @{}", self.instance_id, request);
         }
 
-        Ok(network::FilterStatus::Pause)
+        Ok(NetworkFilterStatus::StopIteration)
     }
 
     /// Is called on response body part.
@@ -104,10 +103,10 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
         data_size: usize,
         _end_of_stream: bool,
         _ops: &dyn network::UpstreamDataOps,
-    ) -> Result<network::FilterStatus> {
+    ) -> Result<NetworkFilterStatus> {
         self.response_body_size += data_size as u64;
 
-        Ok(network::FilterStatus::Continue)
+        Ok(NetworkFilterStatus::Continue)
     }
 
     /// Is called when the TCP connection is complete.

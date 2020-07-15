@@ -19,14 +19,31 @@ use crate::extension::Result;
 use crate::host;
 use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) use self::context::{FilterContext, VoidFilterContext};
+pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
+
+pub use FilterStatus as NetworkFilterStatus;
 
 mod context;
 mod ops;
 
-pub type FilterStatus = Action;
+#[repr(u32)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[non_exhaustive]
+pub enum FilterStatus {
+    Continue = 0,
+    StopIteration = 1,
+}
 
-pub trait Filter {
+impl FilterStatus {
+    pub(self) fn as_action(&self) -> Action {
+        match self {
+            FilterStatus::Continue => Action::Continue,
+            FilterStatus::StopIteration => Action::Pause,
+        }
+    }
+}
+
+pub trait NetworkFilter {
     fn on_new_connection(&mut self) -> Result<FilterStatus> {
         Ok(FilterStatus::Continue)
     }

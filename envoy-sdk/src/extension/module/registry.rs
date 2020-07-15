@@ -16,9 +16,11 @@ use super::{ContextFactory, ContextFactoryHashMap};
 
 use crate::abi::proxy_wasm::traits::{ChildContext, HttpContext, RootContext, StreamContext};
 use crate::extension::access_logger::{AccessLogger, AccessLoggerContext};
+use crate::extension::filter::network::{
+    NetworkFilter, NetworkFilterContext, VoidNetworkFilterContext,
+};
 use crate::extension::{
-    error::ModuleError, factory::ExtensionFactoryContext, filter::http, filter::network,
-    ExtensionFactory,
+    error::ModuleError, factory::ExtensionFactoryContext, filter::http, ExtensionFactory,
 };
 use crate::extension::{InstanceId, Result};
 
@@ -65,7 +67,7 @@ impl Registry {
     pub fn add_network_filter<T, F>(self, mut new: F) -> Result<Self>
     where
         T: ExtensionFactory + 'static,
-        T::Extension: network::Filter,
+        T::Extension: NetworkFilter,
         F: FnMut(InstanceId) -> Result<T> + 'static,
     {
         let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
@@ -81,9 +83,9 @@ impl Registry {
                             instance_id,
                         ) {
                             Ok(network_filter) => {
-                                Box::new(network::FilterContext::with_default_ops(network_filter))
+                                Box::new(NetworkFilterContext::with_default_ops(network_filter))
                             }
-                            Err(err) => Box::new(network::VoidFilterContext::with_default_ops(err)),
+                            Err(err) => Box::new(VoidNetworkFilterContext::with_default_ops(err)),
                         };
                     // Bridge between Network Filter abstraction and Proxy Wasm ABI
                     ChildContext::StreamContext(stream_context)

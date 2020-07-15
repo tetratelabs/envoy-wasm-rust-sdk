@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{Filter, Ops};
+use super::{FilterStatus, NetworkFilter, Ops};
 use crate::abi::proxy_wasm::traits::{Context, StreamContext};
 use crate::abi::proxy_wasm::types::{Action, PeerType};
 use crate::extension::error::ErrorSink;
 use crate::extension::Error;
 use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) struct FilterContext<'a, F>
+pub(crate) struct NetworkFilterContext<'a, F>
 where
-    F: Filter,
+    F: NetworkFilter,
 {
     filter: F,
     logger_ops: &'a dyn Ops,
@@ -29,18 +29,18 @@ where
     error_sink: &'a dyn ErrorSink,
 }
 
-impl<'a, F> StreamContext for FilterContext<'a, F>
+impl<'a, F> StreamContext for NetworkFilterContext<'a, F>
 where
-    F: Filter,
+    F: NetworkFilter,
 {
     fn on_new_connection(&mut self) -> Action {
         match self.filter.on_new_connection() {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle connection opening", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterStatus::StopIteration.as_action()
             }
         }
     }
@@ -51,12 +51,12 @@ where
             end_of_stream,
             self.logger_ops.as_downstream_data_ops(),
         ) {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle data from the downstream", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterStatus::StopIteration.as_action()
             }
         }
     }
@@ -76,12 +76,12 @@ where
             end_of_stream,
             self.logger_ops.as_upstream_data_ops(),
         ) {
-            Ok(action) => action,
+            Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
                     .observe("failed to handle data from the upstream", &err);
                 self.handle_error(err);
-                Action::Pause
+                FilterStatus::StopIteration.as_action()
             }
         }
     }
@@ -104,9 +104,9 @@ where
     }
 }
 
-impl<'a, F> Context for FilterContext<'a, F>
+impl<'a, F> Context for NetworkFilterContext<'a, F>
 where
-    F: Filter,
+    F: NetworkFilter,
 {
     // Http Client callbacks
 
@@ -134,9 +134,9 @@ where
     }
 }
 
-impl<'a, F> FilterContext<'a, F>
+impl<'a, F> NetworkFilterContext<'a, F>
 where
-    F: Filter,
+    F: NetworkFilter,
 {
     pub fn new(
         filter: F,
@@ -144,7 +144,7 @@ where
         http_client_ops: &'a dyn HttpClientResponseOps,
         error_sink: &'a dyn ErrorSink,
     ) -> Self {
-        FilterContext {
+        NetworkFilterContext {
             filter,
             logger_ops,
             http_client_ops,
@@ -183,15 +183,15 @@ where
 /// [`proxy_on_context_create`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_context_create
 /// [`proxy_on_new_connection`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_on_new_connection
 /// [`not yet supported ABI`]: https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
-pub(crate) struct VoidFilterContext<'a> {
+pub(crate) struct VoidNetworkFilterContext<'a> {
     err: Error,
     _filter_ops: &'a dyn Ops,
     error_sink: &'a dyn ErrorSink,
 }
 
-impl<'a> VoidFilterContext<'a> {
+impl<'a> VoidNetworkFilterContext<'a> {
     pub fn new(err: Error, _filter_ops: &'a dyn Ops, error_sink: &'a dyn ErrorSink) -> Self {
-        VoidFilterContext {
+        VoidNetworkFilterContext {
             err,
             _filter_ops,
             error_sink,
@@ -204,14 +204,14 @@ impl<'a> VoidFilterContext<'a> {
     }
 }
 
-impl<'a> StreamContext for VoidFilterContext<'a> {
+impl<'a> StreamContext for VoidNetworkFilterContext<'a> {
     fn on_new_connection(&mut self) -> Action {
         self.error_sink
             .observe("failed to create Proxy Wasm Stream Context", &self.err);
         // TODO(yskopets): Proxy Wasm should provide ABI for closing the downstream connection
         // https://github.com/tetratelabs/envoy-wasm-rust-sdk/issues/29
-        Action::Pause
+        FilterStatus::StopIteration.as_action()
     }
 }
 
-impl<'a> Context for VoidFilterContext<'a> {}
+impl<'a> Context for VoidNetworkFilterContext<'a> {}

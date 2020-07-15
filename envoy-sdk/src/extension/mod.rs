@@ -16,12 +16,13 @@
 
 use std::fmt;
 
-pub use self::access_logger::{AccessLogger, AccessLoggerConfigureOps, AccessLoggerLogOps};
+pub use self::access_logger::AccessLogger;
 pub use self::error::{Error, ErrorContext, Result};
 pub use self::factory::{
     ConfigStatus, DrainStatus, ExtensionFactory, ExtensionFactoryConfigureOps,
     ExtensionFactoryDrainOps,
 };
+pub use self::filter::network::{NetworkFilter, NetworkFilterStatus};
 pub use self::module::{install, registry::Registry};
 
 mod module;
