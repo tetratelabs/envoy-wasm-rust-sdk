@@ -22,6 +22,7 @@ pub use self::factory::{
     ConfigStatus, DrainStatus, ExtensionFactory, ExtensionFactoryConfigureOps,
     ExtensionFactoryDrainOps,
 };
+pub use self::filter::http::HttpFilter;
 pub use self::filter::network::{NetworkFilter, NetworkFilterStatus};
 pub use self::module::{install, registry::Registry};
 

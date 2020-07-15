@@ -18,7 +18,7 @@ use std::time::Duration;
 use envoy::host::log::info;
 
 use envoy::extension::filter::http;
-use envoy::extension::{InstanceId, Result};
+use envoy::extension::{HttpFilter, InstanceId, Result};
 use envoy::host::{Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
 
 use chrono::offset::Local;
@@ -67,7 +67,7 @@ impl<'a> SampleHttpFilter<'a> {
     }
 }
 
-impl<'a> http::Filter for SampleHttpFilter<'a> {
+impl<'a> HttpFilter for SampleHttpFilter<'a> {
     /// Is called when HTTP request headers have been received.
     ///
     /// Use filter_ops to access and mutate request headers.
@@ -100,7 +100,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                     vec![("x-sample-response", "pong")],
                     Some(b"Pong!\n"),
                 )?;
-                Ok(http::FilterHeadersStatus::Pause)
+                Ok(http::FilterHeadersStatus::StopIteration)
             }
             Some(path) if path == "/secret" => {
                 self.active_request = Some(self.http_client.send_request(
@@ -121,7 +121,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                     );
                 }
                 info!("#{} suspending http exchange processing", self.instance_id);
-                Ok(http::FilterHeadersStatus::Pause)
+                Ok(http::FilterHeadersStatus::StopIteration)
             }
             _ => Ok(http::FilterHeadersStatus::Continue),
         }
