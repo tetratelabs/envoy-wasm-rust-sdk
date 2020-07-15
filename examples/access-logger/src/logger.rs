@@ -18,7 +18,8 @@ use std::time::Duration;
 use envoy::host::log::info;
 
 use envoy::extension::{access_logger, AccessLogger, ConfigStatus, Result};
-use envoy::host::{Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats};
+use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
+use envoy::host::{Clock, HttpClient, Stats};
 
 use chrono::offset::Local;
 use chrono::DateTime;

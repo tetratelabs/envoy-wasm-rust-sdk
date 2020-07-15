@@ -19,7 +19,8 @@ use envoy::host::log::info;
 
 use envoy::extension::filter::http;
 use envoy::extension::{HttpFilter, InstanceId, Result};
-use envoy::host::{Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
+use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
+use envoy::host::{Clock, HttpClient};
 
 use chrono::offset::Local;
 use chrono::DateTime;

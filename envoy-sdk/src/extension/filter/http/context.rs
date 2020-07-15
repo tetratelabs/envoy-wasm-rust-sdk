@@ -18,7 +18,7 @@ use crate::abi::proxy_wasm::types::Action;
 use super::{FilterDataStatus, FilterHeadersStatus, FilterTrailersStatus, HttpFilter, Ops};
 use crate::extension::error::ErrorSink;
 use crate::extension::Error;
-use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
+use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) struct HttpFilterContext<'a, F>
 where
