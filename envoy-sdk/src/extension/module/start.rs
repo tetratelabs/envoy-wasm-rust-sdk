@@ -68,9 +68,9 @@ use crate::extension::{Module, Result};
 /// #     fn default() -> extension::Result<Self> { Ok(MyAccessLogger) }
 /// # }
 /// #
-/// use envoy::extension::{on_module_load, Module, Result};
+/// use envoy::extension::{entrypoint, Module, Result};
 ///
-/// on_module_load! { initialize } // put initialization logic into a function to make it unit testable
+/// entrypoint! { initialize } // put initialization logic into a function to make it unit testable
 ///
 /// /// Does one-time initialization.
 /// ///
@@ -85,7 +85,7 @@ use crate::extension::{Module, Result};
 /// }
 /// ```
 #[macro_export]
-macro_rules! on_module_load {
+macro_rules! entrypoint {
     // Apparently, Rust toolchain doesn't handle well exported name `_start`
     // when a package is compiled to targets other than `wasm32-unknown-unknown`.
     // Specifically, linking issues have been observed with targets `wasm32-wasi`
