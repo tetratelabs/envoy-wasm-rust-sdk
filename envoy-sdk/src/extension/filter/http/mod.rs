@@ -24,11 +24,28 @@ pub(crate) use self::context::{HttpFilterContext, VoidHttpFilterContext};
 mod context;
 mod ops;
 
+/// Return codes for [`on_request_headers`] and [`on_response_headers`] filter
+/// invocations.
+///
+/// `Envoy` bases further filter invocations on the return code of the
+/// previous filter.
+///
+/// [`on_request_headers`]: trait.HttpFilter.html#method.on_request_headers
+/// [`on_response_headers`]: trait.HttpFilter.html#method.on_response_headers
 #[repr(u32)]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 #[non_exhaustive]
 pub enum FilterHeadersStatus {
+    /// Continue filter chain iteration.
     Continue = 0,
+    /// Do not iterate to any of the remaining filters in the chain.
+    ///
+    /// To resume filter iteration at a later point, e.g. after the external
+    /// authorization request has completed, call [`resume_request`] or
+    /// [`resume_response`] respectively.
+    ///
+    /// [`resume_request`]: trait.RequestFlowOps.html#tymethod.resume_request
+    /// [`resume_response`]: trait.ResponseFlowOps.html#tymethod.resume_response
     StopIteration = 1,
 }
 
@@ -41,9 +58,101 @@ impl FilterHeadersStatus {
     }
 }
 
-pub type FilterDataStatus = FilterHeadersStatus;
-pub type FilterTrailersStatus = FilterHeadersStatus;
+/// Return codes for [`on_request_body`] and [`on_response_body`] filter
+/// invocations.
+///
+/// `Envoy` bases further filter invocations on the return code of the
+/// previous filter.
+///
+/// [`on_request_body`]: trait.HttpFilter.html#method.on_request_body
+/// [`on_response_body`]: trait.HttpFilter.html#method.on_response_body
+#[repr(u32)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[non_exhaustive]
+pub enum FilterDataStatus {
+    /// Continue filter chain iteration.
+    ///
+    /// If headers have not yet been sent to the next filter, they
+    /// will be sent first. If data has previously been buffered,
+    /// the data in this callback will be added to the buffer
+    /// before the entirety is sent to the next filter.
+    Continue = 0,
+    /// Do not iterate to any of the remaining filters in the chain, and buffer body data for later
+    /// dispatching.
+    ///
+    /// To resume filter iteration at a later point, e.g. after enough data has been buffered
+    /// to make a decision, call [`resume_request`] or [`resume_response`] respectively.
+    ///
+    /// This should be called by filters which must parse a larger block of the incoming data before
+    /// continuing processing and so can not push back on streaming data via watermarks.
+    ///
+    /// If buffering the request causes buffered data to exceed the configured buffer limit, a 413 will
+    /// be sent to the user. On the response path exceeding buffer limits will result in a 500.
+    ///
+    /// [`resume_request`]: trait.RequestFlowOps.html#tymethod.resume_request
+    /// [`resume_response`]: trait.ResponseFlowOps.html#tymethod.resume_response
+    StopIterationAndBuffer = 1,
+}
 
+impl FilterDataStatus {
+    pub(self) fn as_action(&self) -> Action {
+        match self {
+            FilterDataStatus::Continue => Action::Continue,
+            FilterDataStatus::StopIterationAndBuffer => Action::Pause,
+        }
+    }
+}
+
+/// Return codes for [`on_request_trailers`] and [`on_response_trailers`] filter
+/// invocations.
+///
+/// `Envoy` bases further filter invocations on the return code of the
+/// previous filter.
+///
+/// [`on_request_trailers`]: trait.HttpFilter.html#method.on_request_trailers
+/// [`on_response_trailers`]: trait.HttpFilter.html#method.on_response_trailers
+#[repr(u32)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[non_exhaustive]
+pub enum FilterTrailersStatus {
+    /// Continue filter chain iteration.
+    Continue = 0,
+    /// Do not iterate to any of the remaining filters in the chain.
+    ///
+    /// To resume filter iteration at a later point, call [`resume_request`] or
+    /// [`resume_response`] respectively.
+    ///
+    /// [`resume_request`]: trait.RequestFlowOps.html#tymethod.resume_request
+    /// [`resume_response`]: trait.ResponseFlowOps.html#tymethod.resume_response
+    StopIteration = 1,
+}
+
+impl FilterTrailersStatus {
+    pub(self) fn as_action(&self) -> Action {
+        match self {
+            FilterTrailersStatus::Continue => Action::Continue,
+            FilterTrailersStatus::StopIteration => Action::Pause,
+        }
+    }
+}
+
+/// An interface of the `Envoy` `HTTP Filter` extension.
+///
+/// `HTTP Filter` operates on a single HTTP stream, i.e. request/response pair.
+///
+/// When `Envoy` accepts a new connection, a dedicated `HTTP Filter` instance is created for it.
+///
+/// `HTTP Filter` in `Envoy` is a stateful object.
+///
+/// **NOTE: This trait MUST NOT panic**. If a filter invocation cannot proceed
+/// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to terminate
+/// only the affected HTTP request by sending a response with the HTTP Status code
+/// `500 (Internal Server Error)`.
+/// For comparison, if the extension chooses to panic, this will, at best, affect all ongoing HTTP requests
+/// handled by that extension, and, at worst, will crash `Envoy` entirely (as of July 2020).
+///
+/// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
+/// [`Envoy SDK`]: https://docs.rs/envoy-sdk
 pub trait HttpFilter {
     fn on_request_headers(
         &mut self,
@@ -95,15 +204,33 @@ pub trait HttpFilter {
         Ok(FilterTrailersStatus::Continue)
     }
 
+    /// Called when HTTP stream is complete.
+    ///
+    /// This moment happens before `Access Loggers` get called.
     fn on_exchange_complete(&mut self) -> Result<()> {
         Ok(())
     }
 
     // Http Client callbacks
 
+    /// Called when the async HTTP request made through [`Envoy HTTP Client API`][`HttpClient`] is complete.
+    ///
+    /// # Arguments
+    ///
+    /// * `request_id`      - opaque identifier of the request that is now complete.
+    /// * `num_headers`     - number of headers in the response.
+    /// * `body_size`       - size of the response body.
+    /// * `num_trailers`    - number of tarilers in the response.
+    /// * `filter_ops`      - a [`trait object`][`Ops`] through which `HTTP Filter` can access data of the HTTP stream it proxies.
+    /// * `http_client_ops` - a [`trait object`][`HttpClientResponseOps`] through which `Network Filter` can access
+    ///                       data of the response received by [`HttpClient`], including headers, body and trailers.
+    ///
+    /// [`HttpClient`]: ../../../host/http/client/trait.HttpClient.html
+    /// [`HttpClientResponseOps`]: ../../../host/http/client/trait.HttpClientResponseOps.html
+    /// [`Ops`]: trait.Ops.html
     fn on_http_call_response(
         &mut self,
-        _request: HttpClientRequestHandle,
+        _request_id: HttpClientRequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,

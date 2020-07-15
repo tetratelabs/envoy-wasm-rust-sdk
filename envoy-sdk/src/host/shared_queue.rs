@@ -17,6 +17,7 @@
 use crate::abi::proxy_wasm::types::{Bytes, SharedQueueHandle};
 use crate::host;
 
+/// An interface of the `Envoy` `Shared Queue API`.
 pub trait SharedQueue {
     fn register(&self, name: &str) -> host::Result<SharedQueueHandle>;
 

@@ -24,11 +24,26 @@ pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
 mod context;
 mod ops;
 
+/// Return codes for [`on_downstream_data`] and [`on_upstream_data`] filter
+/// invocations.
+///
+/// `Envoy` bases further filter invocations on the return code of the
+/// previous filter.
+///
+/// [`on_downstream_data`]: trait.NetworkFilter.html#method.on_downstream_data
+/// [`on_upstream_data`]: trait.NetworkFilter.html#method.on_upstream_data
 #[repr(u32)]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 #[non_exhaustive]
 pub enum FilterStatus {
+    /// Continue filter chain iteration.
     Continue = 0,
+    /// Do not iterate to any of the remaining filters in the chain.
+    ///
+    /// **WARNING**: At the moment, `Envoy` doesn't yet implement [`ABI`] that
+    /// would allow to resume filter iteration.
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec/tree/master/abi-versions/vNEXT#proxy_resume_downstream
     StopIteration = 1,
 }
 
@@ -41,11 +56,52 @@ impl FilterStatus {
     }
 }
 
+/// An interface of the `Envoy` `Network Filter` extension.
+///
+/// `Network Filter` operates on payloads of a single L4 connection.
+///
+/// When `Envoy` accepts a new connection, a dedicated `Network Filter` instance is created for it.
+///
+/// `Network Filter` in `Envoy` is a stateful object.
+///
+/// **NOTE: This trait MUST NOT panic**. If a filter invocation cannot proceed
+/// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to terminate
+/// only the affected TCP connection by closing it gracefully.
+/// For comparison, if the extension choose to panic, this will, at best, affect all ongoing TCP connections
+/// handled by that extension, and, at worst, will crash `Envoy` entirely (as of July 2020).
+///
+/// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
+/// [`Envoy SDK`]: https://docs.rs/envoy-sdk
 pub trait NetworkFilter {
+    /// Called when a connection is first established.
+    ///
+    /// Filters should do one time long term processing that needs to be done when a connection is
+    /// established. Filter chain iteration can be stopped if needed.
+    ///
+    /// # Return value
+    ///
+    /// [`FilterStatus`] telling `Envoy` how to manage further filter iteration.
+    ///
+    /// [`FilterStatus`]: enum.FilterStatus.html
     fn on_new_connection(&mut self) -> Result<FilterStatus> {
         Ok(FilterStatus::Continue)
     }
 
+    /// Called when data is read on the downstream connection.
+    ///
+    /// # Arguments
+    ///
+    /// * `data_size`     - size of data accumulated in the buffer.
+    /// * `end_of_stream` - supplies whether this is the last byte on the connection. This will only
+    ///                   be set if the connection has half-close semantics enabled.
+    /// * `ops`           - a [`trait object`][`DownstreamDataOps`] through which `Network Filter` can access data in the read buffer.
+    ///
+    /// # Return value
+    ///
+    /// [`FilterStatus`] telling `Envoy` how to manage further filter iteration.
+    ///
+    /// [`FilterStatus`]: enum.FilterStatus.html
+    /// [`DownstreamDataOps`]: trait.DownstreamDataOps.html
     fn on_downstream_data(
         &mut self,
         _data_size: usize,
@@ -55,10 +111,29 @@ pub trait NetworkFilter {
         Ok(FilterStatus::Continue)
     }
 
+    /// Called when downstream connection is closed.
+    ///
+    /// # Arguments
+    ///
+    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_downstream_close(&mut self, _peer_type: PeerType) -> Result<()> {
         Ok(())
     }
 
+    /// Called when data is to be written on the connection.
+    ///
+    /// # Arguments
+    ///
+    /// * `data_size`     - size of data accumulated in the write buffer.
+    /// * `end_of_stream` - supplies whether this is the last byte to write on the connection.
+    /// * `ops`           - a [`trait object`][`UpstreamDataOps`] through which `Network Filter` can access data in the write buffer.
+    ///
+    /// # Return value
+    ///
+    /// [`FilterStatus`] telling `Envoy` how to manage further filter iteration.
+    ///
+    /// [`FilterStatus`]: enum.FilterStatus.html
+    /// [`UpstreamDataOps`]: trait.UpstreamDataOps.html
     fn on_upstream_data(
         &mut self,
         _data_size: usize,
@@ -68,19 +143,42 @@ pub trait NetworkFilter {
         Ok(FilterStatus::Continue)
     }
 
+    /// Called when upstream connection is closed.
+    ///
+    /// # Arguments
+    ///
+    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_upstream_close(&mut self, _peer_type: PeerType) -> Result<()> {
         Ok(())
     }
 
+    /// Called when HTTP stream is complete.
+    ///
+    /// This moment happens before `Access Loggers` get called.
     fn on_connection_complete(&mut self) -> Result<()> {
         Ok(())
     }
 
     // Http Client callbacks
 
+    /// Called when the async HTTP request made through [`Envoy HTTP Client API`][`HttpClient`] is complete.
+    ///
+    /// # Arguments
+    ///
+    /// * `request_id`      - opaque identifier of the request that is now complete.
+    /// * `num_headers`     - number of headers in the response.
+    /// * `body_size`       - size of the response body.
+    /// * `num_trailers`    - number of tarilers in the response.
+    /// * `filter_ops`      - a [`trait object`][`Ops`] through which `Network Filter` can access data of the connection it proxies.
+    /// * `http_client_ops` - a [`trait object`][`HttpClientResponseOps`] through which `Network Filter` can access
+    ///                       data of the response received by [`HttpClient`], including headers, body and trailers.
+    ///
+    /// [`HttpClient`]: ../../../host/http/client/trait.HttpClient.html
+    /// [`HttpClientResponseOps`]: ../../../host/http/client/trait.HttpClientResponseOps.html
+    /// [`Ops`]: trait.Ops.html
     fn on_http_call_response(
         &mut self,
-        _request: HttpClientRequestHandle,
+        _request_id: HttpClientRequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
@@ -91,14 +189,29 @@ pub trait NetworkFilter {
     }
 }
 
+/// An interface for accessing data in the read buffer (data read from the downstream connection).
 pub trait DownstreamDataOps {
-    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    /// Returns data from the read buffer.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset`   - offset to start reading data from.
+    /// * `max_size` - maximum size of data to return.
+    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
+/// An interface for accessing data in the write buffer (data to be written to the downstream connection).
 pub trait UpstreamDataOps {
-    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    /// Returns data from the write buffer.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset`   - offset to start reading data from.
+    /// * `max_size` - maximum size of data to return.
+    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
+/// An interface for accessing data in both read and write buffers.
 pub trait Ops: DownstreamDataOps + UpstreamDataOps {
     fn as_downstream_data_ops(&self) -> &dyn DownstreamDataOps;
 

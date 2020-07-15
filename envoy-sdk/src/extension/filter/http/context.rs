@@ -60,7 +60,7 @@ where
                 self.error_sink
                     .observe("failed to handle HTTP request body", &err);
                 self.handle_error(err);
-                FilterDataStatus::StopIteration.as_action()
+                FilterDataStatus::StopIterationAndBuffer.as_action()
             }
         }
     }
@@ -106,7 +106,7 @@ where
                 self.error_sink
                     .observe("failed to handle HTTP response body", &err);
                 self.handle_error(err);
-                FilterDataStatus::StopIteration.as_action()
+                FilterDataStatus::StopIterationAndBuffer.as_action()
             }
         }
     }

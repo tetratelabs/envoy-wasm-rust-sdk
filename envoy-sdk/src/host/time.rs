@@ -18,7 +18,9 @@ use std::time::SystemTime;
 
 use crate::host;
 
+/// An interface of the `Envoy` `Time Service`.
 pub trait Clock {
+    /// Returns current system time.
     fn now(&self) -> host::Result<SystemTime>;
 }
 
