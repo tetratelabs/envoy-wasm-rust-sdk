@@ -25,6 +25,7 @@ pub use self::factory::{
 pub use self::filter::http::HttpFilter;
 pub use self::filter::network::{NetworkFilter, NetworkFilterStatus};
 pub use self::module::{install, registry::Registry};
+pub use crate::on_module_load;
 
 mod module;
 
