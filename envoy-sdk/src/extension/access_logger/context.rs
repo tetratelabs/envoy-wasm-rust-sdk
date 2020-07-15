@@ -16,7 +16,7 @@ use super::{AccessLogger, Ops};
 use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::ConfigStatus;
-use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
+use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) struct AccessLoggerContext<'a, L>
 where

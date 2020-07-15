@@ -17,7 +17,7 @@
 use crate::abi::proxy_wasm::types::{Action, Bytes};
 use crate::extension::Result;
 use crate::host;
-use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
+use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) use self::context::{HttpFilterContext, VoidHttpFilterContext};
 

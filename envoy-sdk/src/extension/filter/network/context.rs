@@ -17,7 +17,7 @@ use crate::abi::proxy_wasm::traits::{Context, StreamContext};
 use crate::abi::proxy_wasm::types::{Action, PeerType};
 use crate::extension::error::ErrorSink;
 use crate::extension::Error;
-use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
+use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) struct NetworkFilterContext<'a, F>
 where

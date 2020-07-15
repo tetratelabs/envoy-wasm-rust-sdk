@@ -15,7 +15,7 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::extension::{filter::network, InstanceId, NetworkFilter, NetworkFilterStatus, Result};
+use envoy::extension::{filter::network, InstanceId, NetworkFilter, Result};
 use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
 
 use chrono::offset::Local;
