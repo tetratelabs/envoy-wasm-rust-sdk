@@ -19,8 +19,7 @@ use std::fmt;
 pub use self::access_logger::AccessLogger;
 pub use self::error::{Error, Result};
 pub use self::factory::{
-    ConfigStatus, DrainStatus, ExtensionFactory, ExtensionFactoryConfigureOps,
-    ExtensionFactoryDrainOps,
+    ConfigStatus, DrainStatus, ExtensionFactory
 };
 pub use self::filter::http::HttpFilter;
 pub use self::filter::network::{NetworkFilter, NetworkFilterStatus};

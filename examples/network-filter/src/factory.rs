@@ -16,7 +16,7 @@ use std::convert::TryFrom;
 use std::rc::Rc;
 
 use envoy::extension::{
-    ConfigStatus, ExtensionFactory, ExtensionFactoryConfigureOps, InstanceId, Result,
+    factory, ConfigStatus, ExtensionFactory, InstanceId, Result,
 };
 use envoy::host::{Clock, HttpClient, Stats};
 
@@ -79,7 +79,7 @@ impl<'a> ExtensionFactory for SampleNetworkFilterFactory<'a> {
     fn on_configure(
         &mut self,
         _configuration_size: usize,
-        ops: &dyn ExtensionFactoryConfigureOps,
+        ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
         let config = match ops.get_configuration()? {
             Some(bytes) => SampleNetworkFilterConfig::try_from(bytes.as_slice())?,
