@@ -18,9 +18,32 @@ use crate::abi::proxy_wasm::types::Bytes;
 
 use crate::host;
 
+/// An interface of the `Envoy` `Stream Info API`.
 pub trait StreamInfo {
+    /// Evaluates value of a given property in the enclosing context.
+    ///
+    /// * In case [`HttpFilter`], the value will be evaluated in the context of HTTP stream.
+    /// * In case [`NetworkFilter`], the value will be evaluated in the context of TCP connection.
+    /// * In case [`AccessLogger`], the value will be evaluated in the context of HTTP stream
+    ///   or TCP connection that is being logged.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - property path as an array of path segments
+    ///
+    /// [`HttpFilter`]: ../../extension/filter/http/trait.HttpFilter.html
+    /// [`NetworkFilter`]: ../../extension/filter/network/trait.NetworkFilter.html
+    /// [`AccessLogger`]: ../../extension/access_logger/trait.AccessLogger.html
     fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
 
+    /// Saves a value in the enclosing context.
+    ///
+    /// The value will be accessible to other filters on that HTTP stream or TCP connection.
+    ///
+    /// # Arguments
+    ///
+    /// * `path`  - property path as an array of path segments
+    /// * `value` - an opaque blob of bytes
     fn set_stream_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;
 }
 

@@ -25,7 +25,26 @@ pub(crate) use self::context::AccessLoggerContext;
 mod context;
 mod ops;
 
+/// An interface of the `Envoy` `Access Logger` extension.
+///
+/// In contrast to [`HttpFilter`] and [`NetworkFilter`] that only operate on a single
+/// HTTP stream and TCP connection respectively, `Access Logger` operates on multiple
+/// HTTP streams or TCP connections.
+///
+/// `Access Logger` in `Envoy` is a stateful object.
+///
+/// **NOTE: This trait MUST NOT panic**. If a logger invocation cannot proceed
+/// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to handle
+/// the error gracefully.
+/// For comparison, if the extension chooses to panic, this will, at best, affect all ongoing HTTP requests
+/// / TCP connections handled by that extension, and, at worst, will crash `Envoy` entirely (as of July 2020).
+///
+/// [`HttpFilter`]: ../filter/http/trait.HttpFilter.html
+/// [`NetworkFilter`]: ../filter/network/trait.NetworkFilter.html
+/// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
+/// [`Envoy SDK`]: https://docs.rs/envoy-sdk
 pub trait AccessLogger {
+    /// Name the extension should be referred to in `Envoy` configuration.
     const NAME: &'static str;
 
     fn on_configure(
@@ -36,15 +55,37 @@ pub trait AccessLogger {
         Ok(ConfigStatus::Accepted)
     }
 
+    /// Called when HTTP request or TCP connection is complete.
+    ///
+    /// # Arguments
+    ///
+    /// * `logger_ops` - a [`trait object`][`LogOps`] through which `Access Logger` can access
+    ///                  data of the HTTP stream or TCP connection that needs to be logged.
+    ///
+    /// [`LogOps`]: trait.LogOps.html
     fn on_log(&mut self, _logger_ops: &dyn LogOps) -> Result<()> {
         Ok(())
     }
 
     // Http Client callbacks
 
+    /// Called when the async HTTP request made through [`Envoy HTTP Client API`][`HttpClient`] is complete.
+    ///
+    /// # Arguments
+    ///
+    /// * `request_id`      - opaque identifier of the request that is now complete.
+    /// * `num_headers`     - number of headers in the response.
+    /// * `body_size`       - size of the response body.
+    /// * `num_trailers`    - number of tarilers in the response.
+    /// * `http_client_ops` - a [`trait object`][`HttpClientResponseOps`] through which `Access Logger` can access
+    ///                       data of the response received by [`HttpClient`], including headers, body and trailers.
+    ///
+    /// [`HttpClient`]: ../../host/http/client/trait.HttpClient.html
+    /// [`HttpClientResponseOps`]: ../../host/http/client/trait.HttpClientResponseOps.html
+    /// [`Ops`]: trait.Ops.html
     fn on_http_call_response(
         &mut self,
-        _request: HttpClientRequestHandle,
+        _request_id: HttpClientRequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,

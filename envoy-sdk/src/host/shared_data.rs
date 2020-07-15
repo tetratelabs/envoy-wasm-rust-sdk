@@ -17,9 +17,26 @@
 use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
+/// An interface of the `Envoy` `Shared Data API`.
 pub trait SharedData {
+    /// Returns shared data by key.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - key.
+    ///
+    /// # Return value
+    ///
+    /// * `value` - an opaque blob of bytes.
+    /// * `cas`   - CAS options.
     fn get(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)>;
 
+    /// Shares data under a given key.
+    ///
+    /// # Arguments
+    ///
+    /// * `key`   - key.
+    /// * `value` - an opaque blob of bytes.
     fn set(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()>;
 }
 

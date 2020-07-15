@@ -60,9 +60,11 @@ impl DrainStatus {
     }
 }
 
+/// An interface of the `Envoy` extension `Factory`.
 pub trait ExtensionFactory {
     type Extension;
 
+    /// Name the extension should be referred to in `Envoy` configuration.
     const NAME: &'static str;
 
     fn on_configure(

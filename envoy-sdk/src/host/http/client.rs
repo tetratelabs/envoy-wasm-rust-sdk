@@ -21,7 +21,23 @@ use crate::host;
 
 pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHandle;
 
+/// An interface of the `Envoy` `HTTP Client`.
 pub trait HttpClient {
+    /// Sends an HTTP request asynchronously.
+    ///
+    /// # Arguments
+    ///
+    /// * `upstream` - name of `Envoy` `Cluster` to send request to.
+    /// * `headers`  - request headers
+    /// * `body`     - request body
+    /// * `trailers` - request trailers
+    /// * `timeout`  - request timeout
+    ///
+    /// # Return value
+    ///
+    /// opaque [`identifier`][`HttpClientRequestHandle`] of the request sent. Can be used to correlate requests and responses.
+    ///
+    /// [`HttpClientRequestHandle`]: struct.HttpClientRequestHandle.html
     fn send_request(
         &self,
         upstream: &str,
@@ -38,6 +54,9 @@ impl dyn HttpClient {
     }
 }
 
+/// An interface for accessing data of the HTTP response received by [`HttpClient`].
+///
+/// [`HttpClient`]: trait.HttpClient.html
 pub trait HttpClientResponseOps {
     fn http_call_response_headers(&self) -> host::Result<Vec<(String, String)>>;
 
