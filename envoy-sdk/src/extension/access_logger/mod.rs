@@ -12,7 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` `Access Logger API`.
+//! `Envoy` `Access Logger` extension.
+//!
+//! # Examples
+//!
+//! Basic `Access Logger`:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! use envoy::extension::AccessLogger;
+//!
+//! /// My very own `AccessLogger`.
+//! struct MyAccessLogger;
+//!
+//! impl AccessLogger for MyAccessLogger {
+//!     const NAME: &'static str = "my_access_logger";
+//! }
+//! ```
+//!
+//! Basic registration of `MyAccessLogger` on start up:
+//!
+//! ```
+//! # use envoy_sdk as envoy;
+//! # use envoy::extension::AccessLogger;
+//! #
+//! # /// My very own `AccessLogger`.
+//! # struct MyAccessLogger;
+//! #
+//! # impl AccessLogger for MyAccessLogger {
+//! #     const NAME: &'static str = "my_access_logger";
+//! # }
+//! #
+//! use envoy::extension::{entrypoint, Module, Result};
+//!
+//! entrypoint! { initialize } // put initialization logic into a function to make it unit testable
+//!
+//! fn initialize() -> Result<Module> {
+//!     Module::new()
+//!         .add_access_logger(|_instance_id| Ok(MyAccessLogger))
+//! }
+//! ```
 
 use crate::abi::proxy_wasm::types::Bytes;
 
