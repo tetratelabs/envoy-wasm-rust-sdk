@@ -18,12 +18,10 @@ use std::fmt;
 
 pub use self::access_logger::AccessLogger;
 pub use self::error::{Error, Result};
-pub use self::factory::{
-    ConfigStatus, DrainStatus, ExtensionFactory
-};
+pub use self::factory::{ConfigStatus, DrainStatus, ExtensionFactory};
 pub use self::filter::http::HttpFilter;
 pub use self::filter::network::{NetworkFilter, NetworkFilterStatus};
-pub use self::module::{install, registry::Registry};
+pub use self::module::{install, Module};
 pub use crate::on_module_load;
 
 mod module;

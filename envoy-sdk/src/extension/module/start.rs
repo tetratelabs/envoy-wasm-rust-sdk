@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use super::dispatcher::{ContextSelector, VoidContextSelector};
-use crate::extension::{Registry, Result};
+use crate::extension::{Module, Result};
 
 /// Generates the [`_start`] function that will be called by `Envoy` to let
 /// WebAssembly module initialize itself.
@@ -68,17 +68,17 @@ use crate::extension::{Registry, Result};
 /// #     fn default() -> extension::Result<Self> { Ok(MyAccessLogger) }
 /// # }
 /// #
-/// use envoy::extension::{on_module_load, Registry, Result};
+/// use envoy::extension::{on_module_load, Module, Result};
 ///
 /// on_module_load! { initialize } // put initialization logic into a function to make it unit testable
 ///
 /// /// Does one-time initialization.
 /// ///
 /// /// Returns a registry of extensions provided by this module.
-/// fn initialize() -> Result<Registry> {
+/// fn initialize() -> Result<Module> {
 ///   // arbitrary initialization steps
 ///
-///   Registry::new()
+///   Module::new()
 ///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?
 ///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?
 ///       .add_access_logger(|_instance_id| MyAccessLogger::default())
@@ -103,12 +103,12 @@ macro_rules! on_module_load {
         )]
         #[no_mangle]
         extern "C" fn start() {
-            use $crate::extension::{self, Registry, Result};
+            use $crate::extension::{self, Module, Result};
             use $crate::host::log;
 
             fn init<F>(init_fn: F)
             where
-                F: FnOnce() -> Result<Registry>,
+                F: FnOnce() -> Result<Module>,
             {
                 // Apparently, `proxy_wasm` uses `set_log_level`
                 // to set a custom panic handler that will log panics using Envoy Log API.
@@ -126,9 +126,9 @@ macro_rules! on_module_load {
 }
 
 #[doc(hidden)]
-pub fn install(config: Result<Registry>) {
+pub fn install(config: Result<Module>) {
     match config {
-        Ok(registry) => ContextSelector::with_default_ops(registry.into()).install(),
+        Ok(module) => ContextSelector::with_default_ops(module.into()).install(),
         Err(err) => VoidContextSelector::new(err).install(),
     }
 }

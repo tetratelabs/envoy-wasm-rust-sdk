@@ -15,9 +15,7 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use envoy::extension::{
-    factory, ConfigStatus, ExtensionFactory, InstanceId, Result,
-};
+use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};
 use envoy::host::{Clock, HttpClient, Stats};
 
 use super::config::SampleNetworkFilterConfig;
