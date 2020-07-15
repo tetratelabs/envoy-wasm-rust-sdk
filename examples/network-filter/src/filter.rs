@@ -150,7 +150,7 @@ impl<'a> NetworkFilter for SampleNetworkFilter<'a> {
         self.active_request = None;
 
         info!("     headers[count={}]:", num_headers);
-        let response_headers = http_client_ops.get_http_call_response_headers()?;
+        let response_headers = http_client_ops.http_call_response_headers()?;
         for (name, value) in &response_headers {
             info!("       {}: {}", name, value);
         }

@@ -79,7 +79,7 @@ impl<'a> ExtensionFactory for SampleNetworkFilterFactory<'a> {
         _configuration_size: usize,
         ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
-        let config = match ops.get_configuration()? {
+        let config = match ops.configuration()? {
             Some(bytes) => SampleNetworkFilterConfig::try_from(bytes.as_slice())?,
             None => SampleNetworkFilterConfig::default(),
         };

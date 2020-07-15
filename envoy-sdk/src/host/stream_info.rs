@@ -19,9 +19,9 @@ use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
 pub trait StreamInfo {
-    fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
+    fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
 
-    fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;
+    fn set_stream_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;
 }
 
 impl dyn StreamInfo {
@@ -40,11 +40,11 @@ mod impls {
     pub(super) struct Host;
 
     impl StreamInfo for Host {
-        fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
+        fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
             hostcalls::get_property(path)
         }
 
-        fn set_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()> {
+        fn set_stream_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()> {
             hostcalls::set_property(path, value)
         }
     }

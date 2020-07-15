@@ -23,7 +23,7 @@ use crate::host;
 pub(super) struct Host;
 
 impl RequestHeadersOps for Host {
-    fn get_request_headers(&self) -> host::Result<Vec<(String, String)>> {
+    fn request_headers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpRequestHeaders)
     }
 
@@ -31,7 +31,7 @@ impl RequestHeadersOps for Host {
         hostcalls::set_map(MapType::HttpRequestHeaders, headers)
     }
 
-    fn get_request_header(&self, name: &str) -> host::Result<Option<String>> {
+    fn request_header(&self, name: &str) -> host::Result<Option<String>> {
         hostcalls::get_map_value(MapType::HttpRequestHeaders, name)
     }
 
@@ -45,13 +45,13 @@ impl RequestHeadersOps for Host {
 }
 
 impl RequestBodyOps for Host {
-    fn get_request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
+    fn request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::HttpRequestBody, start, max_size)
     }
 }
 
 impl RequestTrailersOps for Host {
-    fn get_request_trailers(&self) -> host::Result<Vec<(String, String)>> {
+    fn request_trailers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpRequestTrailers)
     }
 
@@ -59,7 +59,7 @@ impl RequestTrailersOps for Host {
         hostcalls::set_map(MapType::HttpRequestTrailers, trailers)
     }
 
-    fn get_request_trailer(&self, name: &str) -> host::Result<Option<String>> {
+    fn request_trailer(&self, name: &str) -> host::Result<Option<String>> {
         hostcalls::get_map_value(MapType::HttpRequestTrailers, name)
     }
 
@@ -73,7 +73,7 @@ impl RequestTrailersOps for Host {
 }
 
 impl ResponseHeadersOps for Host {
-    fn get_response_headers(&self) -> host::Result<Vec<(String, String)>> {
+    fn response_headers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpResponseHeaders)
     }
 
@@ -81,7 +81,7 @@ impl ResponseHeadersOps for Host {
         hostcalls::set_map(MapType::HttpResponseHeaders, headers)
     }
 
-    fn get_response_header(&self, name: &str) -> host::Result<Option<String>> {
+    fn response_header(&self, name: &str) -> host::Result<Option<String>> {
         hostcalls::get_map_value(MapType::HttpResponseHeaders, name)
     }
 
@@ -95,13 +95,13 @@ impl ResponseHeadersOps for Host {
 }
 
 impl ResponseBodyOps for Host {
-    fn get_response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
+    fn response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::HttpResponseBody, start, max_size)
     }
 }
 
 impl ResponseTrailersOps for Host {
-    fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
+    fn response_trailers(&self) -> host::Result<Vec<(String, String)>> {
         hostcalls::get_map(MapType::HttpResponseTrailers)
     }
 
@@ -109,7 +109,7 @@ impl ResponseTrailersOps for Host {
         hostcalls::set_map(MapType::HttpResponseTrailers, headers)
     }
 
-    fn get_response_trailer(&self, name: &str) -> host::Result<Option<String>> {
+    fn response_trailer(&self, name: &str) -> host::Result<Option<String>> {
         hostcalls::get_map_value(MapType::HttpResponseTrailers, name)
     }
 

@@ -83,7 +83,7 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         _configuration_size: usize,
         logger_ops: &dyn access_logger::ConfigureOps,
     ) -> Result<ConfigStatus> {
-        self.config = match logger_ops.get_configuration()? {
+        self.config = match logger_ops.configuration()? {
             Some(bytes) => SampleAccessLoggerConfig::try_from(bytes.as_slice())?,
             None => SampleAccessLoggerConfig::default(),
         };
@@ -107,16 +107,16 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         );
 
         info!("  request headers:");
-        let request_headers = logger_ops.get_request_headers()?;
+        let request_headers = logger_ops.request_headers()?;
         for (name, value) in &request_headers {
             info!("    {}: {}", name, value);
         }
         info!("  response headers:");
-        let response_headers = logger_ops.get_response_headers()?;
+        let response_headers = logger_ops.response_headers()?;
         for (name, value) in &response_headers {
             info!("    {}: {}", name, value);
         }
-        let upstream_address = logger_ops.get_property(vec!["upstream", "address"])?;
+        let upstream_address = logger_ops.stream_property(vec!["upstream", "address"])?;
         let upstream_address = upstream_address
             .map(String::from_utf8)
             .transpose()?
@@ -171,7 +171,7 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         self.stats.reports_total().inc()?;
 
         info!("  headers[count={}]:", num_headers);
-        let response_headers = http_client_ops.get_http_call_response_headers()?;
+        let response_headers = http_client_ops.http_call_response_headers()?;
         for (name, value) in &response_headers {
             info!("    {}: {}", name, value);
         }

@@ -39,15 +39,12 @@ impl dyn HttpClient {
 }
 
 pub trait HttpClientResponseOps {
-    fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn http_call_response_headers(&self) -> host::Result<Vec<(String, String)>>;
 
-    fn get_http_call_response_body(
-        &self,
-        start: usize,
-        max_size: usize,
-    ) -> host::Result<Option<Bytes>>;
+    fn http_call_response_body(&self, start: usize, max_size: usize)
+        -> host::Result<Option<Bytes>>;
 
-    fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 }
 
 impl dyn HttpClientResponseOps {
@@ -81,11 +78,11 @@ mod impls {
     }
 
     impl HttpClientResponseOps for Host {
-        fn get_http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
+        fn http_call_response_headers(&self) -> host::Result<Vec<(String, String)>> {
             hostcalls::get_map(MapType::HttpCallResponseHeaders)
         }
 
-        fn get_http_call_response_body(
+        fn http_call_response_body(
             &self,
             start: usize,
             max_size: usize,
@@ -93,7 +90,7 @@ mod impls {
             hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size)
         }
 
-        fn get_http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
+        fn http_call_response_trailers(&self) -> host::Result<Vec<(String, String)>> {
             hostcalls::get_map(MapType::HttpCallResponseTrailers)
         }
     }

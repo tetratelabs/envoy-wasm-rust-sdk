@@ -92,11 +92,11 @@ pub trait NetworkFilter {
 }
 
 pub trait DownstreamDataOps {
-    fn get_downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
 pub trait UpstreamDataOps {
-    fn get_upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
 pub trait Ops: DownstreamDataOps + UpstreamDataOps {

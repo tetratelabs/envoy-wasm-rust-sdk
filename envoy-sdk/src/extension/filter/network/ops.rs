@@ -21,13 +21,13 @@ use crate::host;
 pub(super) struct Host;
 
 impl DownstreamDataOps for Host {
-    fn get_downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
+    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::DownstreamData, start, max_size)
     }
 }
 
 impl UpstreamDataOps for Host {
-    fn get_upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
+    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
         hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
     }
 }

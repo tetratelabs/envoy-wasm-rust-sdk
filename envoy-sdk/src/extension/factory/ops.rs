@@ -20,7 +20,7 @@ use crate::host;
 pub(super) struct Host;
 
 impl ConfigureOps for Host {
-    fn get_configuration(&self) -> host::Result<Option<Bytes>> {
+    fn configuration(&self) -> host::Result<Option<Bytes>> {
         hostcalls::get_configuration()
     }
 }

@@ -81,7 +81,7 @@ pub trait ExtensionFactory {
 }
 
 pub trait ConfigureOps {
-    fn get_configuration(&self) -> host::Result<Option<Bytes>>;
+    fn configuration(&self) -> host::Result<Option<Bytes>>;
 }
 
 pub trait DrainOps {
