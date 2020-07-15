@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy::{extension, extension::Registry, on_module_load};
+use envoy::extension::{on_module_load, Registry, Result};
 
 use http_filter::SampleHttpFilterFactory;
 
@@ -23,7 +23,7 @@ on_module_load! { initialize }
 /// Does one-time initialization.
 ///
 /// Returns a registry of extensions provided by this module.
-fn initialize() -> extension::Result<Registry> {
+fn initialize() -> Result<Registry> {
     Registry::new().add_http_filter(|_instance_id| SampleHttpFilterFactory::default())
 }
 

@@ -24,21 +24,21 @@ use crate::extension::{Registry, Result};
 ///
 /// ```
 /// # use envoy_sdk as envoy;
-/// # use envoy::extension::{AccessLogger, NetworkFilter, HttpFilter, InstanceId, Result, ExtensionFactory};
+/// # use envoy::extension::{self, AccessLogger, NetworkFilter, HttpFilter, InstanceId, ExtensionFactory};
 /// #
 /// # struct MyHttpFilter;
 /// # impl HttpFilter for MyHttpFilter {}
 /// #
 /// # struct MyHttpFilterFactory;
 /// # impl MyHttpFilterFactory {
-/// #     fn default() -> Result<Self> { Ok(MyHttpFilterFactory) }
+/// #     fn default() -> extension::Result<Self> { Ok(MyHttpFilterFactory) }
 /// # }
 /// # impl ExtensionFactory for MyHttpFilterFactory {
 /// #     type Extension = MyHttpFilter;
 /// #
 /// #     const NAME: &'static str = "my.http_filter";
 /// #
-/// #     fn new_extension(&mut self, instance_id: InstanceId) -> Result<Self::Extension> {
+/// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyHttpFilter)
 /// #     }
 /// # }
@@ -48,14 +48,14 @@ use crate::extension::{Registry, Result};
 /// #
 /// # struct MyNetworkFilterFactory;
 /// # impl MyNetworkFilterFactory {
-/// #     fn default() -> Result<Self> { Ok(MyNetworkFilterFactory) }
+/// #     fn default() -> extension::Result<Self> { Ok(MyNetworkFilterFactory) }
 /// # }
 /// # impl ExtensionFactory for MyNetworkFilterFactory {
 /// #     type Extension = MyNetworkFilter;
 /// #
 /// #     const NAME: &'static str = "my.network_filter";
 /// #
-/// #     fn new_extension(&mut self, instance_id: InstanceId) -> Result<Self::Extension> {
+/// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyNetworkFilter)
 /// #     }
 /// # }
@@ -65,17 +65,17 @@ use crate::extension::{Registry, Result};
 /// #     const NAME: &'static str = "my.access_logger";
 /// # }
 /// # impl MyAccessLogger {
-/// #     fn default() -> Result<Self> { Ok(MyAccessLogger) }
+/// #     fn default() -> extension::Result<Self> { Ok(MyAccessLogger) }
 /// # }
 /// #
-/// use envoy::{extension, extension::Registry, on_module_load};
+/// use envoy::extension::{on_module_load, Registry, Result};
 ///
 /// on_module_load! { initialize } // put initialization logic into a function to make it unit testable
 ///
 /// /// Does one-time initialization.
 /// ///
 /// /// Returns a registry of extensions provided by this module.
-/// fn initialize() -> extension::Result<Registry> {
+/// fn initialize() -> Result<Registry> {
 ///   // arbitrary initialization steps
 ///
 ///   Registry::new()
