@@ -21,8 +21,6 @@ use crate::host::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
 
-pub use FilterStatus as NetworkFilterStatus;
-
 mod context;
 mod ops;
 
