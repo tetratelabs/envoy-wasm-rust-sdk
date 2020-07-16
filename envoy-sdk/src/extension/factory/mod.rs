@@ -147,6 +147,10 @@ where
 }
 
 impl dyn Ops {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn Ops {
         &ops::Host
     }

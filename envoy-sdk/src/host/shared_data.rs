@@ -18,6 +18,48 @@ use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
 /// An interface of the `Envoy` `Shared Data API`.
+///
+/// Basic usage of [`SharedData`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::SharedData;
+///
+/// let shared_data = SharedData::default();
+///
+/// let value = shared_data.get("shared_key")?;
+///
+/// shared_data.set("shared_key", Some(b"shared value"), None)?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Injecting [`SharedData`] into a HTTP Filter as a dependency:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::host::SharedData;
+///
+/// struct MyHttpFilter<'a> {
+///     shared_data: &'a dyn SharedData,
+/// }
+///
+/// impl<'a> MyHttpFilter<'a> {
+///     /// Creates a new instance parameterized with a given [`SharedData`] implementation.
+///     pub fn new(shared_data: &'a dyn SharedData) -> Self {
+///         MyHttpFilter { shared_data }
+///     }
+///
+///     /// Creates a new instance parameterized with the default [`SharedData`] implementation.
+///     pub fn default() -> Self {
+///         Self::new(SharedData::default())
+///     }
+/// }
+/// ```
+///
+/// [`SharedData`]: trait.SharedData.html
 pub trait SharedData {
     /// Returns shared data by key.
     ///
@@ -41,6 +83,10 @@ pub trait SharedData {
 }
 
 impl dyn SharedData {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn SharedData {
         &impls::Host
     }

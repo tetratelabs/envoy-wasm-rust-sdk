@@ -22,6 +22,107 @@ use crate::host;
 pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHandle;
 
 /// An interface of the `Envoy` `HTTP Client`.
+///
+/// # Examples
+///
+/// Basic usage of [`HttpClient`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use std::time::Duration;
+/// use envoy::host::HttpClient;
+///
+/// let client = HttpClient::default();
+///
+/// let request_id = client.send_request(
+///     "cluster_name",
+///     vec![("header", "value")],
+///     Some(b"request body"),
+///     vec![("trailer", "value")],
+///     Duration::from_secs(5),
+/// )?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Injecting [`HttpClient`] into a HTTP Filter as a dependency:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::host::HttpClient;
+///
+/// struct MyHttpFilter<'a> {
+///     http_client: &'a dyn HttpClient,
+/// }
+///
+/// impl<'a> MyHttpFilter<'a> {
+///     /// Creates a new instance parameterized with a given [`HttpClient`] implementation.
+///     pub fn new(http_client: &'a dyn HttpClient) -> Self {
+///         MyHttpFilter { http_client }
+///     }
+///
+///     /// Creates a new instance parameterized with the default [`HttpClient`] implementation.
+///     pub fn default() -> Self {
+///         Self::new(HttpClient::default())
+///     }
+/// }
+/// ```
+///
+/// Sending a request and receiving a response inside a `HTTP Filter`:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use std::time::Duration;
+/// use envoy::error::format_err;
+/// use envoy::extension::{HttpFilter, Result};
+/// use envoy::extension::filter::http::{FilterHeadersStatus, RequestHeadersOps, Ops};
+/// use envoy::host::HttpClient;
+/// use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
+///
+/// struct MyHttpFilter<'a> {
+///     http_client: &'a dyn HttpClient,
+///
+///     active_request: Option<HttpClientRequestHandle>,
+/// }
+///
+/// impl<'a> HttpFilter for MyHttpFilter<'a> {
+///     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+///         self.http_client.send_request(
+///             "cluster_name",
+///             vec![("header", "value")],
+///             Some(b"request body"),
+///             vec![("trailer", "value")],
+///             Duration::from_secs(5),
+///         )?;
+///         Ok(FilterHeadersStatus::StopIteration)  // stop further request processing
+///     }
+///
+///     fn on_http_call_response(
+///        &mut self,
+///        request: HttpClientRequestHandle,
+///        _num_headers: usize,
+///        body_size: usize,
+///        _num_trailers: usize,
+///        filter_ops: &dyn Ops,
+///        http_client_ops: &dyn HttpClientResponseOps,
+///    ) -> Result<()> {
+///        if self.active_request != Some(request) {
+///            // don't use `assert!()` to avoid panicing in production code
+///            return Err(format_err!("received unexpected response from HttpClient"));
+///        }
+///        let response_headers = http_client_ops.http_call_response_headers()?;
+///        let response_body = http_client_ops.http_call_response_body(0, body_size)?;
+/// #      stringify! {
+///        ... look into response headers and response body ...
+/// #      };
+///        filter_ops.resume_request() // resume further request processing
+///    }
+/// }
+/// ```
+///
+/// [`HttpClient`]: trait.HttpClient.html
 pub trait HttpClient {
     /// Sends an HTTP request asynchronously.
     ///
@@ -49,6 +150,10 @@ pub trait HttpClient {
 }
 
 impl dyn HttpClient {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn HttpClient {
         &impls::Host
     }
@@ -67,6 +172,10 @@ pub trait HttpClientResponseOps {
 }
 
 impl dyn HttpClientResponseOps {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn HttpClientResponseOps {
         &impls::Host
     }

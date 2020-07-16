@@ -14,6 +14,11 @@
 
 //! `Envoy` `Access Logger` extension.
 //!
+//! Creating a new `Access Logger` extension using `Envoy SDK` consists of the following steps:
+//!
+//! 1. Implement [`AccessLogger`] trait to define core logic of your extension
+//! 2. [`Register`] your extension on WebAssembly module start up
+//!
 //! # Examples
 //!
 //! Basic `Access Logger`:
@@ -30,7 +35,7 @@
 //! }
 //! ```
 //!
-//! Basic registration of `MyAccessLogger` on start up:
+//! Registration of `MyAccessLogger` on start up:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -52,6 +57,9 @@
 //!         .add_access_logger(|_instance_id| Ok(MyAccessLogger))
 //! }
 //! ```
+//!
+//! [`AccessLogger`]: trait.AccessLogger.html
+//! [`Register`]: ../../macro.entrypoint.html
 
 use crate::abi::proxy_wasm::types::Bytes;
 
@@ -69,8 +77,6 @@ mod ops;
 /// In contrast to [`HttpFilter`] and [`NetworkFilter`] that only operate on a single
 /// HTTP stream and TCP connection respectively, `Access Logger` operates on multiple
 /// HTTP streams or TCP connections.
-///
-/// `Access Logger` in `Envoy` is a stateful object.
 ///
 /// # Examples
 ///
@@ -235,6 +241,10 @@ where
 }
 
 impl dyn Ops {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn Ops {
         &ops::Host
     }

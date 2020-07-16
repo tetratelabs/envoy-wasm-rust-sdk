@@ -14,6 +14,12 @@
 
 //! `Envoy` `HTTP Filter` extension.
 //!
+//! Creating a new `HTTP Filter` extension using `Envoy SDK` consists of the following steps:
+//!
+//! 1. Implement [`HttpFilter`] trait to define core logic of your extension
+//! 2. Implement [`ExtensionFactory`] trait to create new instances of your extension
+//! 3. [`Register`] your extension on WebAssembly module start up
+//!
 //! # Examples
 //!
 //! Basic `HTTP Filter`:
@@ -28,7 +34,7 @@
 //! impl HttpFilter for MyHttpFilter {}
 //! ```
 //!
-//! Basic `Factory` object for `MyHttpFilter` instances:
+//! `Factory` object for `MyHttpFilter` instances:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -55,7 +61,7 @@
 //! }
 //! ```
 //!
-//! Basic registration of `MyHttpFilter` on start up:
+//! Registration of `MyHttpFilter` on start up:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -88,6 +94,10 @@
 //!         .add_http_filter(|_instance_id| Ok(MyHttpFilterFactory))
 //! }
 //! ```
+//!
+//! [`HttpFilter`]: trait.HttpFilter.html
+//! [`ExtensionFactory`]: ../../factory/trait.ExtensionFactory.html
+//! [`Register`]: ../../../macro.entrypoint.html
 
 use crate::abi::proxy_wasm::types::{Action, Bytes};
 use crate::extension::Result;
@@ -215,10 +225,10 @@ impl FilterTrailersStatus {
 ///
 /// `HTTP Filter` operates on a single HTTP stream, i.e. request/response pair.
 ///
-/// When `Envoy` receives a new HTTP/1.1 request or a new HTTP/2 stream is opened,
-/// a dedicated `HTTP Filter` instance is created for it.
+/// A dedicated `HTTP Filter` instance is created for every `HTTP/1.1` request
+/// or `HTTP/2` stream handled by `Envoy`.
 ///
-/// `HTTP Filter` in `Envoy` is a stateful object.
+/// Consequently, state of a single HTTP stream can be stored inside `HTTP Filter` itself.
 ///
 /// # Examples
 ///
@@ -602,6 +612,10 @@ where
 }
 
 impl dyn Ops {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn Ops {
         &ops::Host
     }

@@ -183,7 +183,7 @@ where
 ///
 /// E.g., if an error occurres inside [`proxy_on_context_create`] callback
 /// where a new Network Filter instance is supposed to be created,
-/// we cannot terminate the L4 connection right away - `Envoy` doesn't expect it
+/// we cannot terminate the TCP connection right away - `Envoy` doesn't expect it
 /// at this point.
 ///
 /// Instead, we have to memorize the error and wait until [`proxy_on_new_connection`]
