@@ -20,7 +20,7 @@ use crate::host;
 ///
 /// # Examples
 ///
-/// Basic usage of [`Stats`]:
+/// #### Basic usage of [`Stats`]:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -37,7 +37,7 @@ use crate::host;
 /// # }
 /// ```
 ///
-/// Injecting [`Stats`] into a HTTP Filter as a dependency:
+/// #### Injecting [`Stats`] into a HTTP Filter as a dependency:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -90,7 +90,7 @@ pub trait Stats {
 ///
 /// # Examples
 ///
-/// Basic usage of [`Counter`]:
+/// #### Basic usage of [`Counter`]:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -125,7 +125,7 @@ pub trait Counter {
 ///
 /// # Examples
 ///
-/// Basic usage of [`Gauge`]:
+/// #### Basic usage of [`Gauge`]:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -174,7 +174,7 @@ pub trait Gauge {
 ///
 /// # Examples
 ///
-/// Basic usage of [`Histogram`]:
+/// #### Basic usage of [`Histogram`]:
 ///
 /// ```
 /// # use envoy_sdk as envoy;

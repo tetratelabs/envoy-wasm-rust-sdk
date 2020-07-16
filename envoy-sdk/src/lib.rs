@@ -14,7 +14,7 @@
 
 //! `Rust` SDK for WebAssembly-based `Envoy` extensions.
 //!
-//! ## Hello World
+//! ## TLDR
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -57,6 +57,12 @@
 //! * [`Sample Network Filter`][`SampleNetworkFilter`]
 //! * [`Sample Access Logger`][`SampleAccessLogger`]
 //!
+//! ## How To
+//!
+//! * [How To make my extension configurable?][`HowToConfigure`]
+//! * [How To share stats between filter instances?][`HowToShareStats`]
+//! * [How To use HttpClient?][`HowToUseHttpClient`]
+//!
 //! [`HttpFilter`]: extension/filter/http/index.html
 //! [`NetworkFilter`]: extension/filter/network/index.html
 //! [`AccessLogger`]: extension/access_logger/index.html
@@ -72,6 +78,10 @@
 //! [`SampleHttpFilter`]: https://github.com/tetratelabs/envoy-wasm-rust-sdk/tree/master/examples/http-filter
 //! [`SampleNetworkFilter`]: https://github.com/tetratelabs/envoy-wasm-rust-sdk/tree/master/examples/network-filter
 //! [`SampleAccessLogger`]: https://github.com/tetratelabs/envoy-wasm-rust-sdk/tree/master/examples/access-logger
+//!
+//! [`HowToConfigure`]: extension/factory/trait.ExtensionFactory.html#examples
+//! [`HowToShareStats`]: extension/factory/trait.ExtensionFactory.html#examples
+//! [`HowToUseHttpClient`]: host/http/client/trait.HttpClient.html#examples
 
 #![doc(html_root_url = "https://docs.rs/envoy-sdk/0.0.3")]
 

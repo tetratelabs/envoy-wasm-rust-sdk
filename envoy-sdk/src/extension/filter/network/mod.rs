@@ -22,7 +22,7 @@
 //!
 //! # Examples
 //!
-//! Basic `Network Filter`:
+//! #### Basic [`NetworkFilter`]:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -34,7 +34,7 @@
 //! impl NetworkFilter for MyNetworkFilter {}
 //! ```
 //!
-//! `Factory` object for `MyNetworkFilter` instances:
+//! #### `ExtensionFactory` for `MyNetworkFilter` instances:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -47,7 +47,7 @@
 //! #
 //! use envoy::extension::{ExtensionFactory, InstanceId, Result};
 //!
-//! /// `Factory` object for `MyNetworkFilter`.
+//! /// `ExtensionFactory` for `MyNetworkFilter`.
 //! struct MyNetworkFilterFactory;
 //!
 //! impl ExtensionFactory for MyNetworkFilterFactory {
@@ -61,7 +61,7 @@
 //! }
 //! ```
 //!
-//! Registration of `MyNetworkFilter` on start up:
+//! #### Registration of `MyNetworkFilter` on start up:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -73,7 +73,7 @@
 //! #
 //! # use envoy::extension::{ExtensionFactory, InstanceId, self};
 //! #
-//! # /// `Factory` object for `MyNetworkFilter`.
+//! # /// `ExtensionFactory` for `MyNetworkFilter`.
 //! # struct MyNetworkFilterFactory;
 //! #
 //! # impl ExtensionFactory for MyNetworkFilterFactory {
@@ -151,7 +151,7 @@ impl FilterStatus {
 ///
 /// # Examples
 ///
-/// Basic `Network Filter`:
+/// #### Basic `Network Filter`:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -170,14 +170,18 @@ impl FilterStatus {
 /// }
 /// ```
 ///
-/// **NOTE: This trait MUST NOT panic**. If a filter invocation cannot proceed
-/// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to terminate
+/// # NOTE
+///
+/// **This trait MUST NOT panic!**
+///
+/// If a filter invocation cannot proceed normally, it should return [`Result::Err(x)`].
+/// In that case, `Envoy SDK` will be able to terminate
 /// only the affected TCP connection by closing it gracefully.
+///
 /// For comparison, if the extension choose to panic, this will, at best, affect all ongoing TCP connections
 /// handled by that extension, and, at worst, will crash `Envoy` entirely (as of July 2020).
 ///
 /// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
-/// [`Envoy SDK`]: https://docs.rs/envoy-sdk
 pub trait NetworkFilter {
     /// Called when a connection is first established.
     ///

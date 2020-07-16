@@ -22,7 +22,7 @@ use crate::host;
 ///
 /// # Examples
 ///
-/// Basic usage of [`Clock`]:
+/// #### Basic usage of [`Clock`]:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -37,7 +37,7 @@ use crate::host;
 /// # }
 /// ```
 ///
-/// Injecting [`Clock`] into a HTTP Filter as a dependency:
+/// #### Injecting [`Clock`] into a HTTP Filter as a dependency:
 ///
 /// ```
 /// # use envoy_sdk as envoy;

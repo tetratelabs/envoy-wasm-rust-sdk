@@ -16,7 +16,7 @@
 //!
 //! # Examples
 //!
-//! Basic usage of `Envoy` `Log API`:
+//! #### Basic usage of `Envoy` `Log API`:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -27,7 +27,7 @@
 //! log::debug!("logging a message through `Envoy Log API` at {} level", "debug");
 //! ```
 //!
-//! Usage of `Envoy` `Log API` in a HTTP Filter:
+//! #### Usage of `Envoy` `Log API` in a HTTP Filter:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
