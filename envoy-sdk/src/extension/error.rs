@@ -17,7 +17,6 @@
 use std::fmt;
 
 pub use crate::common::{Error, Result};
-pub use crate::host::log;
 
 /// An error at the initialization stage of the WebAssembly module.
 #[derive(Debug)]
@@ -81,6 +80,10 @@ pub(crate) trait ErrorSink {
 }
 
 impl dyn ErrorSink {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn ErrorSink {
         &impls::DefaultErrorSink
     }
@@ -88,6 +91,7 @@ impl dyn ErrorSink {
 
 mod impls {
     use super::{Error, ErrorSink};
+    use crate::host::log;
 
     pub(super) struct DefaultErrorSink;
 

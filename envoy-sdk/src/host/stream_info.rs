@@ -19,6 +19,25 @@ use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
 /// An interface of the `Envoy` `Stream Info API`.
+///
+/// Basic usage of [`StreamInfo`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::StreamInfo;
+///
+/// let stream_info = StreamInfo::default();
+///
+/// let plugin_name = stream_info.stream_property(vec!["plugin_name"])?;
+///
+/// stream_info.set_stream_property(vec!["my_extension", "output"], Some(b"property value"))?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// [`StreamInfo`]: trait.StreamInfo.html
 pub trait StreamInfo {
     /// Evaluates value of a given property in the enclosing context.
     ///
@@ -48,6 +67,10 @@ pub trait StreamInfo {
 }
 
 impl dyn StreamInfo {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn StreamInfo {
         &impls::Host
     }

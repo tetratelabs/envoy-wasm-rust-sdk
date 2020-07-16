@@ -14,10 +14,54 @@
 
 //! `Envoy` `Shared Queue API`.
 
-use crate::abi::proxy_wasm::types::{Bytes, SharedQueueHandle};
+use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
+pub use crate::abi::proxy_wasm::types::SharedQueueHandle;
+
 /// An interface of the `Envoy` `Shared Queue API`.
+///
+/// Basic usage of [`SharedQueue`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::SharedQueue;
+///
+/// let shared_queue = SharedQueue::default();
+///
+/// let queue_handle = shared_queue.register("shared_queue")?;
+///
+/// shared_queue.enqueue(queue_handle, Some(b"some value"))?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Injecting [`SharedQueue`] into a HTTP Filter as a dependency:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::host::SharedQueue;
+///
+/// struct MyHttpFilter<'a> {
+///     shared_queue: &'a dyn SharedQueue,
+/// }
+///
+/// impl<'a> MyHttpFilter<'a> {
+///     /// Creates a new instance parameterized with a given [`SharedQueue`] implementation.
+///     pub fn new(shared_queue: &'a dyn SharedQueue) -> Self {
+///         MyHttpFilter { shared_queue }
+///     }
+///
+///     /// Creates a new instance parameterized with the default [`SharedQueue`] implementation.
+///     pub fn default() -> Self {
+///         Self::new(SharedQueue::default())
+///     }
+/// }
+/// ```
+///
+/// [`SharedQueue`]: trait.SharedQueue.html
 pub trait SharedQueue {
     fn register(&self, name: &str) -> host::Result<SharedQueueHandle>;
 
@@ -29,6 +73,10 @@ pub trait SharedQueue {
 }
 
 impl dyn SharedQueue {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn SharedQueue {
         &impls::Host
     }

@@ -14,6 +14,12 @@
 
 //! `Envoy` `Network Filter` extension.
 //!
+//! Creating a new `Network Filter` extension using `Envoy SDK` consists of the following steps:
+//!
+//! 1. Implement [`NetworkFilter`] trait to define core logic of your extension
+//! 2. Implement [`ExtensionFactory`] trait to create new instances of your extension
+//! 3. [`Register`] your extension on WebAssembly module start up
+//!
 //! # Examples
 //!
 //! Basic `Network Filter`:
@@ -28,7 +34,7 @@
 //! impl NetworkFilter for MyNetworkFilter {}
 //! ```
 //!
-//! Basic `Factory` object for `MyNetworkFilter` instances:
+//! `Factory` object for `MyNetworkFilter` instances:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -55,7 +61,7 @@
 //! }
 //! ```
 //!
-//! Basic registration of `MyNetworkFilter` on start up:
+//! Registration of `MyNetworkFilter` on start up:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -88,6 +94,10 @@
 //!         .add_network_filter(|_instance_id| Ok(MyNetworkFilterFactory))
 //! }
 //! ```
+//!
+//! [`NetworkFilter`]: trait.NetworkFilter.html
+//! [`ExtensionFactory`]: ../../factory/trait.ExtensionFactory.html
+//! [`Register`]: ../../../macro.entrypoint.html
 
 use crate::abi::proxy_wasm::types::{Action, Bytes, PeerType};
 use crate::extension::Result;
@@ -133,11 +143,11 @@ impl FilterStatus {
 
 /// An interface of the `Envoy` `Network Filter` extension.
 ///
-/// `Network Filter` operates on payloads of a single L4 connection.
+/// `Network Filter` operates on a single TCP connection.
 ///
-/// When `Envoy` accepts a new connection, a dedicated `Network Filter` instance is created for it.
+/// A dedicated `Network Filter` instance is created for every connection handled by `Envoy`.
 ///
-/// `Network Filter` in `Envoy` is a stateful object.
+/// Consequently, state of a single connection can be stored inside `Network Filter` itself.
 ///
 /// # Examples
 ///
@@ -375,6 +385,10 @@ where
 }
 
 impl dyn Ops {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn Ops {
         &ops::Host
     }

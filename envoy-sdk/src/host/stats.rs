@@ -17,6 +17,50 @@
 use crate::host;
 
 /// An interface of the `Envoy` `Stats API`.
+///
+/// # Examples
+///
+/// Basic usage of [`Stats`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::Stats;
+///
+/// let stats = Stats::default();
+///
+/// let requests_total = stats.counter("requests_total")?;
+///
+/// requests_total.inc();
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Injecting [`Stats`] into a HTTP Filter as a dependency:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::host::Stats;
+///
+/// struct MyHttpFilter<'a> {
+///     stats: &'a dyn Stats,
+/// }
+///
+/// impl<'a> MyHttpFilter<'a> {
+///     /// Creates a new instance parameterized with a given [`Stats`] implementation.
+///     pub fn new(stats: &'a dyn Stats) -> Self {
+///         MyHttpFilter { stats }
+///     }
+///
+///     /// Creates a new instance parameterized with the default [`Stats`] implementation.
+///     pub fn default() -> Self {
+///         Self::new(Stats::default())
+///     }
+/// }
+/// ```
+///
+/// [`Stats`]: trait.Stats.html
 pub trait Stats {
     /// Creates a [`Counter`] from the stat name.
     ///
@@ -43,6 +87,27 @@ pub trait Stats {
 /// An interface of the `Envoy` `Counter`.
 ///
 /// A `Counter` can only be incremented.
+///
+/// # Examples
+///
+/// Basic usage of [`Counter`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::Stats;
+///
+/// let stats = Stats::default();
+///
+/// let requests_total = stats.counter("requests_total")?;
+///
+/// requests_total.inc()?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// [`Counter`]: trait.Counter.html
 pub trait Counter {
     /// Increments counter by `1`.
     fn inc(&self) -> host::Result<()> {
@@ -57,6 +122,33 @@ pub trait Counter {
 /// An interface of the `Envoy` `Gauge`.
 ///
 /// A `Gauge` can be both incremented and decremented.
+///
+/// # Examples
+///
+/// Basic usage of [`Gauge`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::Stats;
+///
+/// let stats = Stats::default();
+///
+/// let requests_active = stats.gauge("requests_active")?;
+///
+/// requests_active.inc()?;
+///
+/// # stringify! {
+/// ... do some work ...
+/// # };
+///
+/// requests_active.dec()?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// [`Gauge`]: trait.Gauge.html
 pub trait Gauge {
     /// Increments gauge by `1`.
     fn inc(&self) -> host::Result<()> {
@@ -79,12 +171,37 @@ pub trait Gauge {
 /// An interface of the `Envoy` `Histogram`.
 ///
 /// A `Histogram` records values one at a time.
+///
+/// # Examples
+///
+/// Basic usage of [`Histogram`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::Stats;
+///
+/// let stats = Stats::default();
+///
+/// let response_times_millis = stats.histogram("response_times_millis")?;
+///
+/// response_times_millis.record(123)?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// [`Histogram`]: trait.Histogram.html
 pub trait Histogram {
     /// Records a given value.
     fn record(&self, value: u64) -> host::Result<()>;
 }
 
 impl dyn Stats {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn Stats {
         &impls::Host
     }
