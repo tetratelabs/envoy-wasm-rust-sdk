@@ -156,7 +156,7 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
     }
 
     /// Is called when HTTP exchange is complete.
-    fn on_exchange_complete(&mut self) -> Result<()> {
+    fn on_exchange_complete(&mut self, _ops: &dyn http::ExchangeCompleteOps) -> Result<()> {
         // Update stats
         self.stats.requests_active().dec()?;
         self.stats.requests_total().inc()?;

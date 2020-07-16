@@ -139,6 +139,27 @@ impl FilterStatus {
 ///
 /// `Network Filter` in `Envoy` is a stateful object.
 ///
+/// # Examples
+///
+/// Basic `Network Filter`:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::extension::{NetworkFilter, Result};
+/// use envoy::extension::filter::network::FilterStatus;
+/// use envoy::host::log;
+///
+/// /// My very own `NetworkFilter`.
+/// struct MyNetworkFilter;
+///
+/// impl NetworkFilter for MyNetworkFilter {
+///     fn on_new_connection(&mut self) -> Result<FilterStatus> {
+///         log::info!("a new connection has been established");
+///         Ok(FilterStatus::Continue)
+///     }
+/// }
+/// ```
+///
 /// **NOTE: This trait MUST NOT panic**. If a filter invocation cannot proceed
 /// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to terminate
 /// only the affected TCP connection by closing it gracefully.
@@ -168,8 +189,9 @@ pub trait NetworkFilter {
     ///
     /// * `data_size`     - size of data accumulated in the buffer.
     /// * `end_of_stream` - supplies whether this is the last byte on the connection. This will only
-    ///                   be set if the connection has half-close semantics enabled.
-    /// * `ops`           - a [`trait object`][`DownstreamDataOps`] through which `Network Filter` can access data in the read buffer.
+    ///                     be set if the connection has half-close semantics enabled.
+    /// * `ops`           - a [`trait object`][`DownstreamDataOps`] through which `Network Filter` can
+    ///                     manipulate data in the read buffer.
     ///
     /// # Return value
     ///
@@ -191,7 +213,11 @@ pub trait NetworkFilter {
     /// # Arguments
     ///
     /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
-    fn on_downstream_close(&mut self, _peer_type: PeerType) -> Result<()> {
+    fn on_downstream_close(
+        &mut self,
+        _peer_type: PeerType,
+        _ops: &dyn DownstreamCloseOps,
+    ) -> Result<()> {
         Ok(())
     }
 
@@ -201,7 +227,8 @@ pub trait NetworkFilter {
     ///
     /// * `data_size`     - size of data accumulated in the write buffer.
     /// * `end_of_stream` - supplies whether this is the last byte to write on the connection.
-    /// * `ops`           - a [`trait object`][`UpstreamDataOps`] through which `Network Filter` can access data in the write buffer.
+    /// * `ops`           - a [`trait object`][`UpstreamDataOps`] through which `Network Filter` can
+    ///                     manipulate data in the write buffer.
     ///
     /// # Return value
     ///
@@ -223,14 +250,18 @@ pub trait NetworkFilter {
     /// # Arguments
     ///
     /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
-    fn on_upstream_close(&mut self, _peer_type: PeerType) -> Result<()> {
+    fn on_upstream_close(
+        &mut self,
+        _peer_type: PeerType,
+        _ops: &dyn UpstreamCloseOps,
+    ) -> Result<()> {
         Ok(())
     }
 
-    /// Called when HTTP stream is complete.
+    /// Called when TCP connection is complete.
     ///
     /// This moment happens before `Access Loggers` get called.
-    fn on_connection_complete(&mut self) -> Result<()> {
+    fn on_connection_complete(&mut self, _ops: &dyn ConnectionCompleteOps) -> Result<()> {
         Ok(())
     }
 
@@ -244,7 +275,8 @@ pub trait NetworkFilter {
     /// * `num_headers`     - number of headers in the response.
     /// * `body_size`       - size of the response body.
     /// * `num_trailers`    - number of tarilers in the response.
-    /// * `filter_ops`      - a [`trait object`][`Ops`] through which `Network Filter` can access data of the connection it proxies.
+    /// * `filter_ops`      - a [`trait object`][`Ops`] through which `Network Filter` can manipulate data
+    ///                       of the connection it proxies.
     /// * `http_client_ops` - a [`trait object`][`HttpClientResponseOps`] through which `Network Filter` can access
     ///                       data of the response received by [`HttpClient`], including headers, body and trailers.
     ///
@@ -264,7 +296,7 @@ pub trait NetworkFilter {
     }
 }
 
-/// An interface for accessing data in the read buffer (data read from the downstream connection).
+/// An interface for manipulating data in the read buffer (data read from the downstream connection).
 pub trait DownstreamDataOps {
     /// Returns data from the read buffer.
     ///
@@ -275,7 +307,7 @@ pub trait DownstreamDataOps {
     fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
-/// An interface for accessing data in the write buffer (data to be written to the downstream connection).
+/// An interface for manipulating data in the write buffer (data to be written to the downstream connection).
 pub trait UpstreamDataOps {
     /// Returns data from the write buffer.
     ///
@@ -286,22 +318,58 @@ pub trait UpstreamDataOps {
     fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
-/// An interface for accessing data in both read and write buffers.
-pub trait Ops: DownstreamDataOps + UpstreamDataOps {
+pub trait DownstreamCloseOps {
+    // TODO(yskopets): TBD
+}
+
+pub trait UpstreamCloseOps {
+    // TODO(yskopets): TBD
+}
+
+pub trait ConnectionCompleteOps {
+    // TODO(yskopets): TBD
+}
+
+/// An interface for manipulating data in both read and write buffers.
+pub trait Ops:
+    DownstreamDataOps + UpstreamDataOps + DownstreamCloseOps + UpstreamCloseOps + ConnectionCompleteOps
+{
     fn as_downstream_data_ops(&self) -> &dyn DownstreamDataOps;
 
     fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps;
+
+    fn as_downstream_close_ops(&self) -> &dyn DownstreamCloseOps;
+
+    fn as_upstream_close_ops(&self) -> &dyn UpstreamCloseOps;
+
+    fn as_connection_complete_ops(&self) -> &dyn ConnectionCompleteOps;
 }
 
 impl<T> Ops for T
 where
-    T: DownstreamDataOps + UpstreamDataOps,
+    T: DownstreamDataOps
+        + UpstreamDataOps
+        + DownstreamCloseOps
+        + UpstreamCloseOps
+        + ConnectionCompleteOps,
 {
     fn as_downstream_data_ops(&self) -> &dyn DownstreamDataOps {
         self
     }
 
     fn as_upstream_data_ops(&self) -> &dyn UpstreamDataOps {
+        self
+    }
+
+    fn as_downstream_close_ops(&self) -> &dyn DownstreamCloseOps {
+        self
+    }
+
+    fn as_upstream_close_ops(&self) -> &dyn UpstreamCloseOps {
+        self
+    }
+
+    fn as_connection_complete_ops(&self) -> &dyn ConnectionCompleteOps {
         self
     }
 }

@@ -215,9 +215,32 @@ impl FilterTrailersStatus {
 ///
 /// `HTTP Filter` operates on a single HTTP stream, i.e. request/response pair.
 ///
-/// When `Envoy` accepts a new connection, a dedicated `HTTP Filter` instance is created for it.
+/// When `Envoy` receives a new HTTP/1.1 request or a new HTTP/2 stream is opened,
+/// a dedicated `HTTP Filter` instance is created for it.
 ///
 /// `HTTP Filter` in `Envoy` is a stateful object.
+///
+/// # Examples
+///
+/// Basic `HTTP Filter`:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::extension::{HttpFilter, Result};
+/// use envoy::extension::filter::http::{FilterHeadersStatus, RequestHeadersOps};
+/// use envoy::host::log;
+///
+/// /// My very own `HttpFilter`.
+/// struct MyHttpFilter;
+///
+/// impl HttpFilter for MyHttpFilter {
+///     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+///         let user_agent = ops.request_header("user-agent")?.unwrap_or("<unknown>".to_string());
+///         log::info!("user-agent: {}", user_agent);
+///         Ok(FilterHeadersStatus::Continue)
+///     }
+/// }
+/// ```
 ///
 /// **NOTE: This trait MUST NOT panic**. If a filter invocation cannot proceed
 /// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to terminate
@@ -229,6 +252,42 @@ impl FilterTrailersStatus {
 /// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
 /// [`Envoy SDK`]: https://docs.rs/envoy-sdk
 pub trait HttpFilter {
+    /// Called with decoded request headers.
+    ///
+    /// # Arguments
+    ///
+    /// * `num_headers` - number of headers in the request.
+    /// * `ops`         - a [`trait object`][`RequestHeadersOps`] through which `HTTP Filter` can
+    ///                   manipulate request headers.
+    ///
+    /// # Return value
+    ///
+    /// [`FilterHeadersStatus`] telling `Envoy` how to manage further filter iteration.
+    ///
+    /// [`FilterHeadersStatus`]: enum.FilterHeadersStatus.html
+    /// [`RequestHeadersOps`]: trait.RequestHeadersOps.html
+    ///
+    /// # Examples
+    ///
+    /// Basic usage to sniff request headers:
+    ///
+    /// ```
+    /// # use envoy_sdk as envoy;
+    /// # use envoy::extension::{HttpFilter, Result};
+    /// # use envoy::extension::filter::http::{FilterHeadersStatus, RequestHeadersOps};
+    /// # use envoy::host::log;
+    /// #
+    /// # /// My very own `HttpFilter`.
+    /// # struct MyHttpFilter;
+    /// #
+    /// # impl HttpFilter for MyHttpFilter {
+    ///   fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+    ///       let user_agent = ops.request_header("user-agent")?.unwrap_or("<unknown>".to_string());
+    ///       log::info!("user-agent: {}", user_agent);
+    ///       Ok(FilterHeadersStatus::Continue)
+    ///   }
+    /// # }
+    /// ```
     fn on_request_headers(
         &mut self,
         _num_headers: usize,
@@ -237,6 +296,43 @@ pub trait HttpFilter {
         Ok(FilterHeadersStatus::Continue)
     }
 
+    /// Called with a decoded request data frame.
+    ///
+    /// # Arguments
+    ///
+    /// * `body_size`     - size of data accumulated in the read buffer.
+    /// * `end_of_stream` - supplies whether this is the last data frame.
+    /// * `ops`           - a [`trait object`][`RequestBodyOps`] through which `HTTP Filter` can
+    ///                     manipulate request body.
+    ///
+    /// # Return value
+    ///
+    /// [`FilterDataStatus`] telling `Envoy` how to manage further filter iteration.
+    ///
+    /// [`FilterDataStatus`]: enum.FilterDataStatus.html
+    /// [`RequestBodyOps`]: trait.RequestBodyOps.html
+    ///
+    /// # Examples
+    ///
+    /// Basic usage to sniff request body:
+    ///
+    /// ```
+    /// # use envoy_sdk as envoy;
+    /// # use envoy::extension::{HttpFilter, Result};
+    /// # use envoy::extension::filter::http::{FilterDataStatus, RequestBodyOps};
+    /// # use envoy::host::log;
+    /// #
+    /// # /// My very own `HttpFilter`.
+    /// # struct MyHttpFilter;
+    /// #
+    /// # impl HttpFilter for MyHttpFilter {
+    ///   fn on_request_body(&mut self, _body_size: usize, _end_of_stream: bool, ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
+    ///       let chunk_prefix = ops.request_body(0, 10)?.unwrap_or(vec![]);
+    ///       log::info!("body chunk starts with: {:?}", chunk_prefix);
+    ///       Ok(FilterDataStatus::Continue)
+    ///   }
+    /// # }
+    /// ```
     fn on_request_body(
         &mut self,
         _body_size: usize,
@@ -246,6 +342,43 @@ pub trait HttpFilter {
         Ok(FilterDataStatus::Continue)
     }
 
+    /// Called with decoded trailers, implicitly ending the stream.
+    ///
+    ///
+    /// # Arguments
+    ///
+    /// * `num_trailers` - number of trailers in the request.
+    /// * `ops`          - a [`trait object`][`RequestTrailersOps`] through which `HTTP Filter` can
+    ///                    manipulate request trailers.
+    ///
+    /// # Return value
+    ///
+    /// [`FilterTrailersStatus`] telling `Envoy` how to manage further filter iteration.
+    ///
+    /// [`FilterTrailersStatus`]: enum.FilterTrailersStatus.html
+    /// [`RequestTrailersOps`]: trait.RequestTrailersOps.html
+    ///
+    /// # Examples
+    ///
+    /// Basic usage to sniff request trailers:
+    ///
+    /// ```
+    /// # use envoy_sdk as envoy;
+    /// # use envoy::extension::{HttpFilter, Result};
+    /// # use envoy::extension::filter::http::{FilterTrailersStatus, RequestTrailersOps};
+    /// # use envoy::host::log;
+    /// #
+    /// # /// My very own `HttpFilter`.
+    /// # struct MyHttpFilter;
+    /// #
+    /// # impl HttpFilter for MyHttpFilter {
+    ///   fn on_request_trailers(&mut self, _num_headers: usize, ops: &dyn RequestTrailersOps) -> Result<FilterTrailersStatus> {
+    ///       let grpc_message = ops.request_trailer("grpc-message")?.unwrap_or("<unknown>".to_string());
+    ///       log::info!("grpc-message: {}", grpc_message);
+    ///       Ok(FilterTrailersStatus::Continue)
+    ///   }
+    /// # }
+    /// ```
     fn on_request_trailers(
         &mut self,
         _num_trailers: usize,
@@ -254,6 +387,7 @@ pub trait HttpFilter {
         Ok(FilterTrailersStatus::Continue)
     }
 
+    /// Called with response headers to be encoded.
     fn on_response_headers(
         &mut self,
         _num_headers: usize,
@@ -262,6 +396,7 @@ pub trait HttpFilter {
         Ok(FilterHeadersStatus::Continue)
     }
 
+    /// Called with response body to be encoded
     fn on_response_body(
         &mut self,
         _body_size: usize,
@@ -271,6 +406,7 @@ pub trait HttpFilter {
         Ok(FilterDataStatus::Continue)
     }
 
+    /// Called with response trailers to be encoded
     fn on_response_trailers(
         &mut self,
         _num_trailers: usize,
@@ -282,7 +418,7 @@ pub trait HttpFilter {
     /// Called when HTTP stream is complete.
     ///
     /// This moment happens before `Access Loggers` get called.
-    fn on_exchange_complete(&mut self) -> Result<()> {
+    fn on_exchange_complete(&mut self, _ops: &dyn ExchangeCompleteOps) -> Result<()> {
         Ok(())
     }
 
@@ -316,6 +452,7 @@ pub trait HttpFilter {
     }
 }
 
+/// An interface for manipulating request headers.
 pub trait RequestHeadersOps: RequestFlowOps {
     fn request_headers(&self) -> host::Result<Vec<(String, String)>>;
 
@@ -328,10 +465,12 @@ pub trait RequestHeadersOps: RequestFlowOps {
     fn add_request_header(&self, name: &str, value: &str) -> host::Result<()>;
 }
 
+/// An interface for manipulating request body.
 pub trait RequestBodyOps: RequestFlowOps {
     fn request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
+/// An interface for manipulating request trailers.
 pub trait RequestTrailersOps: RequestFlowOps {
     fn request_trailers(&self) -> host::Result<Vec<(String, String)>>;
 
@@ -344,6 +483,7 @@ pub trait RequestTrailersOps: RequestFlowOps {
     fn add_request_trailer(&self, name: &str, value: &str) -> host::Result<()>;
 }
 
+/// An interface for changing request flow.
 pub trait RequestFlowOps {
     fn resume_request(&self) -> host::Result<()>;
 
@@ -357,6 +497,7 @@ pub trait RequestFlowOps {
     ) -> host::Result<()>;
 }
 
+/// An interface for manipulating response headers.
 pub trait ResponseHeadersOps: ResponseFlowOps {
     fn response_headers(&self) -> host::Result<Vec<(String, String)>>;
 
@@ -369,10 +510,12 @@ pub trait ResponseHeadersOps: ResponseFlowOps {
     fn add_response_header(&self, name: &str, value: &str) -> host::Result<()>;
 }
 
+/// An interface for manipulating response body.
 pub trait ResponseBodyOps: ResponseFlowOps {
     fn response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
+/// An interface for manipulating response trailers.
 pub trait ResponseTrailersOps: ResponseFlowOps {
     fn response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 
@@ -385,10 +528,16 @@ pub trait ResponseTrailersOps: ResponseFlowOps {
     fn add_response_trailer(&self, name: &str, value: &str) -> host::Result<()>;
 }
 
+/// An interface for changing response flow.
 pub trait ResponseFlowOps {
     fn resume_response(&self) -> host::Result<()>;
 }
 
+pub trait ExchangeCompleteOps {
+    // TODO(yskopets): define
+}
+
+/// An interface with all available operations over request/response.
 pub trait Ops:
     RequestHeadersOps
     + RequestBodyOps
@@ -396,6 +545,7 @@ pub trait Ops:
     + ResponseHeadersOps
     + ResponseBodyOps
     + ResponseTrailersOps
+    + ExchangeCompleteOps
 {
     fn as_request_headers_ops(&self) -> &dyn RequestHeadersOps;
 
@@ -408,6 +558,8 @@ pub trait Ops:
     fn as_response_body_ops(&self) -> &dyn ResponseBodyOps;
 
     fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps;
+
+    fn as_exchange_complete_ops(&self) -> &dyn ExchangeCompleteOps;
 }
 
 impl<T> Ops for T
@@ -417,7 +569,8 @@ where
         + RequestTrailersOps
         + ResponseHeadersOps
         + ResponseBodyOps
-        + ResponseTrailersOps,
+        + ResponseTrailersOps
+        + ExchangeCompleteOps,
 {
     fn as_request_headers_ops(&self) -> &dyn RequestHeadersOps {
         self
@@ -440,6 +593,10 @@ where
     }
 
     fn as_response_trailers_ops(&self) -> &dyn ResponseTrailersOps {
+        self
+    }
+
+    fn as_exchange_complete_ops(&self) -> &dyn ExchangeCompleteOps {
         self
     }
 }

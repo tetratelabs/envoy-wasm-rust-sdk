@@ -24,7 +24,7 @@ where
     F: NetworkFilter,
 {
     filter: F,
-    logger_ops: &'a dyn Ops,
+    filter_ops: &'a dyn Ops,
     http_client_ops: &'a dyn HttpClientResponseOps,
     error_sink: &'a dyn ErrorSink,
 }
@@ -49,7 +49,7 @@ where
         match self.filter.on_downstream_data(
             data_size,
             end_of_stream,
-            self.logger_ops.as_downstream_data_ops(),
+            self.filter_ops.as_downstream_data_ops(),
         ) {
             Ok(status) => status.as_action(),
             Err(err) => {
@@ -62,7 +62,10 @@ where
     }
 
     fn on_downstream_close(&mut self, peer_type: PeerType) {
-        if let Err(err) = self.filter.on_downstream_close(peer_type) {
+        if let Err(err) = self
+            .filter
+            .on_downstream_close(peer_type, self.filter_ops.as_downstream_close_ops())
+        {
             self.error_sink
                 .observe("failed to handle connection close by the downstream", &err);
             // TODO(yskopets): do we still need to do anything to terminate the connection?
@@ -74,7 +77,7 @@ where
         match self.filter.on_upstream_data(
             data_size,
             end_of_stream,
-            self.logger_ops.as_upstream_data_ops(),
+            self.filter_ops.as_upstream_data_ops(),
         ) {
             Ok(status) => status.as_action(),
             Err(err) => {
@@ -87,19 +90,14 @@ where
     }
 
     fn on_upstream_close(&mut self, peer_type: PeerType) {
-        if let Err(err) = self.filter.on_upstream_close(peer_type) {
+        if let Err(err) = self
+            .filter
+            .on_upstream_close(peer_type, self.filter_ops.as_upstream_close_ops())
+        {
             self.error_sink
                 .observe("failed to handle connection close by the upstream", &err);
             // TODO(yskopets): do we still need to do anything to terminate the connection?
             self.handle_error(err);
-        }
-    }
-
-    fn on_log(&mut self) {
-        if let Err(err) = self.filter.on_connection_complete() {
-            self.error_sink
-                .observe("failed to handle completion of a connection", &err);
-            // connection is already being terminated, so there is no need to do it explicitly
         }
     }
 }
@@ -108,6 +106,18 @@ impl<'a, F> Context for NetworkFilterContext<'a, F>
 where
     F: NetworkFilter,
 {
+    fn on_done(&mut self) -> bool {
+        if let Err(err) = self
+            .filter
+            .on_connection_complete(self.filter_ops.as_connection_complete_ops())
+        {
+            self.error_sink
+                .observe("failed to handle completion of a connection", &err);
+            // connection is already being terminated, so there is no need to do it explicitly
+        }
+        true
+    }
+
     // Http Client callbacks
 
     fn on_http_call_response(
@@ -122,7 +132,7 @@ where
             num_headers,
             body_size,
             num_trailers,
-            self.logger_ops,
+            self.filter_ops,
             self.http_client_ops,
         ) {
             self.error_sink.observe(
@@ -140,13 +150,13 @@ where
 {
     pub fn new(
         filter: F,
-        logger_ops: &'a dyn Ops,
+        filter_ops: &'a dyn Ops,
         http_client_ops: &'a dyn HttpClientResponseOps,
         error_sink: &'a dyn ErrorSink,
     ) -> Self {
         NetworkFilterContext {
             filter,
-            logger_ops,
+            filter_ops,
             http_client_ops,
             error_sink,
         }

@@ -113,7 +113,7 @@ impl<'a> NetworkFilter for SampleNetworkFilter<'a> {
     }
 
     /// Is called when the TCP connection is complete.
-    fn on_connection_complete(&mut self) -> Result<()> {
+    fn on_connection_complete(&mut self, _ops: &dyn network::ConnectionCompleteOps) -> Result<()> {
         // Update stats
         self.stats.requests_active().dec()?;
         self.stats.requests_total().inc()?;

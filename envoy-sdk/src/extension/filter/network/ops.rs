@@ -15,7 +15,9 @@
 use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::{BufferType, Bytes};
 
-use super::{DownstreamDataOps, UpstreamDataOps};
+use super::{
+    ConnectionCompleteOps, DownstreamCloseOps, DownstreamDataOps, UpstreamCloseOps, UpstreamDataOps,
+};
 use crate::host;
 
 pub(super) struct Host;
@@ -31,3 +33,9 @@ impl UpstreamDataOps for Host {
         hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
     }
 }
+
+impl DownstreamCloseOps for Host {}
+
+impl UpstreamCloseOps for Host {}
+
+impl ConnectionCompleteOps for Host {}

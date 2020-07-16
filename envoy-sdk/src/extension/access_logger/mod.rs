@@ -55,7 +55,7 @@
 
 use crate::abi::proxy_wasm::types::Bytes;
 
-use crate::extension::{ConfigStatus, Result};
+use crate::extension::{ConfigStatus, DrainStatus, Result};
 use crate::host;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
@@ -72,6 +72,33 @@ mod ops;
 ///
 /// `Access Logger` in `Envoy` is a stateful object.
 ///
+/// # Examples
+///
+/// Basic `Access Logger`:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::extension::{AccessLogger, Result};
+/// use envoy::extension::access_logger::LogOps;
+/// use envoy::host::log;
+///
+/// /// My very own `AccessLogger`.
+/// struct MyAccessLogger;
+///
+/// impl AccessLogger for MyAccessLogger {
+///     const NAME: &'static str = "my_access_logger";
+///
+///     fn on_log(&mut self, ops: &dyn LogOps) -> Result<()> {
+///         let upstream_address = ops.stream_property(vec!["upstream", "address"])?
+///             .map(String::from_utf8)
+///             .transpose()?
+///             .unwrap_or("<unknown>".to_string());
+///         log::info!("upstream.address : {}", upstream_address);
+///         Ok(())
+///     }    
+/// }
+/// ```
+///
 /// **NOTE: This trait MUST NOT panic**. If a logger invocation cannot proceed
 /// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to handle
 /// the error gracefully.
@@ -86,10 +113,24 @@ pub trait AccessLogger {
     /// Name the extension should be referred to in `Envoy` configuration.
     const NAME: &'static str;
 
+    /// Called when `Access Logger` is being (re-)configured.
+    ///
+    /// # Arguments
+    ///
+    /// * `_configuration_size` - size of configuration data.
+    /// * `_ops`                - a [`trait object`][`ConfigureOps`] through which `Access Logger` can access
+    ///                           its configuration.
+    ///
+    /// # Return value
+    ///
+    /// [`ConfigStatus`] telling `Envoy` whether configuration has been successfully applied.
+    ///
+    /// [`ConfigStatus`]: ../factory/enum.ConfigStatus.html
+    /// [`ConfigureOps`]: trait.ConfigureOps.html
     fn on_configure(
         &mut self,
         _configuration_size: usize,
-        _logger_ops: &dyn ConfigureOps,
+        _ops: &dyn ConfigureOps,
     ) -> Result<ConfigStatus> {
         Ok(ConfigStatus::Accepted)
     }
@@ -98,12 +139,24 @@ pub trait AccessLogger {
     ///
     /// # Arguments
     ///
-    /// * `logger_ops` - a [`trait object`][`LogOps`] through which `Access Logger` can access
-    ///                  data of the HTTP stream or TCP connection that needs to be logged.
+    /// * `ops` - a [`trait object`][`LogOps`] through which `Access Logger` can access
+    ///           data of the HTTP stream or TCP connection that is being logged.
     ///
     /// [`LogOps`]: trait.LogOps.html
-    fn on_log(&mut self, _logger_ops: &dyn LogOps) -> Result<()> {
+    fn on_log(&mut self, _ops: &dyn LogOps) -> Result<()> {
         Ok(())
+    }
+
+    /// Called when `Access Logger` is about to be destroyed.
+    ///
+    /// # Return value
+    ///
+    /// [`DrainStatus`] telling `Envoy` whether `Access Logger` has already been drained
+    /// and can be now removed safely.
+    ///
+    /// [`DrainStatus`]: ../factory/enum.DrainStatus.html
+    fn on_drain(&mut self) -> Result<DrainStatus> {
+        Ok(DrainStatus::Complete)
     }
 
     // Http Client callbacks
@@ -134,10 +187,17 @@ pub trait AccessLogger {
     }
 }
 
+/// An interface for accessing extension config.
 pub trait ConfigureOps {
     fn configuration(&self) -> host::Result<Option<Bytes>>;
 }
 
+/// An interface for acknowledging `Envoy` that extension `Factory` has been drained.
+pub trait DrainOps {
+    fn done(&self) -> host::Result<()>;
+}
+
+/// An interface for accessing data of the HTTP stream or TCP connection that is being logged.
 pub trait LogOps {
     fn request_headers(&self) -> host::Result<Vec<(String, String)>>;
 
@@ -154,6 +214,7 @@ pub trait LogOps {
     fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
 }
 
+#[doc(hidden)]
 pub trait Ops: ConfigureOps + LogOps {
     fn as_configure_ops(&self) -> &dyn ConfigureOps;
 
