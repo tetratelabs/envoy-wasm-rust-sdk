@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `envoy_sdk` crate."><meta name="keywords" content="rust, rustlang, rust-lang, envoy_sdk"><title>envoy_sdk - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="../favicon.ico"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../envoy_sdk/index.html'><div class='logo-container'><img src='../rust-logo.png' alt='logo'></div></a><p class='location'>Crate envoy_sdk</p><div class="sidebar-elems"><a id='all-types' href='all.html'><p>See all envoy_sdk's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'envoy_sdk', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/envoy_sdk/lib.rs.html#15-92' title='goto source code'>[src]</a></span><span class='in-band'>Crate <a class="mod" href=''>envoy_sdk</a></span></h1><div class='docblock'><p><code>Rust</code> SDK for WebAssembly-based <code>Envoy</code> extensions.</p>
+<h2 id="tldr" class="section-header"><a href="#tldr">TLDR</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="doccomment">/// My very own `HttpFilter`.</span>
+<span class="kw">struct</span> <span class="ident">MyHttpFilter</span>;
+
+<span class="kw">impl</span> <span class="ident">HttpFilter</span> <span class="kw">for</span> <span class="ident">MyHttpFilter</span> {
+    <span class="kw">fn</span> <span class="ident">on_request_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_num_headers</span>: <span class="ident">usize</span>, <span class="ident">_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">RequestHeadersOps</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FilterHeadersStatus</span><span class="op">&gt;</span> {
+        <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;proxying an HTTP request&quot;</span>);
+        <span class="prelude-val">Ok</span>(<span class="ident">FilterHeadersStatus</span>::<span class="ident">Continue</span>)
+    }
+}</pre></div>
+<h2 id="supported-extension-types" class="section-header"><a href="#supported-extension-types">Supported Extension Types</a></h2>
+<p><code>Envoy SDK</code> can help you to develop the following types of extensions:</p>
+<ul>
+<li><a href="extension/filter/http/index.html"><code>HttpFilter</code></a></li>
+<li><a href="extension/filter/network/index.html"><code>NetworkFilter</code></a></li>
+<li><a href="extension/access_logger/index.html"><code>AccessLogger</code></a></li>
+</ul>
+<h2 id="supported-envoy-apis" class="section-header"><a href="#supported-envoy-apis">Supported Envoy APIs</a></h2>
+<p>You can use the following <code>Envoy APIs</code> in your extensions:</p>
+<ul>
+<li><a href="host/time/trait.Clock.html"><code>Clock</code></a></li>
+<li><a href="host/http/client/trait.HttpClient.html"><code>HttpClient</code></a></li>
+<li><a href="host/log/index.html"><code>Log</code></a></li>
+<li><a href="host/stats/trait.Stats.html"><code>Stats</code></a></li>
+<li><a href="host/stream_info/trait.StreamInfo.html"><code>StreamInfo</code></a></li>
+<li><a href="host/shared_data/trait.SharedData.html"><code>SharedData</code></a></li>
+<li><a href="host/shared_queue/trait.SharedQueue.html"><code>SharedQueue</code></a></li>
+</ul>
+<h2 id="example-extensions" class="section-header"><a href="#example-extensions">Example extensions</a></h2>
+<ul>
+<li><a href="https://github.com/tetratelabs/envoy-wasm-rust-sdk/tree/master/examples/http-filter"><code>Sample HTTP Filter</code></a></li>
+<li><a href="https://github.com/tetratelabs/envoy-wasm-rust-sdk/tree/master/examples/network-filter"><code>Sample Network Filter</code></a></li>
+<li><a href="https://github.com/tetratelabs/envoy-wasm-rust-sdk/tree/master/examples/access-logger"><code>Sample Access Logger</code></a></li>
+</ul>
+<h2 id="how-to" class="section-header"><a href="#how-to">How To</a></h2>
+<ul>
+<li><a href="extension/factory/trait.ExtensionFactory.html#examples">How To make my extension configurable?</a></li>
+<li><a href="extension/factory/trait.ExtensionFactory.html#examples">How To share stats between filter instances?</a></li>
+<li><a href="host/http/client/trait.HttpClient.html#examples">How To use HttpClient?</a></li>
+</ul>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table><tr class='module-item'><td><a class="mod" href="extension/index.html" title='envoy_sdk::extension mod'>extension</a></td><td class='docblock-short'><p><code>Envoy</code> <code>Extension APIs</code> to be implemented by extensions.</p>
+</td></tr><tr class='module-item'><td><a class="mod" href="host/index.html" title='envoy_sdk::host mod'>host</a></td><td class='docblock-short'><p><code>Envoy</code> <code>Host APIs</code> provided for use by extensions.</p>
+</td></tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table><tr class='module-item'><td><a class="macro" href="macro.entrypoint.html" title='envoy_sdk::entrypoint macro'>entrypoint</a></td><td class='docblock-short'><p>Generates the <a href="https://github.com/proxy-wasm/spec/blob/master/abi-versions/vNEXT/README.md#_start"><code>_start</code></a> function that will be called by <code>Envoy</code> to let
+WebAssembly module initialize itself.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "envoy_sdk";</script><script src="../aliases.js"></script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `http` mod in crate `envoy_sdk`."><meta name="keywords" content="rust, rustlang, rust-lang, http"><title>envoy_sdk::extension::filter::http - Rust</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../envoy_sdk/index.html'><div class='logo-container'><img src='../../../../rust-logo.png' alt='logo'></div></a><p class='location'>Module http</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'><a href='../../../index.html'>envoy_sdk</a>::<wbr><a href='../../index.html'>extension</a>::<wbr><a href='../index.html'>filter</a></p><script>window.sidebarCurrent = {name: 'http', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/envoy_sdk/extension/filter/http/mod.rs.html#15-630' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../../../index.html'>envoy_sdk</a>::<wbr><a href='../../index.html'>extension</a>::<wbr><a href='../index.html'>filter</a>::<wbr><a class="mod" href=''>http</a></span></h1><div class='docblock'><p><code>Envoy</code> <code>HTTP Filter</code> extension.</p>
+<p>Creating a new <code>HTTP Filter</code> extension using <code>Envoy SDK</code> consists of the following steps:</p>
+<ol>
+<li>Implement <a href="trait.HttpFilter.html"><code>HttpFilter</code></a> trait to define core logic of your extension</li>
+<li>Implement <a href="../../factory/trait.ExtensionFactory.html"><code>ExtensionFactory</code></a> trait to create new instances of your extension</li>
+<li><a href="../../../macro.entrypoint.html"><code>Register</code></a> your extension on WebAssembly module start up</li>
+</ol>
+<h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1><h4 id="basic-httpfilter" class="section-header"><a href="#basic-httpfilter">Basic <code>HttpFilter</code>:</a></h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::<span class="ident">HttpFilter</span>;
+
+<span class="doccomment">/// My very own `HttpFilter`.</span>
+<span class="kw">struct</span> <span class="ident">MyHttpFilter</span>;
+
+<span class="kw">impl</span> <span class="ident">HttpFilter</span> <span class="kw">for</span> <span class="ident">MyHttpFilter</span> {}</pre></div>
+<h4 id="extensionfactory-for-myhttpfilter-instances" class="section-header"><a href="#extensionfactory-for-myhttpfilter-instances"><code>ExtensionFactory</code> for <code>MyHttpFilter</code> instances:</a></h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">ExtensionFactory</span>, <span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
+
+<span class="doccomment">/// `ExtensionFactory` for `MyHttpFilter`.</span>
+<span class="kw">struct</span> <span class="ident">MyHttpFilterFactory</span>;
+
+<span class="kw">impl</span> <span class="ident">ExtensionFactory</span> <span class="kw">for</span> <span class="ident">MyHttpFilterFactory</span> {
+    <span class="kw">type</span> <span class="ident">Extension</span> <span class="op">=</span> <span class="ident">MyHttpFilter</span>;
+
+    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;my_http_filter&quot;</span>;
+
+    <span class="kw">fn</span> <span class="ident">new_extension</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_instance_id</span>: <span class="ident">InstanceId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Extension</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">MyHttpFilter</span>)
+    }
+}</pre></div>
+<h4 id="registration-of-myhttpfilter-on-start-up" class="section-header"><a href="#registration-of-myhttpfilter-on-start-up">Registration of <code>MyHttpFilter</code> on start up:</a></h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">entrypoint</span>, <span class="ident">Module</span>, <span class="prelude-ty">Result</span>};
+
+<span class="macro">entrypoint</span><span class="macro">!</span> { <span class="ident">initialize</span> } <span class="comment">// put initialization logic into a function to make it unit testable</span>
+
+<span class="kw">fn</span> <span class="ident">initialize</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span> {
+    <span class="ident">Module</span>::<span class="ident">new</span>()
+        .<span class="ident">add_http_filter</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">MyHttpFilterFactory</span>))
+}</pre></div>
+</div><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table><tr class='module-item'><td><a class="enum" href="enum.FilterDataStatus.html" title='envoy_sdk::extension::filter::http::FilterDataStatus enum'>FilterDataStatus</a></td><td class='docblock-short'><p>Return codes for <a href="trait.HttpFilter.html#method.on_request_body"><code>on_request_body</code></a> and <a href="trait.HttpFilter.html#method.on_response_body"><code>on_response_body</code></a> filter
+invocations.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.FilterHeadersStatus.html" title='envoy_sdk::extension::filter::http::FilterHeadersStatus enum'>FilterHeadersStatus</a></td><td class='docblock-short'><p>Return codes for <a href="trait.HttpFilter.html#method.on_request_headers"><code>on_request_headers</code></a> and <a href="trait.HttpFilter.html#method.on_response_headers"><code>on_response_headers</code></a> filter
+invocations.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.FilterTrailersStatus.html" title='envoy_sdk::extension::filter::http::FilterTrailersStatus enum'>FilterTrailersStatus</a></td><td class='docblock-short'><p>Return codes for <a href="trait.HttpFilter.html#method.on_request_trailers"><code>on_request_trailers</code></a> and <a href="trait.HttpFilter.html#method.on_response_trailers"><code>on_response_trailers</code></a> filter
+invocations.</p>
+</td></tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table><tr class='module-item'><td><a class="trait" href="trait.ExchangeCompleteOps.html" title='envoy_sdk::extension::filter::http::ExchangeCompleteOps trait'>ExchangeCompleteOps</a></td><td class='docblock-short'><p>An interface for operations available in the context of <a href="trait.HttpFilter.html#method.on_exchange_complete"><code>on_exchange_complete</code></a>
+filter invocation.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.HttpFilter.html" title='envoy_sdk::extension::filter::http::HttpFilter trait'>HttpFilter</a></td><td class='docblock-short'><p>An interface of the <code>Envoy</code> <code>HTTP Filter</code> extension.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.Ops.html" title='envoy_sdk::extension::filter::http::Ops trait'>Ops</a></td><td class='docblock-short'><p>An interface with all available operations over request/response.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.RequestBodyOps.html" title='envoy_sdk::extension::filter::http::RequestBodyOps trait'>RequestBodyOps</a></td><td class='docblock-short'><p>An interface for manipulating request body.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.RequestFlowOps.html" title='envoy_sdk::extension::filter::http::RequestFlowOps trait'>RequestFlowOps</a></td><td class='docblock-short'><p>An interface for changing request flow.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.RequestHeadersOps.html" title='envoy_sdk::extension::filter::http::RequestHeadersOps trait'>RequestHeadersOps</a></td><td class='docblock-short'><p>An interface for manipulating request headers.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.RequestTrailersOps.html" title='envoy_sdk::extension::filter::http::RequestTrailersOps trait'>RequestTrailersOps</a></td><td class='docblock-short'><p>An interface for manipulating request trailers.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.ResponseBodyOps.html" title='envoy_sdk::extension::filter::http::ResponseBodyOps trait'>ResponseBodyOps</a></td><td class='docblock-short'><p>An interface for manipulating response body.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.ResponseFlowOps.html" title='envoy_sdk::extension::filter::http::ResponseFlowOps trait'>ResponseFlowOps</a></td><td class='docblock-short'><p>An interface for changing response flow.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.ResponseHeadersOps.html" title='envoy_sdk::extension::filter::http::ResponseHeadersOps trait'>ResponseHeadersOps</a></td><td class='docblock-short'><p>An interface for manipulating response headers.</p>
+</td></tr><tr class='module-item'><td><a class="trait" href="trait.ResponseTrailersOps.html" title='envoy_sdk::extension::filter::http::ResponseTrailersOps trait'>ResponseTrailersOps</a></td><td class='docblock-short'><p>An interface for manipulating response trailers.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../";window.currentCrate = "envoy_sdk";</script><script src="../../../../aliases.js"></script><script src="../../../../main.js"></script><script defer src="../../../../search-index.js"></script></body></html>
