@@ -543,6 +543,10 @@ pub trait ResponseFlowOps {
     fn resume_response(&self) -> host::Result<()>;
 }
 
+/// An interface for operations available in the context of [`on_exchange_complete`]
+/// filter invocation.
+///
+/// [`on_exchange_complete`]: trait.HttpFilter.html#method.on_exchange_complete
 pub trait ExchangeCompleteOps {
     // TODO(yskopets): define
 }

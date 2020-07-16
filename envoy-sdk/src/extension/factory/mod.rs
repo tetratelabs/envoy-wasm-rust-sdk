@@ -118,11 +118,13 @@ pub trait ExtensionFactory {
 
 /// An interface for accessing extension config.
 pub trait ConfigureOps {
+    /// Returns extension config.
     fn configuration(&self) -> host::Result<Option<Bytes>>;
 }
 
 /// An interface for acknowledging `Envoy` that extension `Factory` has been drained.
 pub trait DrainOps {
+    /// Acknowledges `Envoy` that extension has been drained and can be safely removed now.
     fn done(&self) -> host::Result<()>;
 }
 

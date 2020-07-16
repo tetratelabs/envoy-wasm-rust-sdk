@@ -328,14 +328,26 @@ pub trait UpstreamDataOps {
     fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
+/// An interface for operations available in the context of [`on_downstream_close`]
+/// filter invocation.
+///
+/// [`on_downstream_close`]: trait.NetworkFilter.html#method.on_downstream_close
 pub trait DownstreamCloseOps {
     // TODO(yskopets): TBD
 }
 
+/// An interface for operations available in the context of [`on_upstream_close`]
+/// filter invocation.
+///
+/// [`on_upstream_close`]: trait.NetworkFilter.html#method.on_upstream_close
 pub trait UpstreamCloseOps {
     // TODO(yskopets): TBD
 }
 
+/// An interface for operations available in the context of [`on_connection_complete`]
+/// filter invocation.
+///
+/// [`on_connection_complete`]: trait.NetworkFilter.html#method.on_connection_complete
 pub trait ConnectionCompleteOps {
     // TODO(yskopets): TBD
 }
