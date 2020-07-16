@@ -25,7 +25,7 @@ pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHan
 ///
 /// # Examples
 ///
-/// Basic usage of [`HttpClient`]:
+/// #### Basic usage of [`HttpClient`]:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -47,7 +47,7 @@ pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHan
 /// # }
 /// ```
 ///
-/// Injecting [`HttpClient`] into a HTTP Filter as a dependency:
+/// #### Injecting [`HttpClient`] into a HTTP Filter as a dependency:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -70,7 +70,7 @@ pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHan
 /// }
 /// ```
 ///
-/// Sending a request and receiving a response inside a `HTTP Filter`:
+/// #### Sending a request and receiving a response inside a `HTTP Filter`:
 ///
 /// ```
 /// # use envoy_sdk as envoy;

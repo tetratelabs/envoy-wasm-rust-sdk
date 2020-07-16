@@ -22,7 +22,7 @@
 //!
 //! # Examples
 //!
-//! Basic `HTTP Filter`:
+//! #### Basic [`HttpFilter`]:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -34,7 +34,7 @@
 //! impl HttpFilter for MyHttpFilter {}
 //! ```
 //!
-//! `Factory` object for `MyHttpFilter` instances:
+//! #### [`ExtensionFactory`] for `MyHttpFilter` instances:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -47,7 +47,7 @@
 //! #
 //! use envoy::extension::{ExtensionFactory, InstanceId, Result};
 //!
-//! /// `Factory` object for `MyHttpFilter`.
+//! /// `ExtensionFactory` for `MyHttpFilter`.
 //! struct MyHttpFilterFactory;
 //!
 //! impl ExtensionFactory for MyHttpFilterFactory {
@@ -61,7 +61,7 @@
 //! }
 //! ```
 //!
-//! Registration of `MyHttpFilter` on start up:
+//! #### Registration of `MyHttpFilter` on start up:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -73,7 +73,7 @@
 //! #
 //! # use envoy::extension::{ExtensionFactory, InstanceId, self};
 //! #
-//! # /// `Factory` object for `MyHttpFilter`.
+//! # /// `ExtensionFactory` for `MyHttpFilter`.
 //! # struct MyHttpFilterFactory;
 //! # impl ExtensionFactory for MyHttpFilterFactory {
 //! #     type Extension = MyHttpFilter;
@@ -232,7 +232,7 @@ impl FilterTrailersStatus {
 ///
 /// # Examples
 ///
-/// Basic `HTTP Filter`:
+/// #### Basic `HttpFilter`:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -252,15 +252,19 @@ impl FilterTrailersStatus {
 /// }
 /// ```
 ///
-/// **NOTE: This trait MUST NOT panic**. If a filter invocation cannot proceed
-/// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to terminate
+/// # NOTE
+///
+/// **This trait MUST NOT panic!**
+///
+/// If a filter invocation cannot proceed normally, it should return [`Result::Err(x)`].
+/// In that case, `Envoy SDK` will be able to terminate
 /// only the affected HTTP request by sending a response with the HTTP Status code
 /// `500 (Internal Server Error)`.
+///
 /// For comparison, if the extension chooses to panic, this will, at best, affect all ongoing HTTP requests
 /// handled by that extension, and, at worst, will crash `Envoy` entirely (as of July 2020).
 ///
 /// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
-/// [`Envoy SDK`]: https://docs.rs/envoy-sdk
 pub trait HttpFilter {
     /// Called with decoded request headers.
     ///
@@ -279,7 +283,7 @@ pub trait HttpFilter {
     ///
     /// # Examples
     ///
-    /// Basic usage to sniff request headers:
+    /// #### Basic usage to sniff request headers:
     ///
     /// ```
     /// # use envoy_sdk as envoy;
@@ -324,7 +328,7 @@ pub trait HttpFilter {
     ///
     /// # Examples
     ///
-    /// Basic usage to sniff request body:
+    /// #### Basic usage to sniff request body:
     ///
     /// ```
     /// # use envoy_sdk as envoy;
@@ -370,7 +374,7 @@ pub trait HttpFilter {
     ///
     /// # Examples
     ///
-    /// Basic usage to sniff request trailers:
+    /// #### Basic usage to sniff request trailers:
     ///
     /// ```
     /// # use envoy_sdk as envoy;

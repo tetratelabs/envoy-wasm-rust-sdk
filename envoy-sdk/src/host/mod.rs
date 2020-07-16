@@ -27,7 +27,7 @@
 //!
 //! # Examples
 //!
-//! Parameterize HTTP Filter extension with `Envoy` [`Clock`]:
+//! #### Parameterize HTTP Filter extension with `Envoy` [`Clock`]:
 //!
 //! ```
 //! # use envoy_sdk as envoy;

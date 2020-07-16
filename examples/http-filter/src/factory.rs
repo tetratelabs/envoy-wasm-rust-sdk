@@ -58,7 +58,7 @@ impl<'a> SampleHttpFilterFactory<'a> {
         })
     }
 
-    /// Creates a new factory bound to the actual Envoy ABI.
+    /// Creates a new factory bound to the actual `Envoy` ABI.
     pub fn default() -> Result<Self> {
         Self::new(Clock::default(), HttpClient::default(), Stats::default())
     }

@@ -21,7 +21,7 @@
 //!
 //! # Examples
 //!
-//! Basic `Access Logger`:
+//! #### Basic [`AccessLogger`]:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -35,7 +35,7 @@
 //! }
 //! ```
 //!
-//! Registration of `MyAccessLogger` on start up:
+//! #### Registration of `MyAccessLogger` on start up:
 //!
 //! ```
 //! # use envoy_sdk as envoy;
@@ -80,7 +80,7 @@ mod ops;
 ///
 /// # Examples
 ///
-/// Basic `Access Logger`:
+/// #### Basic `AccessLogger`:
 ///
 /// ```
 /// # use envoy_sdk as envoy;
@@ -105,16 +105,19 @@ mod ops;
 /// }
 /// ```
 ///
-/// **NOTE: This trait MUST NOT panic**. If a logger invocation cannot proceed
-/// normally, it should return [`Result::Err(x)`]. In that case, [`Envoy SDK`] will be able to handle
-/// the error gracefully.
+/// # NOTE
+///
+/// **This trait MUST NOT panic!**
+///
+/// If a logger invocation cannot proceed normally, it should return [`Result::Err(x)`].
+/// In that case, `Envoy SDK` will be able to handle the error gracefully.
+///
 /// For comparison, if the extension chooses to panic, this will, at best, affect all ongoing HTTP requests
 /// / TCP connections handled by that extension, and, at worst, will crash `Envoy` entirely (as of July 2020).
 ///
 /// [`HttpFilter`]: ../filter/http/trait.HttpFilter.html
 /// [`NetworkFilter`]: ../filter/network/trait.NetworkFilter.html
 /// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
-/// [`Envoy SDK`]: https://docs.rs/envoy-sdk
 pub trait AccessLogger {
     /// Name the extension should be referred to in `Envoy` configuration.
     const NAME: &'static str;
@@ -199,7 +202,9 @@ pub trait ConfigureOps {
     fn configuration(&self) -> host::Result<Option<Bytes>>;
 }
 
-/// An interface for acknowledging `Envoy` that extension `Factory` has been drained.
+/// An interface for acknowledging `Envoy` that `AccessLogger` has been drained.
+///
+/// [`AccessLogger`]: trait.AccessLogger.html
 pub trait DrainOps {
     /// Acknowledges `Envoy` that extension has been drained and can be safely removed now.
     fn done(&self) -> host::Result<()>;
