@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{ConfigureOps, LogOps};
+use super::{ConfigureOps, DrainOps, LogOps};
 use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::{Bytes, MapType};
 use crate::host;
@@ -52,5 +52,11 @@ impl LogOps for Host {
 
     fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
         hostcalls::get_property(path)
+    }
+}
+
+impl DrainOps for Host {
+    fn done(&self) -> host::Result<()> {
+        hostcalls::done()
     }
 }

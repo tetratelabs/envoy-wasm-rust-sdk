@@ -42,7 +42,7 @@ impl ConfigStatus {
     }
 }
 
-/// Possible responses to the the request to drain the extension.
+/// Possible responses to the request to drain the extension.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum DrainStatus {
     /// Extension is being drained and cannot be removed just yet.
@@ -67,6 +67,20 @@ pub trait ExtensionFactory {
     /// Name the extension should be referred to in `Envoy` configuration.
     const NAME: &'static str;
 
+    /// Called when extension is being (re-)configured.
+    ///
+    /// # Arguments
+    ///
+    /// * `_configuration_size` - size of configuration data.
+    /// * `_ops`                - a [`trait object`][`ConfigureOps`] through which extension `Factory` can access
+    ///                           configuration.
+    ///
+    /// # Return value
+    ///
+    /// [`ConfigStatus`] telling `Envoy` whether configuration has been successfully applied.
+    ///
+    /// [`ConfigStatus`]: enum.ConfigStatus.html
+    /// [`ConfigureOps`]: trait.ConfigureOps.html
     fn on_configure(
         &mut self,
         _configuration_size: usize,
@@ -75,21 +89,44 @@ pub trait ExtensionFactory {
         Ok(ConfigStatus::Accepted)
     }
 
+    /// Called to create a new instance of the extension, e.g. [`HttpFilter`] or [`NetworkFilter`].
+    ///
+    /// # Arguments
+    ///
+    /// * `instance_id` - opaque identifier of the extension instance.
+    ///
+    /// # Return value
+    ///
+    /// a new instance of the extension.
+    ///
+    /// [`HttpFilter`]: ../filter/http/trait.HttpFilter.html
+    /// [`NetworkFilter`]: ../filter/network/trait.NetworkFilter.html
     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension>;
 
+    /// Called when extension `Factory` is about to be destroyed.
+    ///
+    /// # Return value
+    ///
+    /// [`DrainStatus`] telling `Envoy` whether extension `Factory` has already been drained
+    /// and can be now removed safely.
+    ///
+    /// [`DrainStatus`]: enum.DrainStatus.html
     fn on_drain(&mut self) -> Result<DrainStatus> {
         Ok(DrainStatus::Complete)
     }
 }
 
+/// An interface for accessing extension config.
 pub trait ConfigureOps {
     fn configuration(&self) -> host::Result<Option<Bytes>>;
 }
 
+/// An interface for acknowledging `Envoy` that extension `Factory` has been drained.
 pub trait DrainOps {
     fn done(&self) -> host::Result<()>;
 }
 
+#[doc(hidden)]
 pub trait Ops: ConfigureOps + DrainOps {
     fn as_configure_ops(&self) -> &dyn ConfigureOps;
 

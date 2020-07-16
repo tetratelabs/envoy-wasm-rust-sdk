@@ -15,7 +15,7 @@
 use super::{AccessLogger, Ops};
 use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ErrorSink;
-use crate::extension::ConfigStatus;
+use crate::extension::{ConfigStatus, DrainStatus};
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
 pub(crate) struct AccessLoggerContext<'a, L>
@@ -59,6 +59,17 @@ impl<'a, L> Context for AccessLoggerContext<'a, L>
 where
     L: AccessLogger,
 {
+    fn on_done(&mut self) -> bool {
+        match self.logger.on_drain() {
+            Ok(status) => status.as_bool(),
+            Err(err) => {
+                self.error_sink
+                    .observe("failed to initiate draining of the extension", &err);
+                DrainStatus::Ongoing.as_bool()
+            }
+        }
+    }
+
     // Http Client callbacks
 
     fn on_http_call_response(

@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use super::{
-    RequestBodyOps, RequestFlowOps, RequestHeadersOps, RequestTrailersOps, ResponseBodyOps,
-    ResponseFlowOps, ResponseHeadersOps, ResponseTrailersOps,
+    ExchangeCompleteOps, RequestBodyOps, RequestFlowOps, RequestHeadersOps, RequestTrailersOps,
+    ResponseBodyOps, ResponseFlowOps, ResponseHeadersOps, ResponseTrailersOps,
 };
 use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::{BufferType, Bytes, MapType};
@@ -146,3 +146,5 @@ impl ResponseFlowOps for Host {
         hostcalls::resume_http_response()
     }
 }
+
+impl ExchangeCompleteOps for Host {}
