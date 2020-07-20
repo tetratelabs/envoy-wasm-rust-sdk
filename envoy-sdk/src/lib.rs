@@ -83,7 +83,7 @@
 //! [`HowToShareStats`]: extension/factory/trait.ExtensionFactory.html#examples
 //! [`HowToUseHttpClient`]: host/http/client/trait.HttpClient.html#examples
 
-#![doc(html_root_url = "https://docs.rs/envoy-sdk/0.0.3")]
+#![doc(html_root_url = "https://docs.rs/envoy-sdk/0.0.4")]
 
 mod abi;
 
