@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["SharedData","An interface of the `Envoy` `Shared Data API`."]]});
+initSidebarItems({"trait":[["Service",""]]});

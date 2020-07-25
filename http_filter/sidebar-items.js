@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SampleHttpFilterFactory","Factory for creating sample HTTP filter instances (one filter instance per HTTP request)."]]});

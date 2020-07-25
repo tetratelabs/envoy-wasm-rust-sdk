@@ -1,1 +1,1 @@
-initSidebarItems({"type":[["Error","A boxed [`Error`]."],["Result","A specialized [`Result`] type."]]});
+initSidebarItems({"enum":[["Error","The error type for extension callback methods."]],"type":[["Result","A specialized [`Result`] type for use in extension callback methods."]]});

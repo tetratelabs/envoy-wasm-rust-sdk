@@ -1,1 +1,1 @@
-initSidebarItems({"type":[["Error","A boxed [`Error`]."],["Result","A specialized [`Result`] type."]]});
+initSidebarItems({"struct":[["Error","The error type for host API functions."],["Function","Represents a host ABI function."]],"type":[["Result","A specialized [`Result`] type for use in host API functions."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SampleAccessLogger","Sample Access Logger."]]});

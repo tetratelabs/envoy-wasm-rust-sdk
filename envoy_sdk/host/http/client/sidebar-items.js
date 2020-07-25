@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["HttpClientRequestHandle","Opaque identifier of a request made via `HTTP Client API`."]],"trait":[["HttpClient","An interface of the `Envoy` `HTTP Client`."],["HttpClientResponseOps","An interface for accessing data of the HTTP response received by [`HttpClient`]."]]});
+initSidebarItems({"struct":[["RequestHandle","Opaque identifier of a request made via `HTTP Client API`."]],"trait":[["Client",""],["ResponseOps",""]]});

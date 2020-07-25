@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["access_logger"] = [{"text":"impl&lt;'a&gt; <a class=\"trait\" href=\"envoy_sdk/extension/access_logger/trait.Logger.html\" title=\"trait envoy_sdk::extension::access_logger::Logger\">Logger</a> for <a class=\"struct\" href=\"access_logger/struct.SampleAccessLogger.html\" title=\"struct access_logger::SampleAccessLogger\">SampleAccessLogger</a>&lt;'a&gt;","synthetic":false,"types":["access_logger::logger::SampleAccessLogger"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

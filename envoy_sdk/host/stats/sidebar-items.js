@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["Counter","An interface of the `Envoy` `Counter`."],["Gauge","An interface of the `Envoy` `Gauge`."],["Histogram","An interface of the `Envoy` `Histogram`."],["Stats","An interface of the `Envoy` `Stats API`."]]});
+initSidebarItems({"trait":[["Counter",""],["Gauge",""],["Histogram",""],["Service",""]]});

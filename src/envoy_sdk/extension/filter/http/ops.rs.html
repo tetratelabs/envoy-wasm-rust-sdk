@@ -146,8 +146,6 @@
 <span id="146">146</span>
 <span id="147">147</span>
 <span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -164,17 +162,17 @@
 <span class="comment">// limitations under the License.</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">ExchangeCompleteOps</span>, <span class="ident">RequestBodyOps</span>, <span class="ident">RequestFlowOps</span>, <span class="ident">RequestHeadersOps</span>, <span class="ident">RequestTrailersOps</span>,
-    <span class="ident">ResponseBodyOps</span>, <span class="ident">ResponseFlowOps</span>, <span class="ident">ResponseHeadersOps</span>, <span class="ident">ResponseTrailersOps</span>,
+    <span class="ident">RequestBodyOps</span>, <span class="ident">RequestFlowOps</span>, <span class="ident">RequestHeadersOps</span>, <span class="ident">RequestTrailersOps</span>, <span class="ident">ResponseBodyOps</span>,
+    <span class="ident">ResponseFlowOps</span>, <span class="ident">ResponseHeadersOps</span>, <span class="ident">ResponseTrailersOps</span>,
 };
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">hostcalls</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::{<span class="ident">BufferType</span>, <span class="ident">Bytes</span>, <span class="ident">MapType</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">hostcalls</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">types</span>::{<span class="ident">BufferType</span>, <span class="ident">Bytes</span>, <span class="ident">MapType</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">Host</span>;
 
 <span class="kw">impl</span> <span class="ident">RequestHeadersOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">request_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_request_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpRequestHeaders</span>)
     }
 
@@ -182,7 +180,7 @@
         <span class="ident">hostcalls</span>::<span class="ident">set_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpRequestHeaders</span>, <span class="ident">headers</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">request_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_request_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map_value</span>(<span class="ident">MapType</span>::<span class="ident">HttpRequestHeaders</span>, <span class="ident">name</span>)
     }
 
@@ -196,13 +194,13 @@
 }
 
 <span class="kw">impl</span> <span class="ident">RequestBodyOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">request_body</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_request_body</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">BufferType</span>::<span class="ident">HttpRequestBody</span>, <span class="ident">start</span>, <span class="ident">max_size</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">RequestTrailersOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">request_trailers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_request_trailers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpRequestTrailers</span>)
     }
 
@@ -210,7 +208,7 @@
         <span class="ident">hostcalls</span>::<span class="ident">set_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpRequestTrailers</span>, <span class="ident">trailers</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">request_trailer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_request_trailer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map_value</span>(<span class="ident">MapType</span>::<span class="ident">HttpRequestTrailers</span>, <span class="ident">name</span>)
     }
 
@@ -224,7 +222,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">ResponseHeadersOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">response_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_response_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpResponseHeaders</span>)
     }
 
@@ -232,7 +230,7 @@
         <span class="ident">hostcalls</span>::<span class="ident">set_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpResponseHeaders</span>, <span class="ident">headers</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">response_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_response_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map_value</span>(<span class="ident">MapType</span>::<span class="ident">HttpResponseHeaders</span>, <span class="ident">name</span>)
     }
 
@@ -246,13 +244,13 @@
 }
 
 <span class="kw">impl</span> <span class="ident">ResponseBodyOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">response_body</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_response_body</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">BufferType</span>::<span class="ident">HttpResponseBody</span>, <span class="ident">start</span>, <span class="ident">max_size</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">ResponseTrailersOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">response_trailers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_response_trailers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpResponseTrailers</span>)
     }
 
@@ -260,7 +258,7 @@
         <span class="ident">hostcalls</span>::<span class="ident">set_map</span>(<span class="ident">MapType</span>::<span class="ident">HttpResponseTrailers</span>, <span class="ident">headers</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">response_trailer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_response_trailer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_map_value</span>(<span class="ident">MapType</span>::<span class="ident">HttpResponseTrailers</span>, <span class="ident">name</span>)
     }
 
@@ -297,7 +295,5 @@
         <span class="ident">hostcalls</span>::<span class="ident">resume_http_response</span>()
     }
 }
-
-<span class="kw">impl</span> <span class="ident">ExchangeCompleteOps</span> <span class="kw">for</span> <span class="ident">Host</span> {}
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../../";window.currentCrate = "envoy_sdk";</script><script src="../../../../../aliases.js"></script><script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script><script defer src="../../../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../../";window.currentCrate = "envoy_sdk";</script><script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script><script defer src="../../../../../search-index.js"></script></body></html>
