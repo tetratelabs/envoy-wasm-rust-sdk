@@ -6,6 +6,8 @@ on:
   push:
     branches:
     - master
+    tags:
+    - '**'
   pull_request:
     branches:
     - '**'
@@ -131,5 +133,71 @@ jobs:
         rustup default stable
         rustc -vV
 
+    - name: "Install 'wasm32-unknown-unknown'"
+      run: |
+        rustup target add wasm32-unknown-unknown
+
     - name: "Build docs"
-      run: cargo doc --workspace --no-deps
+      run: cargo doc:wasm --workspace --no-deps
+
+    - name: "Publish GitHub Pages"
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      run: |
+        git fetch origin gh-pages                 # By default, 'actions/checkout' only fetches branch of the commit.
+        git worktree add /tmp/rustdoc gh-pages    # Checkout 'gh-pages' branch into '/tmp/rustdoc'
+        rm -rf /tmp/rustdoc/*                     # Remove all files (except for hidden files, such as .git directory)
+        cp -rp target/wasm32-unknown-unknown/doc/* /tmp/rustdoc/
+        cd /tmp/rustdoc
+        git add --all                             # This adds, modifies, and removes index entries to match the working tree.
+        if ! git diff --cached --quiet ; then     # There might be no changes to commit
+          GIT_AUTHOR_NAME="${{ github.event.head_commit.author.name }}" \
+            GIT_AUTHOR_EMAIL="${{ github.event.head_commit.author.email }}" \
+            GIT_AUTHOR_DATE="${{ github.event.head_commit.timestamp }}" \
+            GIT_COMMITTER_NAME="${{ github.event.head_commit.committer.name }}" \
+            GIT_COMMITTER_EMAIL="${{ github.event.head_commit.committer.email }}" \
+            GIT_COMMITTER_DATE="${{ github.event.head_commit.timestamp }}" \
+            git commit -m "${{ github.event.head_commit.message }}"
+          git push origin gh-pages
+        else
+          echo "There are no changes to GitHub Pages."
+        fi
+        git worktree remove --force /tmp/rustdoc  # Remove the working tree.
+        echo "Rust Docs has been published to https://tetratelabs.github.io/envoy-wasm-rust-sdk/envoy_sdk/"
+
+  publish:
+    name: "Publish Crate"
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+    - lint
+    - build
+    - test
+    - docs
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Install Rust"
+      run: |
+        rustup update stable
+        rustup default stable
+        rustc -vV
+
+    - name: "Install 'wasm32-unknown-unknown'"
+      run: |
+        rustup target add wasm32-unknown-unknown
+
+    - name: "Check version"
+      run: |
+        version="$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[] | select(.name == "envoy-sdk") | .version')"
+        tag="${GITHUB_REF##*/}"
+        if [[ "$version" != "$tag" ]]; then
+          echo "Package version according to Cargo.toml ($version) is different from the Git tag ($tag). Did you forget to bump the version in Cargo.toml ?"
+          exit 1
+        fi
+
+    - name: "Publish Crate"
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+      run: |
+        cd envoy-sdk && cargo publish:wasm
