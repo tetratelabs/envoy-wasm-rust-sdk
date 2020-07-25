@@ -1,6 +1,8 @@
 [alias]
-"build:wasm" = ["build", "--target", "wasm32-unknown-unknown"]
-"check:wasm" = ["check", "--target", "wasm32-unknown-unknown"]
+"build:wasm"   = ["build",   "--target", "wasm32-unknown-unknown"]
+"check:wasm"   = ["check",   "--target", "wasm32-unknown-unknown"]
+"doc:wasm"     = ["doc",     "--target", "wasm32-unknown-unknown"]
+"publish:wasm" = ["publish", "--target", "wasm32-unknown-unknown"]
 
 # To be able to run unit tests on macOS, support compilation to 'x86_64-apple-darwin'.
 [target.'cfg(target_vendor = "apple")']

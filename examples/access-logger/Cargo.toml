@@ -1,6 +1,6 @@
 [package]
 name = "access-logger"
-version = "0.0.2"
+version = "0.0.3-alpha1"
 authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
 edition = "2018"
 publish = false
