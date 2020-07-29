@@ -17,7 +17,7 @@
 use std::fmt;
 
 pub use self::config::ConfigStatus;
-pub use self::error::{Error, Result};
+pub use self::error::{Error, ErrorContext, Result};
 pub use self::factory::Factory;
 pub use self::module::{install, registry::Registry};
 

@@ -18,6 +18,7 @@ use super::ContextFactoryHashMap;
 
 use crate::abi::proxy_wasm_ext;
 use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
+use crate::error::format_err;
 use crate::extension::error::ConfigurationError;
 use crate::extension::error::ErrorSink;
 use crate::extension::{Error, Result};
@@ -44,13 +45,11 @@ impl<'a> ContextSelector<'a> {
     fn new_root_context(&mut self, context_id: u32) -> Result<Box<dyn RootContext>> {
         let name = match self.stream_info.get_property(vec!["plugin_root_id"])? {
             Some(bytes) => String::from_utf8(bytes).map_err(|e| {
-                function("env", "proxy_get_property").into_parse_error(
-                    format!(
-                        "value of property \"{}\" is not a valid UTF-8 string: {:?}",
-                        "plugin_root_id", e
-                    )
-                    .into(),
-                )
+                function("env", "proxy_get_property").into_parse_error(format_err!(
+                    "value of property \"{}\" is not a valid UTF-8 string: {:?}",
+                    "plugin_root_id",
+                    e
+                ))
             })?,
             None => String::default(),
         };

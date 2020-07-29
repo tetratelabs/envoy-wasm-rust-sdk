@@ -18,7 +18,7 @@ use std::fmt;
 
 use crate::abi::proxy_wasm_ext::types::Status;
 
-pub use crate::common::{Error, Result};
+pub use crate::error::{Error, ErrorContext, Result};
 
 /// An error returned from the call to Envoy ABI.
 #[derive(Debug)]
