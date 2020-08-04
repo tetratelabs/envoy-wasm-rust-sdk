@@ -1,0 +1,22 @@
+[package]
+name = "envoy-sdk-test"
+version = "0.0.5"
+authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
+description = "Rust SDK for WebAssembly-based Envoy extensions"
+license = "Apache-2.0"
+repository = "https://github.com/tetratelabs/envoy-wasm-rust-sdk/"
+readme = "README.md"
+keywords = ["envoy", "extension", "wasm"]
+categories = ["wasm"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+envoy = { path = "../envoy-sdk", package = "envoy-sdk" }
+
+[dev-dependencies]
+version-sync = "0.9"

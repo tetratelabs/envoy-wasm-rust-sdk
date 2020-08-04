@@ -18,7 +18,7 @@ use std::time::SystemTime;
 
 use crate::host;
 
-/// An interface of the `Envoy` `Time Service`.
+/// An interface of the `Envoy` `System Clock`.
 ///
 /// # Examples
 ///
