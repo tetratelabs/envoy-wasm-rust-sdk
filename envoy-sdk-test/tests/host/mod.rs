@@ -12,8 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![doc(html_root_url = "https://docs.rs/envoy-sdk-test/0.0.1")]
-
-pub use self::host::*;
-
-pub mod host;
+mod time;
