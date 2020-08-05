@@ -12,10 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Fake `Envoy` `Host APIs` for use in unit tests.
-
-pub use stats::FakeStats;
-pub use time::FakeClock;
-
-pub mod stats;
-pub mod time;
+mod host;
