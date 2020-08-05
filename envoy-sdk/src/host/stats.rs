@@ -14,6 +14,9 @@
 
 //! `Envoy` `Stats API`.
 
+use std::ops::Deref;
+use std::rc::Rc;
+
 use crate::host;
 
 /// An interface of the `Envoy` `Stats API`.
@@ -204,6 +207,43 @@ impl dyn Stats {
     /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn Stats {
         &impls::Host
+    }
+}
+
+impl<T: Counter> Counter for Rc<T> {
+    /// Increments counter by a given offset.
+    fn add(&self, offset: u64) -> host::Result<()> {
+        self.deref().add(offset)
+    }
+    /// Returns current value of the counter.
+    fn value(&self) -> host::Result<u64> {
+        self.deref().value()
+    }
+}
+
+impl<T: Gauge> Gauge for Rc<T> {
+    /// Increments gauge by a given offset.
+    fn add(&self, offset: u64) -> host::Result<()> {
+        self.deref().add(offset)
+    }
+    /// Decrements gauge by a given offset.
+    fn sub(&self, offset: u64) -> host::Result<()> {
+        self.deref().sub(offset)
+    }
+    /// Sets gauge to a given value.
+    fn set(&self, value: u64) -> host::Result<()> {
+        self.deref().set(value)
+    }
+    /// Returns current value of the gauge.
+    fn value(&self) -> host::Result<u64> {
+        self.deref().value()
+    }
+}
+
+impl<T: Histogram> Histogram for Rc<T> {
+    /// Records a given value.
+    fn record(&self, value: u64) -> host::Result<()> {
+        self.deref().record(value)
     }
 }
 
