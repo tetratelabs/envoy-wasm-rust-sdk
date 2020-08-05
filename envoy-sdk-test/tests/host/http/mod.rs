@@ -12,16 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Fake `Envoy` `Host APIs` for use in unit tests.
-
-pub use http::client::FakeHttpClient;
-pub use stats::FakeStats;
-pub use time::FakeClock;
-
-pub mod http;
-pub mod log;
-pub mod shared_data;
-pub mod shared_queue;
-pub mod stats;
-pub mod stream_info;
-pub mod time;
+mod client;
