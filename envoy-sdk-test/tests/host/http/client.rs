@@ -15,7 +15,7 @@
 use std::time::Duration;
 
 use envoy::host::http::client::HttpClient;
-use envoy::host::Result;
+use envoy::host::{HeaderMap, Result};
 
 use envoy_sdk_test as envoy_test;
 use envoy_test::host::FakeHttpClient;
@@ -26,13 +26,13 @@ fn test_fake_http_client() -> Result<()> {
 
     let request_handle = http_client.send_request(
         "example_cluster",
-        vec![
-            (":method", "GET"),
-            (":path", "/stuff"),
-            (":authority", "example.org"),
+        &[
+            (":method", b"GET"),
+            (":path", b"/stuff"),
+            (":authority", b"example.org"),
         ],
         Some(b"example body"),
-        vec![("grpc-status", "0"), ("grpc-message", "OK")],
+        &[("grpc-status", b"0"), ("grpc-message", b"OK")],
         Duration::from_secs(3),
     )?;
 
@@ -45,23 +45,28 @@ fn test_fake_http_client() -> Result<()> {
     assert_eq!(pending.handle, request_handle);
     assert_eq!(pending.request.upstream, "example_cluster");
     assert_eq!(
-        pending.request.headers,
-        vec![
-            (":method", "GET"),
-            (":path", "/stuff"),
-            (":authority", "example.org"),
-        ]
-        .into_iter()
-        .map(|e| (e.0.to_owned(), e.1.to_owned()))
-        .collect::<Vec<(String, String)>>()
+        pending.request.headers.as_slice(),
+        HeaderMap::from(
+            [
+                (":method", "GET".as_bytes()),
+                (":path", "/stuff".as_bytes()),
+                (":authority", "example.org".as_bytes()),
+            ]
+            .as_ref()
+        )
+        .as_slice(),
     );
-    assert_eq!(pending.request.body, b"example body");
+    assert_eq!(pending.request.body.as_bytes(), b"example body");
     assert_eq!(
-        pending.request.trailers,
-        vec![("grpc-status", "0"), ("grpc-message", "OK"),]
-            .into_iter()
-            .map(|e| (e.0.to_owned(), e.1.to_owned()))
-            .collect::<Vec<(String, String)>>()
+        pending.request.trailers.as_slice(),
+        HeaderMap::from(
+            [
+                ("grpc-status", "0".as_bytes()),
+                ("grpc-message", "OK".as_bytes()),
+            ]
+            .as_ref()
+        )
+        .as_slice(),
     );
     assert_eq!(pending.request.timeout, Duration::from_secs(3));
 

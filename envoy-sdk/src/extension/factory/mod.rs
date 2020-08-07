@@ -37,7 +37,7 @@
 //! impl ExtensionFactory for MyHttpFilterFactory {
 //!     type Extension = MyHttpFilter;
 //!
-//!     const NAME: &'static str = "my_http_filter";
+//!     fn name() -> &'static str { "my_http_filter" }
 //!
 //!     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
 //!         Ok(MyHttpFilter)
@@ -124,7 +124,7 @@ impl DrainStatus {
 /// impl ExtensionFactory for MyHttpFilterFactory {
 ///     type Extension = MyHttpFilter;
 ///
-///     const NAME: &'static str = "my_http_filter";
+///     fn name() -> &'static str { "my_http_filter" }
 ///
 ///     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
 ///         Ok(MyHttpFilter)
@@ -163,7 +163,7 @@ impl DrainStatus {
 /// impl ExtensionFactory for MyHttpFilterFactory {
 ///     type Extension = MyHttpFilter;
 ///
-///     const NAME: &'static str = "my_http_filter";
+///     fn name() -> &'static str { "my_http_filter" }
 ///
 ///     /// Called when extension is being (re-)configured on `Envoy Listener` update.
 ///     fn on_configure(&mut self, config: Bytes, ops: &dyn factory::ConfigureOps) -> Result<ConfigStatus> {
@@ -215,7 +215,7 @@ impl DrainStatus {
 /// impl ExtensionFactory for MyHttpFilterFactory {
 ///     type Extension = MyHttpFilter;
 ///
-///     const NAME: &'static str = "my_http_filter";
+///     fn name() -> &'static str { "my_http_filter" }
 ///
 ///     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
 ///         Ok(MyHttpFilter::new(Rc::clone(&self.stats)))
@@ -247,8 +247,10 @@ impl DrainStatus {
 pub trait ExtensionFactory {
     type Extension;
 
-    /// Name the extension should be referred to in `Envoy` configuration.
-    const NAME: &'static str;
+    /// Returns a name the extension should be referred to in `Envoy` configuration.
+    fn name() -> &'static str
+    where
+        Self: Sized;
 
     /// Called when extension is being (re-)configured on `Envoy Listener` update.
     ///

@@ -53,7 +53,7 @@
 //! impl ExtensionFactory for MyHttpFilterFactory {
 //!     type Extension = MyHttpFilter;
 //!
-//!     const NAME: &'static str = "my_http_filter";
+//!     fn name() -> &'static str { "my_http_filter" }
 //!
 //!     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
 //!         Ok(MyHttpFilter)
@@ -78,7 +78,7 @@
 //! # impl ExtensionFactory for MyHttpFilterFactory {
 //! #     type Extension = MyHttpFilter;
 //! #
-//! #     const NAME: &'static str = "my_http_filter";
+//! #     fn name() -> &'static str { "my_http_filter" }
 //! #
 //! #     fn new_extension(&mut self, _instance_id: InstanceId) -> extension::Result<Self::Extension> {
 //! #         Ok(MyHttpFilter)

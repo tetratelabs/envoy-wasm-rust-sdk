@@ -29,13 +29,13 @@
 //!
 //! let request_handle = http_client.send_request(
 //!     "example_cluster",
-//!     vec![
-//!         (":method", "GET"),
-//!         (":path", "/stuff"),
-//!         (":authority", "example.org"),
+//!     &vec![
+//!         (":method", b"GET" as &[u8]),
+//!         (":path", b"/stuff"),
+//!         (":authority", b"example.org"),
 //!     ],
 //!     None,
-//!     vec![],
+//!     &[],
 //!     Duration::from_secs(3),
 //! )?;
 //!
@@ -54,7 +54,7 @@ use std::cell::RefCell;
 use std::time::Duration;
 
 use envoy::host::http::client::{HttpClient, HttpClientRequestHandle};
-use envoy::host::Result;
+use envoy::host::{Bytes, HeaderMap, Result};
 
 /// Fake `HTTP Client`.
 #[derive(Debug, Default)]
@@ -69,9 +69,9 @@ pub struct FakeHttpClient {
 #[derive(Debug, Default)]
 pub struct FakeHttpRequest {
     pub upstream: String,
-    pub headers: Vec<(String, String)>,
-    pub body: Vec<u8>,
-    pub trailers: Vec<(String, String)>,
+    pub headers: HeaderMap,
+    pub body: Bytes,
+    pub trailers: HeaderMap,
     pub timeout: Duration,
 }
 
@@ -89,24 +89,18 @@ impl HttpClient for FakeHttpClient {
     fn send_request(
         &self,
         upstream: &str,
-        headers: Vec<(&str, &str)>,
+        headers: &[(&str, &[u8])],
         body: Option<&[u8]>,
-        trailers: Vec<(&str, &str)>,
+        trailers: &[(&str, &[u8])],
         timeout: Duration,
     ) -> Result<HttpClientRequestHandle> {
         let handle = HttpClientRequestHandle::from(*self.counter.borrow());
         *self.counter.borrow_mut() += 1;
         let request = FakeHttpRequest {
             upstream: upstream.to_owned(),
-            headers: headers
-                .into_iter()
-                .map(|e| (e.0.to_owned(), e.1.to_owned()))
-                .collect(),
-            body: body.map(|b| b.to_owned()).unwrap_or_default(),
-            trailers: trailers
-                .into_iter()
-                .map(|e| (e.0.to_owned(), e.1.to_owned()))
-                .collect(),
+            headers: headers.into(),
+            body: body.map(|o| o.to_vec()).into(),
+            trailers: trailers.into(),
             timeout,
         };
         self.requests

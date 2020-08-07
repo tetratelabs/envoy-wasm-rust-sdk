@@ -14,5 +14,9 @@
 
 #![doc(html_root_url = "https://docs.rs/envoy-sdk-test/0.0.5")]
 
+pub use runtime::FakeEnvoy;
+
+mod runtime;
+
 pub mod extension;
 pub mod host;

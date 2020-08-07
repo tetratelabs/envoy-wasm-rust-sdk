@@ -61,7 +61,7 @@ impl Module {
             // Bridge between Access Logger abstraction and Proxy Wasm ABI
             Ok(Box::new(AccessLoggerContext::with_default_ops(logger)))
         });
-        self.add_extension(T::NAME, factory)
+        self.add_extension(T::name(), factory)
     }
 
     pub fn add_network_filter<T, F>(self, mut new: F) -> Result<Self>
@@ -92,7 +92,7 @@ impl Module {
                 },
             )))
         });
-        self.add_extension(T::NAME, factory)
+        self.add_extension(T::name(), factory)
     }
 
     pub fn add_http_filter<T, F>(self, mut new: F) -> Result<Self>
@@ -123,7 +123,7 @@ impl Module {
                 },
             )))
         });
-        self.add_extension(T::NAME, factory)
+        self.add_extension(T::name(), factory)
     }
 }
 
