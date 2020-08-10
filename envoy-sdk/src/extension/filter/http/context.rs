@@ -198,7 +198,7 @@ where
     }
 
     fn handle_error(&self, _err: Error) {
-        if let Err(err) = self.filter_ops.send_response(500, vec![], None) {
+        if let Err(err) = self.filter_ops.send_response(500, &[], None) {
             self.error_sink.observe(
                 "failed to terminate processing of the HTTP request: failed to send a direct reply",
                 &err,
@@ -247,7 +247,7 @@ impl<'a> HttpContext for VoidHttpFilterContext<'a> {
     fn on_http_request_headers(&mut self, _num_headers: usize) -> Action {
         self.error_sink
             .observe("failed to create Proxy Wasm Http Context", &self.err);
-        if let Err(err) = self.filter_ops.send_response(500, vec![], None) {
+        if let Err(err) = self.filter_ops.send_response(500, &[], None) {
             self.error_sink.observe(
                 "failed to terminate processing of the HTTP request: failed to send a direct reply",
                 &err,

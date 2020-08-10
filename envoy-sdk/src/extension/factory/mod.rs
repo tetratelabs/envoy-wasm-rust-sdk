@@ -47,10 +47,8 @@
 //!
 //! [`ExtensionFactory`]: trait.ExtensionFactory.html
 
-use crate::abi::proxy_wasm::types::Bytes;
-
 use crate::extension::{factory, InstanceId, Result};
-use crate::host;
+use crate::host::{self, Bytes};
 
 pub(crate) use self::context::ExtensionFactoryContext;
 
@@ -153,6 +151,7 @@ impl DrainStatus {
 /// #
 /// use std::rc::Rc;
 /// use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};
+/// use envoy::host::Bytes;
 ///
 /// /// `ExtensionFactory` for `MyHttpFilter`.
 /// struct MyHttpFilterFactory {
@@ -167,10 +166,9 @@ impl DrainStatus {
 ///     fn name() -> &'static str { "my_http_filter" }
 ///
 ///     /// Called when extension is being (re-)configured on `Envoy Listener` update.
-///     fn on_configure(&mut self, _configuration_size: usize, ops: &dyn factory::ConfigureOps) -> Result<ConfigStatus> {
-///         let config = match ops.configuration()? {
-///             Some(bytes) => String::from_utf8(bytes)?,
-///             None => String::default(),
+///     fn on_configure(&mut self, config: Bytes, ops: &dyn factory::ConfigureOps) -> Result<ConfigStatus> {
+///         let config = if config.is_empty() { String::default() } else {
+///             String::from_utf8(config.into_bytes())?
 ///         };
 ///         self.config = Rc::new(config);
 ///         Ok(ConfigStatus::Accepted)
@@ -258,9 +256,8 @@ pub trait ExtensionFactory {
     ///
     /// # Arguments
     ///
-    /// * `_configuration_size` - size of configuration data.
-    /// * `_ops`                - a [`trait object`][`ConfigureOps`] through which `ExtensionFactory`
-    ///                           can access extension configuration.
+    /// * `_config` - configuration.
+    /// * `_ops`    - a [`trait object`][`ConfigureOps`] with operations available in this context.
     ///
     /// # Return value
     ///
@@ -270,7 +267,7 @@ pub trait ExtensionFactory {
     /// [`ConfigureOps`]: trait.ConfigureOps.html
     fn on_configure(
         &mut self,
-        _configuration_size: usize,
+        _config: Bytes,
         _ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
         Ok(ConfigStatus::Accepted)
@@ -304,10 +301,26 @@ pub trait ExtensionFactory {
 }
 
 /// An interface for accessing extension config.
-pub trait ConfigureOps {
+pub trait ContextOps {
     /// Returns extension config.
-    fn configuration(&self) -> host::Result<Option<Bytes>>;
+    fn configuration(&self) -> host::Result<Bytes>;
 }
+
+impl dyn ContextOps {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
+    pub fn default() -> &'static dyn ContextOps {
+        &ops::Host
+    }
+}
+
+/// An interface for operations available in the context of [`on_configure`]
+/// invocation.
+///
+/// [`on_configure`]: trait.ExtensionFactory.html#method.on_configure
+pub trait ConfigureOps {}
 
 /// An interface for acknowledging `Envoy` that [`ExtensionFactory`] has been drained.
 ///

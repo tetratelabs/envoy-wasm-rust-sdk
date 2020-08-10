@@ -43,8 +43,8 @@ impl<'a> ContextSelector<'a> {
     }
 
     fn new_root_context(&mut self, context_id: u32) -> Result<Box<dyn RootContext>> {
-        let name = match self.stream_info.stream_property(vec!["plugin_root_id"])? {
-            Some(bytes) => String::from_utf8(bytes).map_err(|e| {
+        let name = match self.stream_info.stream_property(&["plugin_root_id"])? {
+            Some(data) => String::from_utf8(data.into_vec()).map_err(|e| {
                 function("env", "proxy_get_property").into_parse_error(format_err!(
                     "value of property \"{}\" is not a valid UTF-8 string: {:?}",
                     "plugin_root_id",
