@@ -98,7 +98,7 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
             Some(path) if path == "/ping" => {
                 filter_ops.send_response(
                     200,
-                    vec![("x-sample-response", "pong")],
+                    &[("x-sample-response", b"pong")],
                     Some(b"Pong!\n"),
                 )?;
                 Ok(http::FilterHeadersStatus::StopIteration)
@@ -106,13 +106,13 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
             Some(path) if path == "/secret" => {
                 self.active_request = Some(self.http_client.send_request(
                     "mock_service",
-                    vec![
-                        (":method", "GET"),
-                        (":path", "/authz"),
-                        (":authority", "mock.local"),
+                    &[
+                        (":method", b"GET"),
+                        (":path", b"/authz"),
+                        (":authority", b"mock.local"),
                     ],
                     None,
-                    vec![],
+                    &[],
                     Duration::from_secs(3),
                 )?);
                 if let Some(request) = self.active_request {

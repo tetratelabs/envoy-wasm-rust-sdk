@@ -14,9 +14,7 @@
 
 //! `Envoy` `Stream Info API`.
 
-use crate::abi::proxy_wasm::types::Bytes;
-
-use crate::host;
+use crate::host::{self, Bytes};
 
 /// An interface of the `Envoy` `Stream Info API`.
 ///
@@ -30,9 +28,9 @@ use crate::host;
 ///
 /// let stream_info = StreamInfo::default();
 ///
-/// let plugin_name = stream_info.stream_property(vec!["plugin_name"])?;
+/// let plugin_name = stream_info.stream_property(&["plugin_name"])?;
 ///
-/// stream_info.set_stream_property(vec!["my_extension", "output"], Some(b"property value"))?;
+/// stream_info.set_stream_property(&["my_extension", "output"], b"property value")?;
 /// # Ok(())
 /// # }
 /// ```
@@ -53,7 +51,7 @@ pub trait StreamInfo {
     /// [`HttpFilter`]: ../../extension/filter/http/trait.HttpFilter.html
     /// [`NetworkFilter`]: ../../extension/filter/network/trait.NetworkFilter.html
     /// [`AccessLogger`]: ../../extension/access_logger/trait.AccessLogger.html
-    fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
+    fn stream_property(&self, path: &[&str]) -> host::Result<Option<Bytes>>;
 
     /// Saves a value in the enclosing context.
     ///
@@ -63,7 +61,7 @@ pub trait StreamInfo {
     ///
     /// * `path`  - property path as an array of path segments
     /// * `value` - an opaque blob of bytes
-    fn set_stream_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()>;
+    fn set_stream_property(&self, path: &[&str], value: &[u8]) -> host::Result<()>;
 }
 
 impl dyn StreamInfo {
@@ -78,19 +76,18 @@ impl dyn StreamInfo {
 
 mod impls {
     use crate::abi::proxy_wasm::hostcalls;
-    use crate::abi::proxy_wasm::types::Bytes;
 
     use super::StreamInfo;
-    use crate::host;
+    use crate::host::{self, Bytes};
 
     pub(super) struct Host;
 
     impl StreamInfo for Host {
-        fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
+        fn stream_property(&self, path: &[&str]) -> host::Result<Option<Bytes>> {
             hostcalls::get_property(path)
         }
 
-        fn set_stream_property(&self, path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()> {
+        fn set_stream_property(&self, path: &[&str], value: &[u8]) -> host::Result<()> {
             hostcalls::set_property(path, value)
         }
     }

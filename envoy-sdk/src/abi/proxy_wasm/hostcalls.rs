@@ -20,12 +20,17 @@ use std::time::Duration;
 
 use proxy_wasm::hostcalls;
 
-use super::types::{Bytes, HttpRequestHandle, MetricHandle, MetricType, SharedQueueHandle, Status};
-use crate::host;
+use super::types::{
+    BufferType, HttpRequestHandle, MapType, MetricHandle, MetricType, OptimisticLockVersion,
+    SharedQueueHandle, Status,
+};
+use crate::host::{self, Bytes, HeaderMap, HeaderValue};
 
 // Configuration API
 
-pub use hostcalls::get_configuration;
+pub fn get_configuration() -> host::Result<Bytes> {
+    hostcalls::get_configuration().map(Bytes::from)
+}
 
 // Lifecycle API
 
@@ -33,13 +38,65 @@ pub use hostcalls::done;
 
 // Headers/Body manipulation API
 
-pub use hostcalls::{add_map_value, get_buffer, get_map, get_map_value, set_map, set_map_value};
+pub fn add_map_value(map_type: MapType, key: &str, value: &HeaderValue) -> host::Result<()> {
+    // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
+    hostcalls::add_map_value(map_type, key, unsafe {
+        core::str::from_utf8_unchecked(value.as_bytes())
+    })
+}
+
+pub fn get_buffer(buffer_type: BufferType, start: usize, max_size: usize) -> host::Result<Bytes> {
+    hostcalls::get_buffer(buffer_type, start, max_size).map(Bytes::from)
+}
+
+pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
+    hostcalls::get_map(map_type).map(HeaderMap::from)
+}
+
+pub fn set_map(map_type: MapType, map: &HeaderMap) -> host::Result<()> {
+    let mut headers = Vec::with_capacity(map.len());
+    for (name, value) in map {
+        // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
+        headers.push((name.as_ref(), unsafe {
+            core::str::from_utf8_unchecked(value.as_bytes())
+        }));
+    }
+    hostcalls::set_map(map_type, headers)
+}
+
+pub fn get_map_value(map_type: MapType, name: &str) -> host::Result<Option<HeaderValue>> {
+    hostcalls::get_map_value(map_type, name).map(|o| o.map(HeaderValue::from))
+}
+
+pub fn set_map_value(
+    map_type: MapType,
+    name: &str,
+    value: Option<&HeaderValue>,
+) -> host::Result<()> {
+    // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
+    hostcalls::set_map_value(
+        map_type,
+        name,
+        value.map(|value| unsafe { core::str::from_utf8_unchecked(value.as_bytes()) }),
+    )
+}
 
 // HTTP Flow API
 
-pub use hostcalls::{
-    clear_http_route_cache, resume_http_request, resume_http_response, send_http_response,
-};
+pub use hostcalls::{clear_http_route_cache, resume_http_request, resume_http_response};
+
+pub fn send_http_response(
+    status_code: u32,
+    headers: &[(&str, &[u8])],
+    body: Option<&[u8]>,
+) -> host::Result<()> {
+    let mut unsafe_headers = Vec::with_capacity(headers.len());
+    for (name, value) in headers {
+        // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
+        unsafe_headers.push((*name, unsafe { core::str::from_utf8_unchecked(value) }));
+    }
+    hostcalls::send_http_response(status_code, unsafe_headers, body)
+}
 
 // Shared Queue
 
@@ -52,11 +109,14 @@ pub fn resolve_shared_queue(vm_id: &str, name: &str) -> host::Result<Option<Shar
 }
 
 pub fn dequeue_shared_queue(queue_id: SharedQueueHandle) -> host::Result<Option<Bytes>> {
-    hostcalls::dequeue_shared_queue(queue_id.as_id())
+    hostcalls::dequeue_shared_queue(queue_id.as_id()).map(|data| data.map(Bytes::from))
 }
 
-pub fn enqueue_shared_queue(queue_id: SharedQueueHandle, value: Option<&[u8]>) -> host::Result<()> {
-    hostcalls::enqueue_shared_queue(queue_id.as_id(), value)
+pub fn enqueue_shared_queue(queue_id: SharedQueueHandle, value: &[u8]) -> host::Result<()> {
+    hostcalls::enqueue_shared_queue(
+        queue_id.as_id(),
+        if value.is_empty() { None } else { Some(value) },
+    )
 }
 
 // Time API
@@ -67,22 +127,56 @@ pub use hostcalls::get_current_time;
 
 pub fn dispatch_http_call(
     upstream: &str,
-    headers: Vec<(&str, &str)>,
+    headers: &[(&str, &[u8])],
     body: Option<&[u8]>,
-    trailers: Vec<(&str, &str)>,
+    trailers: &[(&str, &[u8])],
     timeout: Duration,
 ) -> host::Result<HttpRequestHandle> {
+    // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
+    let headers = headers
+        .iter()
+        .map(|(name, value)| (*name, unsafe { core::str::from_utf8_unchecked(value) }))
+        .collect();
+    let trailers = trailers
+        .iter()
+        .map(|(name, value)| (*name, unsafe { core::str::from_utf8_unchecked(value) }))
+        .collect();
     hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
         .map(HttpRequestHandle::from)
 }
 
 // Stream Info API
 
-pub use hostcalls::{get_property, set_property};
+pub fn get_property(path: &[&str]) -> host::Result<Option<Bytes>> {
+    // TODO(yskopets): change `proxy-wasm` to accept &[&str] instead of Vec<&str>
+    hostcalls::get_property(path.into()).map(|data| data.map(Bytes::from))
+}
+
+pub fn set_property(path: &[&str], value: &[u8]) -> host::Result<()> {
+    // TODO(yskopets): change `proxy-wasm` to accept &[&str] instead of Vec<&str>
+    hostcalls::set_property(
+        path.into(),
+        if value.is_empty() { None } else { Some(value) },
+    )
+}
 
 // Shared data API
 
-pub use hostcalls::{get_shared_data, set_shared_data};
+pub fn get_shared_data(key: &str) -> host::Result<(Option<Bytes>, Option<OptimisticLockVersion>)> {
+    hostcalls::get_shared_data(key).map(|(value, version)| (value.map(Bytes::from), version))
+}
+
+pub fn set_shared_data(
+    key: &str,
+    value: &[u8],
+    version: Option<OptimisticLockVersion>,
+) -> host::Result<()> {
+    hostcalls::set_shared_data(
+        key,
+        if value.is_empty() { None } else { Some(value) },
+        version,
+    )
+}
 
 // Stats API
 

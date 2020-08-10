@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{ConfigureOps, DrainOps};
+use super::{ConfigureOps, ContextOps, DrainOps};
 use crate::abi::proxy_wasm::hostcalls;
-use crate::abi::proxy_wasm::types::Bytes;
-use crate::host;
+use crate::host::{self, Bytes};
 
 pub(super) struct Host;
 
-impl ConfigureOps for Host {
-    fn configuration(&self) -> host::Result<Option<Bytes>> {
+impl ContextOps for Host {
+    fn configuration(&self) -> host::Result<Bytes> {
         hostcalls::get_configuration()
     }
 }
+
+impl ConfigureOps for Host {}
 
 impl DrainOps for Host {
     fn done(&self) -> host::Result<()> {

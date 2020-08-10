@@ -12,45 +12,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{ConfigureOps, DrainOps, LogOps};
+use super::{ConfigureOps, ContextOps, DrainOps, LogOps};
 use crate::abi::proxy_wasm::hostcalls;
-use crate::abi::proxy_wasm::types::{Bytes, MapType};
-use crate::host;
+use crate::abi::proxy_wasm::types::MapType;
+use crate::host::{self, Bytes, HeaderMap, HeaderValue};
 
 pub(super) struct Host;
 
-impl ConfigureOps for Host {
-    fn configuration(&self) -> host::Result<Option<Bytes>> {
+impl ContextOps for Host {
+    fn configuration(&self) -> host::Result<Bytes> {
         hostcalls::get_configuration()
     }
 }
 
+impl ConfigureOps for Host {}
+
 impl LogOps for Host {
-    fn request_headers(&self) -> host::Result<Vec<(String, String)>> {
+    fn request_headers(&self) -> host::Result<HeaderMap> {
         hostcalls::get_map(MapType::HttpRequestHeaders)
     }
 
-    fn request_header(&self, name: &str) -> host::Result<Option<String>> {
+    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
         hostcalls::get_map_value(MapType::HttpRequestHeaders, name)
     }
 
-    fn response_headers(&self) -> host::Result<Vec<(String, String)>> {
+    fn response_headers(&self) -> host::Result<HeaderMap> {
         hostcalls::get_map(MapType::HttpResponseHeaders)
     }
 
-    fn response_header(&self, name: &str) -> host::Result<Option<String>> {
+    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
         hostcalls::get_map_value(MapType::HttpResponseHeaders, name)
     }
 
-    fn response_trailers(&self) -> host::Result<Vec<(String, String)>> {
+    fn response_trailers(&self) -> host::Result<HeaderMap> {
         hostcalls::get_map(MapType::HttpResponseTrailers)
     }
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<String>> {
+    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
         hostcalls::get_map_value(MapType::HttpResponseTrailers, &name)
     }
 
-    fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>> {
+    fn stream_property(&self, path: &[&str]) -> host::Result<Option<Bytes>> {
         hostcalls::get_property(path)
     }
 }

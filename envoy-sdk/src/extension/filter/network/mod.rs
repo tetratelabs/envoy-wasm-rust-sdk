@@ -99,10 +99,10 @@
 //! [`ExtensionFactory`]: ../../factory/trait.ExtensionFactory.html
 //! [`Register`]: ../../../macro.entrypoint.html
 
-use crate::abi::proxy_wasm::types::{Action, Bytes, PeerType};
+use crate::abi::proxy_wasm::types::{Action, PeerType};
 use crate::extension::Result;
-use crate::host;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
+use crate::host::{self, Bytes};
 
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
 
@@ -318,7 +318,7 @@ pub trait DownstreamDataOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
 }
 
 /// An interface for manipulating data in the write buffer (data to be written to the downstream connection).
@@ -329,7 +329,7 @@ pub trait UpstreamDataOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
 }
 
 /// An interface for operations available in the context of [`on_downstream_close`]
