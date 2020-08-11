@@ -21,11 +21,11 @@ use std::time::{Duration, SystemTime};
 use proxy_wasm::hostcalls;
 
 use super::types::{
-    BufferType, HttpRequestHandle, MapType, MetricHandle, MetricType, OptimisticLockVersion,
-    SharedQueueHandle, Status,
+    BufferType, HeaderValue, HttpRequestHandle, MapType, MetricHandle, MetricType,
+    OptimisticLockVersion, SharedQueueHandle, Status,
 };
 use crate::error::format_err;
-use crate::host::{self, Bytes, HeaderMap, HeaderValue};
+use crate::host::{self, Bytes, HeaderMap};
 
 // Configuration API
 
@@ -44,11 +44,7 @@ pub fn done() -> host::Result<()> {
 // Headers/Body manipulation API
 
 pub fn add_map_value(map_type: MapType, key: &str, value: &HeaderValue) -> host::Result<()> {
-    // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
-    hostcalls::add_map_value(map_type, key, unsafe {
-        core::str::from_utf8_unchecked(value.as_bytes())
-    })
-    .map_err(|err| format_err!(err))
+    hostcalls::add_map_value(map_type, key, value).map_err(|err| format_err!(err))
 }
 
 pub fn get_buffer(buffer_type: BufferType, start: usize, max_size: usize) -> host::Result<Bytes> {
@@ -63,21 +59,12 @@ pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
         .map_err(|err| format_err!(err))
 }
 
-pub fn set_map(map_type: MapType, map: &HeaderMap) -> host::Result<()> {
-    let mut headers = Vec::with_capacity(map.len());
-    for (name, value) in map {
-        // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
-        headers.push((name.as_ref(), unsafe {
-            core::str::from_utf8_unchecked(value.as_bytes())
-        }));
-    }
-    hostcalls::set_map(map_type, headers).map_err(|err| format_err!(err))
+pub fn set_map(map_type: MapType, headers: &HeaderMap) -> host::Result<()> {
+    hostcalls::set_map(map_type, headers.as_slice()).map_err(|err| format_err!(err))
 }
 
 pub fn get_map_value(map_type: MapType, name: &str) -> host::Result<Option<HeaderValue>> {
-    hostcalls::get_map_value(map_type, name)
-        .map(|o| o.map(HeaderValue::from))
-        .map_err(|err| format_err!(err))
+    hostcalls::get_map_value(map_type, name).map_err(|err| format_err!(err))
 }
 
 pub fn set_map_value(
@@ -85,13 +72,7 @@ pub fn set_map_value(
     name: &str,
     value: Option<&HeaderValue>,
 ) -> host::Result<()> {
-    // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
-    hostcalls::set_map_value(
-        map_type,
-        name,
-        value.map(|value| unsafe { core::str::from_utf8_unchecked(value.as_bytes()) }),
-    )
-    .map_err(|err| format_err!(err))
+    hostcalls::set_map_value(map_type, name, value).map_err(|err| format_err!(err))
 }
 
 // HTTP Flow API
@@ -113,12 +94,7 @@ pub fn send_http_response(
     headers: &[(&str, &[u8])],
     body: Option<&[u8]>,
 ) -> host::Result<()> {
-    let mut unsafe_headers = Vec::with_capacity(headers.len());
-    for (name, value) in headers {
-        // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
-        unsafe_headers.push((*name, unsafe { core::str::from_utf8_unchecked(value) }));
-    }
-    hostcalls::send_http_response(status_code, unsafe_headers, body).map_err(|err| format_err!(err))
+    hostcalls::send_http_response(status_code, headers, body).map_err(|err| format_err!(err))
 }
 
 // Shared Queue
@@ -141,12 +117,11 @@ pub fn dequeue_shared_queue(queue_id: SharedQueueHandle) -> host::Result<Option<
         .map_err(|err| format_err!(err))
 }
 
-pub fn enqueue_shared_queue(queue_id: SharedQueueHandle, value: &[u8]) -> host::Result<()> {
-    hostcalls::enqueue_shared_queue(
-        queue_id.as_id(),
-        if value.is_empty() { None } else { Some(value) },
-    )
-    .map_err(|err| format_err!(err))
+pub fn enqueue_shared_queue<V>(queue_id: SharedQueueHandle, value: V) -> host::Result<()>
+where
+    V: AsRef<[u8]>,
+{
+    hostcalls::enqueue_shared_queue(queue_id.as_id(), Some(value)).map_err(|err| format_err!(err))
 }
 
 // Time API
@@ -157,22 +132,20 @@ pub fn get_current_time() -> host::Result<SystemTime> {
 
 // HTTP Client API
 
-pub fn dispatch_http_call(
+pub fn dispatch_http_call<K1, V1, K2, V2, B>(
     upstream: &str,
-    headers: &[(&str, &[u8])],
-    body: Option<&[u8]>,
-    trailers: &[(&str, &[u8])],
+    headers: &[(K1, V1)],
+    body: Option<B>,
+    trailers: &[(K2, V2)],
     timeout: Duration,
-) -> host::Result<HttpRequestHandle> {
-    // TODO(yskopets): change `proxy-wasm` to represent header value as `&[u8]` rather than `&str`
-    let headers = headers
-        .iter()
-        .map(|(name, value)| (*name, unsafe { core::str::from_utf8_unchecked(value) }))
-        .collect();
-    let trailers = trailers
-        .iter()
-        .map(|(name, value)| (*name, unsafe { core::str::from_utf8_unchecked(value) }))
-        .collect();
+) -> host::Result<HttpRequestHandle>
+where
+    K1: AsRef<str>,
+    V1: AsRef<[u8]>,
+    K2: AsRef<str>,
+    V2: AsRef<[u8]>,
+    B: AsRef<[u8]>,
+{
     hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
         .map(HttpRequestHandle::from)
         .map_err(|err| format_err!(err))
@@ -180,20 +153,21 @@ pub fn dispatch_http_call(
 
 // Stream Info API
 
-pub fn get_property(path: &[&str]) -> host::Result<Option<Bytes>> {
-    // TODO(yskopets): change `proxy-wasm` to accept &[&str] instead of Vec<&str>
-    hostcalls::get_property(path.into())
+pub fn get_property<P>(path: &[P]) -> host::Result<Option<Bytes>>
+where
+    P: AsRef<str>,
+{
+    hostcalls::get_property(path)
         .map(|data| data.map(Bytes::from))
         .map_err(|err| format_err!(err))
 }
 
-pub fn set_property(path: &[&str], value: &[u8]) -> host::Result<()> {
-    // TODO(yskopets): change `proxy-wasm` to accept &[&str] instead of Vec<&str>
-    hostcalls::set_property(
-        path.into(),
-        if value.is_empty() { None } else { Some(value) },
-    )
-    .map_err(|err| format_err!(err))
+pub fn set_property<P, V>(path: &[P], value: V) -> host::Result<()>
+where
+    P: AsRef<str>,
+    V: AsRef<[u8]>,
+{
+    hostcalls::set_property(path, Some(value)).map_err(|err| format_err!(err))
 }
 
 // Shared data API
@@ -219,6 +193,12 @@ pub fn set_shared_data(
 
 // Stats API
 
+// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
+// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
+//
+// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
+// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
+#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_define_metric(
         metric_type: MetricType,
@@ -245,6 +225,12 @@ pub fn define_metric(metric_type: MetricType, metric_name: &str) -> host::Result
     }
 }
 
+// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
+// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
+//
+// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
+// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
+#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_increment_metric(metric_id: u32, offset: i64) -> Status;
 }
@@ -260,6 +246,12 @@ pub fn increment_metric(metric_handle: MetricHandle, offset: i64) -> host::Resul
     }
 }
 
+// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
+// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
+//
+// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
+// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
+#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_record_metric(metric_id: u32, value: u64) -> Status;
 }
@@ -275,6 +267,12 @@ pub fn record_metric(metric_handle: MetricHandle, value: u64) -> host::Result<()
     }
 }
 
+// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
+// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
+//
+// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
+// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
+#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_get_metric(metric_id: u32, return_metric_value: *mut u64) -> Status;
 }
