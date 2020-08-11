@@ -99,7 +99,7 @@
 //! [`ExtensionFactory`]: ../../factory/trait.ExtensionFactory.html
 //! [`Register`]: ../../../macro.entrypoint.html
 
-use crate::abi::proxy_wasm::types::{Action, PeerType};
+use crate::abi::proxy_wasm::types::{Action, CloseType};
 use crate::extension::Result;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 use crate::host::{self, Bytes};
@@ -226,10 +226,10 @@ pub trait NetworkFilter {
     ///
     /// # Arguments
     ///
-    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
+    /// * `close_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_downstream_close(
         &mut self,
-        _peer_type: PeerType,
+        _close_type: CloseType,
         _ops: &dyn DownstreamCloseOps,
     ) -> Result<()> {
         Ok(())
@@ -263,10 +263,10 @@ pub trait NetworkFilter {
     ///
     /// # Arguments
     ///
-    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
+    /// * `close_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_upstream_close(
         &mut self,
-        _peer_type: PeerType,
+        _close_type: CloseType,
         _ops: &dyn UpstreamCloseOps,
     ) -> Result<()> {
         Ok(())

@@ -14,7 +14,7 @@
 
 use super::{FilterStatus, NetworkFilter, Ops};
 use crate::abi::proxy_wasm::traits::{Context, StreamContext};
-use crate::abi::proxy_wasm::types::{Action, PeerType};
+use crate::abi::proxy_wasm::types::{Action, CloseType};
 use crate::extension::error::ErrorSink;
 use crate::extension::Error;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
@@ -61,10 +61,10 @@ where
         }
     }
 
-    fn on_downstream_close(&mut self, peer_type: PeerType) {
+    fn on_downstream_close(&mut self, close_type: CloseType) {
         if let Err(err) = self
             .filter
-            .on_downstream_close(peer_type, self.filter_ops.as_downstream_close_ops())
+            .on_downstream_close(close_type, self.filter_ops.as_downstream_close_ops())
         {
             self.error_sink
                 .observe("failed to handle connection close by the downstream", &err);
@@ -89,10 +89,10 @@ where
         }
     }
 
-    fn on_upstream_close(&mut self, peer_type: PeerType) {
+    fn on_upstream_close(&mut self, close_type: CloseType) {
         if let Err(err) = self
             .filter
-            .on_upstream_close(peer_type, self.filter_ops.as_upstream_close_ops())
+            .on_upstream_close(close_type, self.filter_ops.as_upstream_close_ops())
         {
             self.error_sink
                 .observe("failed to handle connection close by the upstream", &err);

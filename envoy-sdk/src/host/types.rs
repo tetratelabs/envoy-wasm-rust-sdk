@@ -16,6 +16,8 @@ use core::iter::FusedIterator;
 use core::str;
 use std::{fmt, ops};
 
+pub use crate::abi::proxy_wasm::types::HeaderValue;
+
 #[derive(Debug, Default)]
 pub struct Bytes {
     data: Vec<u8>,
@@ -158,39 +160,12 @@ impl Iterator for IntoIter {
 
 impl FusedIterator for IntoIter {}
 
-// impl<I, K, V> From<I> for HeaderMap
-// where
-//     K: Into<HeaderName>,
-//     V: Into<HeaderValue>,
-//     I: IntoIterator<Item = (K, V)>,
-// {
-//     fn from(entries: I) -> Self {
-//         Self::new(
-//             entries
-//                 .into_iter()
-//                 .map(|(name, value)| (name.into(), value.into()))
-//                 .collect(),
-//         )
-//     }
-// }
-
-impl From<Vec<(String, String)>> for HeaderMap {
-    fn from(entries: Vec<(String, String)>) -> Self {
+impl From<Vec<(String, HeaderValue)>> for HeaderMap {
+    fn from(entries: Vec<(String, HeaderValue)>) -> Self {
         Self::new(
             entries
                 .into_iter()
-                .map(|(name, value)| ((*name).into(), (*value).into()))
-                .collect(),
-        )
-    }
-}
-
-impl From<Vec<(String, Vec<u8>)>> for HeaderMap {
-    fn from(entries: Vec<(String, Vec<u8>)>) -> Self {
-        Self::new(
-            entries
-                .into_iter()
-                .map(|(name, value)| ((*name).into(), (*value).into()))
+                .map(|(name, value)| ((*name).into(), value))
                 .collect(),
         )
     }
@@ -201,7 +176,7 @@ impl From<&[(&str, &[u8])]> for HeaderMap {
         Self::new(
             entries
                 .iter()
-                .map(|(name, value)| ((*name).into(), (*value).into()))
+                .map(|(name, value)| ((*name).into(), (*value).to_owned().into()))
                 .collect(),
         )
     }
@@ -259,117 +234,5 @@ impl fmt::Debug for HeaderName {
 impl fmt::Display for HeaderName {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), fmt)
-    }
-}
-
-#[derive(Debug, Default, Eq, PartialEq)]
-pub struct HeaderValue {
-    data: Vec<u8>,
-}
-
-impl HeaderValue {
-    pub fn new(data: Vec<u8>) -> Self {
-        HeaderValue { data }
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.data.is_empty()
-    }
-
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
-
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.data
-    }
-
-    pub fn as_slice(&self) -> &[u8] {
-        &self.data
-    }
-
-    pub fn into_bytes(self) -> Vec<u8> {
-        self.data
-    }
-
-    pub fn into_vec(self) -> Vec<u8> {
-        self.data
-    }
-}
-
-impl From<String> for HeaderValue {
-    fn from(data: String) -> Self {
-        Self::from(data.into_bytes())
-    }
-}
-
-impl From<&str> for HeaderValue {
-    fn from(data: &str) -> Self {
-        Self::from(data.to_owned())
-    }
-}
-
-impl From<Vec<u8>> for HeaderValue {
-    fn from(data: Vec<u8>) -> Self {
-        Self::new(data)
-    }
-}
-
-impl From<&[u8]> for HeaderValue {
-    fn from(data: &[u8]) -> Self {
-        Self::new(data.to_vec())
-    }
-}
-
-impl fmt::Display for HeaderValue {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match str::from_utf8(self.as_slice()) {
-            Ok(string) => fmt::Display::fmt(string, f),
-            Err(_) => fmt::Debug::fmt(&self.data, f),
-        }
-    }
-}
-
-impl PartialEq<String> for HeaderValue {
-    #[inline]
-    fn eq(&self, other: &String) -> bool {
-        *self == &other[..]
-    }
-}
-
-impl PartialEq<&str> for HeaderValue {
-    #[inline]
-    fn eq(&self, other: &&str) -> bool {
-        self.data == other.as_bytes()
-    }
-}
-
-impl<'a> PartialEq<HeaderValue> for &'a str {
-    #[inline]
-    fn eq(&self, other: &HeaderValue) -> bool {
-        *other == *self
-    }
-}
-
-impl PartialEq<HeaderValue> for String {
-    #[inline]
-    fn eq(&self, other: &HeaderValue) -> bool {
-        *other == *self
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn eq() {
-        let value = HeaderValue::from(String::from("test"));
-
-        assert!(value == String::from("test"));
-        assert!(value == "test");
-
-        assert!(String::from("test") == value);
-        assert!("test" == value);
     }
 }
