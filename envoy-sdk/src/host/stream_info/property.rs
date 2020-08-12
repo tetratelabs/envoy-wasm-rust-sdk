@@ -183,7 +183,7 @@ impl Request {
         };
 
     /// Referer request header.
-    pub const REFERER: &'static Property<'static, HeaderValue, proxy_wasm::types::ByteString> =
+    pub const REFERER: &'static Property<'static, ByteString, proxy_wasm::types::ByteString> =
         &Property {
             path: Path {
                 inner: PathKind::Static(&["request", "referer"]),
@@ -193,7 +193,7 @@ impl Request {
         };
 
     /// User agent request header.
-    pub const USER_AGENT: &'static Property<'static, HeaderValue, proxy_wasm::types::ByteString> =
+    pub const USER_AGENT: &'static Property<'static, ByteString, proxy_wasm::types::ByteString> =
         &Property {
             path: Path {
                 inner: PathKind::Static(&["request", "user_agent"]),

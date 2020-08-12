@@ -96,8 +96,8 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
             log::info!("#{} -> {}: {}", self.instance_id, name, value);
         }
 
-        log::info!("  request.id: {:?}", self.stream_info.request().id()?);
         log::info!("  connection.id: {:?}", self.stream_info.connection().id()?);
+        log::info!("  request.id: {:?}", self.stream_info.request().id()?);
         log::info!(
             "  listener.traffic_direction: {:?}",
             self.stream_info.listener().traffic_direction()?
