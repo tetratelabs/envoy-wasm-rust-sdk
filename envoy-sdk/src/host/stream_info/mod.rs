@@ -263,12 +263,12 @@ impl<'a> RequestInfo<'a> {
     }
 
     /// Returns referer request header.
-    pub fn referer(&self) -> host::Result<Option<String>> {
+    pub fn referer(&self) -> host::Result<Option<HeaderValue>> {
         self.stream.property(Request::REFERER)
     }
 
     /// Returns user agent request header.
-    pub fn user_agent(&self) -> host::Result<Option<String>> {
+    pub fn user_agent(&self) -> host::Result<Option<HeaderValue>> {
         self.stream.property(Request::USER_AGENT)
     }
 }
