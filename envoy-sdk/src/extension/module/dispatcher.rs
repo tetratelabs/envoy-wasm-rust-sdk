@@ -21,7 +21,6 @@ use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ConfigurationError;
 use crate::extension::error::ErrorSink;
 use crate::extension::{Error, Result};
-use crate::host::error::function;
 use crate::host::StreamInfo;
 
 pub(crate) struct ContextSelector<'a> {
@@ -42,16 +41,8 @@ impl<'a> ContextSelector<'a> {
     }
 
     fn new_root_context(&mut self, context_id: u32) -> Result<Box<dyn RootContext>> {
-        let name = match self.stream_info.stream_property(&["plugin_root_id"])? {
-            Some(data) => String::from_utf8(data.into_vec()).map_err(|e| {
-                function("env", "proxy_get_property").into_parse_error(
-                    format!(
-                        "value of property \"{}\" is not a valid UTF-8 string: {:?}",
-                        "plugin_root_id", e
-                    )
-                    .into(),
-                )
-            })?,
+        let name = match self.stream_info.plugin().root_id()? {
+            Some(data) => data,
             None => String::default(),
         };
         if let Some(root_context_factory) = self.factories.get_mut(&name) {

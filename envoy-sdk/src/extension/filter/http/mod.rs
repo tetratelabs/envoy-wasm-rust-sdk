@@ -245,7 +245,7 @@ impl FilterTrailersStatus {
 ///
 /// impl HttpFilter for MyHttpFilter {
 ///     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
-///         let user_agent = ops.request_header("user-agent")?.unwrap_or("<unknown>".into());
+///         let user_agent = ops.request_header("user-agent")?.unwrap_or_else(|| "<unknown>".into());
 ///         log::info!("user-agent: {}", user_agent);
 ///         Ok(FilterHeadersStatus::Continue)
 ///     }
@@ -296,7 +296,7 @@ pub trait HttpFilter {
     /// #
     /// # impl HttpFilter for MyHttpFilter {
     ///   fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
-    ///       let user_agent = ops.request_header("user-agent")?.unwrap_or("<unknown>".into());
+    ///       let user_agent = ops.request_header("user-agent")?.unwrap_or_else(|| "<unknown>".into());
     ///       log::info!("user-agent: {}", user_agent);
     ///       Ok(FilterHeadersStatus::Continue)
     ///   }
@@ -387,7 +387,7 @@ pub trait HttpFilter {
     /// #
     /// # impl HttpFilter for MyHttpFilter {
     ///   fn on_request_trailers(&mut self, _num_headers: usize, ops: &dyn RequestTrailersOps) -> Result<FilterTrailersStatus> {
-    ///       let grpc_message = ops.request_trailer("grpc-message")?.unwrap_or("<unknown>".into());
+    ///       let grpc_message = ops.request_trailer("grpc-message")?.unwrap_or_else(|| "<unknown>".into());
     ///       log::info!("grpc-message: {}", grpc_message);
     ///       Ok(FilterTrailersStatus::Continue)
     ///   }

@@ -117,12 +117,11 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         for (name, value) in &response_headers {
             info!("    {}: {}", name, value);
         }
-        let upstream_address = logger_ops.stream_property(&["upstream", "address"])?;
-        let upstream_address = upstream_address
-            .map(Bytes::into_vec)
-            .map(String::from_utf8)
-            .transpose()?
-            .unwrap_or_else(String::default);
+        let upstream_address = logger_ops
+            .stream_info()
+            .upstream()
+            .address()?
+            .unwrap_or_else(|| "<unknown>".into());
         info!("  upstream info:");
         info!("    {}: {}", "upstream.address", upstream_address);
 
