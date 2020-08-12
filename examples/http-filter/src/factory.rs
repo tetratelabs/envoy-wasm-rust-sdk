@@ -16,7 +16,7 @@ use std::convert::TryFrom;
 use std::rc::Rc;
 
 use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};
-use envoy::host::{Bytes, Clock, HttpClient, Stats};
+use envoy::host::{Bytes, Clock, HttpClient, Stats, StreamInfo};
 
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
@@ -35,6 +35,7 @@ pub struct SampleHttpFilterFactory<'a> {
     // Metrics API provided by Envoy host.
     clock: &'a dyn Clock,
     http_client: &'a dyn HttpClient,
+    stream_info: &'a dyn StreamInfo,
 }
 
 impl<'a> SampleHttpFilterFactory<'a> {
@@ -42,6 +43,7 @@ impl<'a> SampleHttpFilterFactory<'a> {
     pub fn new(
         clock: &'a dyn Clock,
         http_client: &'a dyn HttpClient,
+        stream_info: &'a dyn StreamInfo,
         stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleHttpFilterStats::new(
@@ -55,12 +57,18 @@ impl<'a> SampleHttpFilterFactory<'a> {
             stats: Rc::new(stats),
             clock,
             http_client,
+            stream_info,
         })
     }
 
     /// Creates a new factory bound to the actual `Envoy` ABI.
     pub fn default() -> Result<Self> {
-        Self::new(Clock::default(), HttpClient::default(), Stats::default())
+        Self::new(
+            Clock::default(),
+            HttpClient::default(),
+            StreamInfo::default(),
+            Stats::default(),
+        )
     }
 }
 
@@ -97,6 +105,7 @@ impl<'a> ExtensionFactory for SampleHttpFilterFactory<'a> {
             instance_id,
             self.clock,
             self.http_client,
+            self.stream_info,
         ))
     }
 }

@@ -20,7 +20,7 @@ use envoy::host::log::info;
 use envoy::extension::filter::http;
 use envoy::extension::{HttpFilter, InstanceId, Result};
 use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use envoy::host::{Clock, HttpClient};
+use envoy::host::{Clock, HttpClient, StreamInfo};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -41,6 +41,7 @@ pub struct SampleHttpFilter<'a> {
     // Metrics API provided by Envoy host.
     clock: &'a dyn Clock,
     http_client: &'a dyn HttpClient,
+    stream_info: &'a dyn StreamInfo,
 
     active_request: Option<HttpClientRequestHandle>,
     response_body_size: u64,
@@ -54,6 +55,7 @@ impl<'a> SampleHttpFilter<'a> {
         instance_id: InstanceId,
         clock: &'a dyn Clock,
         http_client: &'a dyn HttpClient,
+        stream_info: &'a dyn StreamInfo,
     ) -> Self {
         // Inject dependencies on Envoy host APIs
         SampleHttpFilter {
@@ -62,6 +64,7 @@ impl<'a> SampleHttpFilter<'a> {
             instance_id,
             clock,
             http_client,
+            stream_info,
             active_request: None,
             response_body_size: 0,
         }
@@ -93,6 +96,16 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
         for (name, value) in &filter_ops.request_headers()? {
             info!("#{} -> {}: {}", self.instance_id, name, value);
         }
+
+        info!("  request.id: {:?}", self.stream_info.request().id()?);
+        info!("  connection.id: {:?}", self.stream_info.connection().id()?);
+        info!(
+            "  listener.traffic_direction: {:?}",
+            self.stream_info.listener().traffic_direction()?
+        );
+        info!("  route.name: {:?}", self.stream_info.route().name()?);
+        info!("  cluster.name: {:?}", self.stream_info.cluster().name()?);
+        info!("  plugin.name: {:?}", self.stream_info.plugin().name()?);
 
         match filter_ops.request_header(":path")? {
             Some(path) if path == "/ping" => {
@@ -165,6 +178,10 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
             .record(self.response_body_size)?;
 
         info!("#{} http exchange complete", self.instance_id);
+        info!(
+            "  response.flags: {:?}",
+            self.stream_info.response().flags()?
+        );
         Ok(())
     }
 
