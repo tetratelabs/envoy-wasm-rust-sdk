@@ -21,6 +21,8 @@ use self::property::{
     Cluster, Connection, Destination, Listener, Plugin, Property, Request, Response, Route, Source,
     Upstream,
 };
+use crate::error::format_err;
+use crate::host::error::function;
 use crate::host::{self, ByteString};
 
 pub use self::types::{ResponseFlags, TrafficDirection};
@@ -174,7 +176,15 @@ impl<'a> StreamInfoAccessor<'a> {
         if let Some(bytes) = self.stream_info.stream_property(prop.path())? {
             let encoded = proxy_wasm::Value::<W>::new(bytes.into_bytes());
             let decoded: host::Result<T> = encoded.try_into();
-            decoded.map(Option::from)
+            decoded.map(Option::from).map_err(|err| {
+                function("env", "proxy_get_property")
+                    .into_parse_error(format_err!(
+                        "value of property \"{:?}\" is not valid: {:?}",
+                        prop.path(),
+                        err
+                    ))
+                    .into()
+            })
         } else {
             Ok(None)
         }

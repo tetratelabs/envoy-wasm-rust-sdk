@@ -119,8 +119,10 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
             log::info!("    {}: {}", name, value);
         }
         let upstream_address = logger_ops
-            .stream_property(&["upstream", "address"])?
-            .unwrap_or_else(ByteString::default);
+            .stream_info()
+            .upstream()
+            .address()?
+            .unwrap_or_else(|| "<unknown>".into());
         log::info!("  upstream info:");
         log::info!("    {}: {}", "upstream.address", upstream_address);
 

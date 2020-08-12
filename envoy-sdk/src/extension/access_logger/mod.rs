@@ -63,7 +63,7 @@
 
 use crate::extension::{ConfigStatus, DrainStatus, Result};
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, ByteString, HeaderMap};
+use crate::host::{self, ByteString, HeaderMap, StreamInfo};
 
 pub(crate) use self::context::AccessLoggerContext;
 
@@ -93,7 +93,7 @@ mod ops;
 ///     fn name() -> &'static str { "my_access_logger" }
 ///
 ///     fn on_log(&mut self, ops: &dyn LogOps) -> Result<()> {
-///         let upstream_address = ops.stream_property(&["upstream", "address"])?
+///         let upstream_address = ops.stream_info().upstream().address()?
 ///             .unwrap_or_else(|| "<unknown>".into());
 ///         log::info!("upstream.address : {}", upstream_address);
 ///         Ok(())
@@ -238,7 +238,7 @@ pub trait LogOps {
 
     fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>>;
+    fn stream_info(&self) -> &dyn StreamInfo;
 }
 
 #[doc(hidden)]

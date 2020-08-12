@@ -66,7 +66,7 @@ impl fmt::Display for HostResponseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "failed to parse a value returned by the host ABI function \"{}\": {}",
+            "failed to parse value returned by the host ABI function \"{}\": {}",
             self.function, self.err,
         )
     }
