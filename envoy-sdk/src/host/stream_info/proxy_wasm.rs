@@ -47,14 +47,14 @@ pub(super) mod types {
 /// Represents an encoded property value.
 pub(super) struct Value<T> {
     bytes: Vec<u8>,
-    type_: PhantomData<T>,
+    _type: PhantomData<T>,
 }
 
 impl<T> Value<T> {
     pub fn new(bytes: Vec<u8>) -> Self {
         Value {
             bytes,
-            type_: PhantomData::<T>,
+            _type: PhantomData,
         }
     }
 }

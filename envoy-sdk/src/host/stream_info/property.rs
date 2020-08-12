@@ -52,8 +52,8 @@ impl<'a> PathKind<'a> {
 /// request id, response status code, upstream address, etc.
 pub(super) struct Property<'a, T, W> {
     path: Path<'a>,
-    type_: PhantomData<T>,
-    proxy_wasm_type: PhantomData<W>,
+    _type: PhantomData<T>,
+    _proxy_wasm_type: PhantomData<W>,
 }
 
 impl<'a, T, W> Property<'a, T, W> {
@@ -72,8 +72,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Custom(vec!["request", "headers", name]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         }
     }
 
@@ -82,8 +82,8 @@ impl Request {
         path: Path {
             inner: PathKind::Static(&["request", "id"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Time of the first byte received.
@@ -92,8 +92,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "time"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Total duration of the request.
@@ -102,8 +102,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "duration"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Size of the request body.
@@ -111,8 +111,8 @@ impl Request {
         path: Path {
             inner: PathKind::Static(&["request", "size"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Total size of the request including the headers.
@@ -120,8 +120,8 @@ impl Request {
         path: Path {
             inner: PathKind::Static(&["request", "total_size"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Request protocol e.g. "HTTP/2".
@@ -130,8 +130,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "protocol"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// The path portion of the URL.
@@ -139,8 +139,8 @@ impl Request {
         path: Path {
             inner: PathKind::Static(&["request", "path"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The path portion of the URL without the query string.
@@ -149,8 +149,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "url_path"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// The host portion of the URL.
@@ -158,8 +158,8 @@ impl Request {
         path: Path {
             inner: PathKind::Static(&["request", "host"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Request method.
@@ -168,8 +168,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "method"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// The scheme portion of the URL.
@@ -178,8 +178,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "scheme"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Referer request header.
@@ -188,8 +188,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "referer"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// User agent request header.
@@ -198,8 +198,8 @@ impl Request {
             path: Path {
                 inner: PathKind::Static(&["request", "user_agent"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 }
 
@@ -213,8 +213,8 @@ impl Response {
             path: Path {
                 inner: PathKind::Custom(vec!["response", "headers", name]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         }
     }
 
@@ -224,8 +224,8 @@ impl Response {
             path: Path {
                 inner: PathKind::Custom(vec!["response", "trailers", name]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         }
     }
 
@@ -234,8 +234,8 @@ impl Response {
         path: Path {
             inner: PathKind::Static(&["response", "code"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Size of the response body.
@@ -243,8 +243,8 @@ impl Response {
         path: Path {
             inner: PathKind::Static(&["response", "size"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Total size of the response including the approximate uncompressed size of the headers and the trailers.
@@ -252,8 +252,8 @@ impl Response {
         path: Path {
             inner: PathKind::Static(&["response", "total_size"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Additional details about the response beyond the standard response code.
@@ -262,8 +262,8 @@ impl Response {
             path: Path {
                 inner: PathKind::Static(&["response", "flags"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Response gRPC status code.
@@ -271,8 +271,8 @@ impl Response {
         path: Path {
             inner: PathKind::Static(&["response", "grpc_status"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
 
@@ -285,8 +285,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection_id"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Indicates whether TLS is applied to the downstream connection and the peer ceritificate is presented.
@@ -294,8 +294,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "mtls"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Requested server name in the downstream TLS connection.
@@ -307,8 +307,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "requested_server_name"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// TLS version of the downstream TLS connection.
@@ -317,8 +317,8 @@ impl Connection {
             path: Path {
                 inner: PathKind::Static(&["connection", "tls_version"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// The subject field of the local certificate in the downstream TLS connection.
@@ -330,8 +330,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "subject_local_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The subject field of the peer certificate in the downstream TLS connection.
@@ -343,8 +343,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "subject_peer_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first URI entry in the SAN field of the local certificate in the downstream TLS connection.
@@ -356,8 +356,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "uri_san_local_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first URI entry in the SAN field of the peer certificate in the downstream TLS connection.
@@ -369,8 +369,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "uri_san_peer_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first DNS entry in the SAN field of the local certificate in the downstream TLS connection.
@@ -382,8 +382,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "dns_san_local_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first DNS entry in the SAN field of the peer certificate in the downstream TLS connection.
@@ -395,8 +395,8 @@ impl Connection {
         path: Path {
             inner: PathKind::Static(&["connection", "dns_san_peer_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
 
@@ -410,8 +410,8 @@ impl Upstream {
             path: Path {
                 inner: PathKind::Static(&["upstream", "address"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Upstream connection remote port.
@@ -419,8 +419,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "port"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The local address of the upstream connection.
@@ -429,8 +429,8 @@ impl Upstream {
             path: Path {
                 inner: PathKind::Static(&["upstream", "local_address"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// The upstream transport failure reason e.g. certificate validation failed.
@@ -442,8 +442,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "transport_failure_reason"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// TLS version of the upstream TLS connection.
@@ -452,8 +452,8 @@ impl Upstream {
             path: Path {
                 inner: PathKind::Static(&["upstream", "tls_version"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// The subject field of the local certificate in the upstream TLS connection.
@@ -465,8 +465,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "subject_local_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The subject field of the peer certificate in the upstream TLS connection.
@@ -478,8 +478,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "subject_peer_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first URI entry in the SAN field of the local certificate in the upstream TLS connection.
@@ -491,8 +491,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "uri_san_local_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first URI entry in the SAN field of the peer certificate in the upstream TLS connection.
@@ -504,8 +504,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "uri_san_peer_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first DNS entry in the SAN field of the local certificate in the upstream TLS connection.
@@ -517,8 +517,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "dns_san_local_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// The first DNS entry in the SAN field of the peer certificate in the upstream TLS connection.
@@ -530,8 +530,8 @@ impl Upstream {
         path: Path {
             inner: PathKind::Static(&["upstream", "dns_san_peer_certificate"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
 
@@ -545,8 +545,8 @@ impl Source {
             path: Path {
                 inner: PathKind::Static(&["source", "address"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Downstream connection remote port.
@@ -554,8 +554,8 @@ impl Source {
         path: Path {
             inner: PathKind::Static(&["source", "port"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
 
@@ -569,8 +569,8 @@ impl Destination {
             path: Path {
                 inner: PathKind::Static(&["destination", "address"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Downstream connection local port.
@@ -578,8 +578,8 @@ impl Destination {
         path: Path {
             inner: PathKind::Static(&["destination", "port"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
 
@@ -592,8 +592,8 @@ impl Plugin {
         path: Path {
             inner: PathKind::Static(&["plugin_name"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 
     /// Plugin Root ID.
@@ -602,8 +602,8 @@ impl Plugin {
             path: Path {
                 inner: PathKind::Static(&["plugin_root_id"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 
     /// Plugin VM ID.
@@ -612,8 +612,8 @@ impl Plugin {
             path: Path {
                 inner: PathKind::Static(&["plugin_vm_id"]),
             },
-            type_: PhantomData,
-            proxy_wasm_type: PhantomData,
+            _type: PhantomData,
+            _proxy_wasm_type: PhantomData,
         };
 }
 
@@ -630,8 +630,8 @@ impl Listener {
         path: Path {
             inner: PathKind::Static(&["listener_direction"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
 
@@ -644,8 +644,8 @@ impl Cluster {
         path: Path {
             inner: PathKind::Static(&["cluster_name"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
 
@@ -658,7 +658,7 @@ impl Route {
         path: Path {
             inner: PathKind::Static(&["route_name"]),
         },
-        type_: PhantomData,
-        proxy_wasm_type: PhantomData,
+        _type: PhantomData,
+        _proxy_wasm_type: PhantomData,
     };
 }
