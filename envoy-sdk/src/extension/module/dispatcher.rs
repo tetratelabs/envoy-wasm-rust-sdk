@@ -42,7 +42,7 @@ impl<'a> ContextSelector<'a> {
 
     fn new_root_context(&mut self, context_id: u32) -> Result<Box<dyn RootContext>> {
         let name = match self.stream_info.plugin().root_id()? {
-            Some(data) => data,
+            Some(value) => value,
             None => String::default(),
         };
         if let Some(root_context_factory) = self.factories.get_mut(&name) {
