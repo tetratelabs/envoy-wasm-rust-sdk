@@ -97,8 +97,8 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
             info!("#{} -> {}: {}", self.instance_id, name, value);
         }
 
-        info!("  request.id: {:?}", self.stream_info.request().id()?);
         info!("  connection.id: {:?}", self.stream_info.connection().id()?);
+        info!("  request.id: {:?}", self.stream_info.request().id()?);
         info!(
             "  listener.traffic_direction: {:?}",
             self.stream_info.listener().traffic_direction()?
