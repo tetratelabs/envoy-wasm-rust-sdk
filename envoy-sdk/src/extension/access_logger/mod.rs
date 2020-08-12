@@ -238,7 +238,7 @@ pub trait LogOps {
 
     fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn stream_info<'a>(&'a self) -> &'a dyn StreamInfo;
+    fn stream_info(&self) -> &dyn StreamInfo;
 }
 
 #[doc(hidden)]
