@@ -14,5 +14,21 @@
 
 //! `Envoy` `Log API`.
 
+pub use crate::abi::proxy_wasm_ext::types::LogLevel;
+
 #[cfg(feature = "log")]
 pub use log::{debug, error, info, trace, warn};
+
+/// Sets the global maximum log level.
+///
+/// # Examples
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::host::log::{self, LogLevel};
+///
+/// // change max log level (by default, `LogLevel::Info`)
+/// log::set_max_level(LogLevel::Debug);
+/// ```
+#[cfg(feature = "log")]
+pub use crate::abi::proxy_wasm_ext::set_log_level as set_max_level;

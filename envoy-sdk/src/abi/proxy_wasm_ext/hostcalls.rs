@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Extensions to [`proxy_wasm::hostcalls`].
+//!
+//! [`proxy-wasm::hostcalls`]: https://docs.rs/proxy-wasm/*/proxy_wasm/hostcalls/index.html
+
 use std::time::{Duration, SystemTime};
 
 use proxy_wasm::hostcalls;

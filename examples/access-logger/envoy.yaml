@@ -52,10 +52,10 @@ static_resources:
               config:
                 configuration: |
                   {"setting":"value"}
-                name: "envoy-sdk-samples"
-                root_id: examples.access-logger
+                name: examples.access_logger
+                root_id: examples.access_logger
                 vm_config:
-                  vm_id: "vm-with-access-logger"
+                  vm_id: vm.examples.access_logger
                   runtime: "envoy.wasm.runtime.v8"
                   code:
                     local:

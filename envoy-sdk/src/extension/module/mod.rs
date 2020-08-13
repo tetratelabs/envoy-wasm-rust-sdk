@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Re-exported part of [`proxy_wasm`] API.
-//!
-//! [`proxy_wasm`]: https://docs.rs/proxy-wasm/
+pub use self::start::install;
 
-pub use crate::abi::proxy_wasm_ext::types;
-pub use ::proxy_wasm::traits;
-pub use ::proxy_wasm::{set_log_level, set_root_context};
+mod start;
+
+pub mod registry;

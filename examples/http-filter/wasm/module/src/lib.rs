@@ -12,48 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy::proxy_wasm;
-use proxy_wasm::traits::{ChildContext, RootContext};
-use proxy_wasm::types::LogLevel;
-
-use envoy::extension;
-use envoy::extension::factory;
-use envoy::extension::filter::http;
-use envoy::on_module_load;
+use envoy::{extension, extension::Registry, on_module_load};
 
 use http_filter::SampleHttpFilterFactory;
 
-// Generate a `_start` function with a given code that will be called by Envoy
-// to let WebAssembly module initialize itself.
-on_module_load! { initialize(); }
+// Generate the `_start` function that will be called by `Envoy` to let
+// WebAssembly module initialize itself.
+on_module_load! { initialize }
 
 /// Does one-time initialization.
-fn initialize() {
-    proxy_wasm::set_log_level(LogLevel::Info);
-
-    // Register HTTP filter extension
-    proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
-        // Inject dependencies on Envoy host APIs
-        let http_filter_factory =
-            SampleHttpFilterFactory::with_default_ops().expect("unable to initialize extension");
-
-        // Bridge between HTTP filter factory abstraction and Envoy ABI
-        Box::new(factory::FactoryContext::with_default_ops(
-            http_filter_factory,
-            |http_filter_factory, instance_id| -> ChildContext {
-                let http_filter = <_ as extension::factory::Factory>::new_extension(
-                    http_filter_factory,
-                    instance_id,
-                )
-                .unwrap();
-
-                // Bridge between HTTP filter abstraction and Envoy ABI
-                ChildContext::HttpContext(Box::new(http::FilterContext::with_default_ops(
-                    http_filter,
-                )))
-            },
-        ))
-    });
+///
+/// Returns a registry of extensions provided by this module.
+fn initialize() -> extension::Result<Registry> {
+    Ok(Registry::new().add_http_filter(|_instance_id| SampleHttpFilterFactory::default()))
 }
 
 #[cfg(test)]
@@ -62,6 +33,6 @@ mod tests {
 
     #[test]
     fn should_initialize() {
-        initialize()
+        assert!(initialize().is_ok());
     }
 }

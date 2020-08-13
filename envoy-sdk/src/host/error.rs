@@ -24,7 +24,7 @@ pub(crate) fn function(module: &'static str, function: &'static str) -> Function
 
 /// Represents a host ABI function.
 #[derive(Eq, PartialEq, Clone, Debug)]
-pub struct Function {
+pub(crate) struct Function {
     module: &'static str,
     function: &'static str,
 }
@@ -73,7 +73,7 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-/// A specialized [`Result`] type for use in host API functions.
+/// A specialized [`Result`] type for host API.
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
 pub type Result<T> = core::result::Result<T, Error>;
