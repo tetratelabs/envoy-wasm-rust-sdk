@@ -38,11 +38,11 @@ pub use hostcalls::done;
 
 // Headers/Body manipulation API
 
-pub use hostcalls::add_map_value;
-
 pub fn get_buffer(buffer_type: BufferType, start: usize, max_size: usize) -> host::Result<Bytes> {
     hostcalls::get_buffer(buffer_type, start, max_size).map(Bytes::from)
 }
+
+pub use hostcalls::set_buffer;
 
 pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
     hostcalls::get_map(map_type).map(HeaderMap::from)
@@ -52,7 +52,7 @@ pub fn set_map(map_type: MapType, headers: &HeaderMap) -> host::Result<()> {
     hostcalls::set_map(map_type, headers.as_slice())
 }
 
-pub use hostcalls::{get_map_value, set_map_value};
+pub use hostcalls::{get_map_value, set_map_value, add_map_value};
 
 // HTTP Flow API
 
