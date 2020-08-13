@@ -16,7 +16,7 @@
 
 use std::fmt;
 
-pub use crate::common::{Error, Result};
+pub use crate::error::{Error, ErrorContext, Result};
 pub use crate::host::log;
 
 /// An error at the initialization stage of the WebAssembly module.
