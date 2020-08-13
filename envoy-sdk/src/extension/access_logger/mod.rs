@@ -189,7 +189,7 @@ pub trait AccessLogger {
 }
 
 /// An interface for accessing extension config.
-pub trait ContextOps {
+pub(crate) trait ContextOps {
     /// Returns extension config.
     fn configuration(&self) -> host::Result<Bytes>;
 }
@@ -220,18 +220,25 @@ pub trait DrainOps {
 
 /// An interface for accessing data of the HTTP stream or TCP connection that is being logged.
 pub trait LogOps {
+    /// Returns request headers.
     fn request_headers(&self) -> host::Result<HeaderMap>;
 
+    /// Returns request header by name.
     fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>>;
 
+    /// Returns response headers.
     fn response_headers(&self) -> host::Result<HeaderMap>;
 
+    /// Returns response header by name.
     fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>>;
 
+    /// Returns response trailers.
     fn response_trailers(&self) -> host::Result<HeaderMap>;
 
+    /// Returns response trailer by name.
     fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>>;
 
+    /// Provides access to properties of the stream.
     fn stream_info(&self) -> &dyn StreamInfo;
 }
 
