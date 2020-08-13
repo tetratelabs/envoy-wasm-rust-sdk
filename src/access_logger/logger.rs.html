@@ -184,6 +184,11 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -250,7 +255,7 @@
 
     <span class="doccomment">/// Creates a new instance of sample access logger</span>
     <span class="doccomment">/// bound to the actual Envoy ABI.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_default_ops</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="ident">SampleAccessLogger</span>::<span class="ident">new</span>(
             <span class="ident">time</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
             <span class="ident">http_client</span>::<span class="ident">Client</span>::<span class="ident">default</span>(),
@@ -260,6 +265,11 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">access_logger</span>::<span class="ident">Logger</span> <span class="kw">for</span> <span class="ident">SampleAccessLogger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// The reference name for sample access logger.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.</span>
+    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;examples.access_logger&quot;</span>;
+
     <span class="doccomment">/// Is called when Envoy creates a new Listener that uses sample access logger.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Use logger_ops to get ahold of configuration.</span>

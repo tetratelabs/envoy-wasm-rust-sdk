@@ -176,7 +176,7 @@
     }
 
     <span class="doccomment">/// Creates a new factory bound to the actual Envoy ABI.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_default_ops</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="ident">SampleHttpFilterFactory</span>::<span class="ident">new</span>(
             <span class="ident">time</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
             <span class="ident">http_client</span>::<span class="ident">Client</span>::<span class="ident">default</span>(),
@@ -191,7 +191,7 @@
     <span class="doccomment">/// The reference name for sample network filter.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.</span>
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;examples.http-filter&quot;</span>;
+    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;examples.http_filter&quot;</span>;
 
     <span class="doccomment">/// Is called when Envoy creates a new Listener that uses sample HTTP filter.</span>
     <span class="kw">fn</span> <span class="ident">on_configure</span>(
@@ -215,7 +215,7 @@
 
     <span class="doccomment">/// Is called to create a unique instance of sample HTTP filter</span>
     <span class="doccomment">/// for each HTTP request.</span>
-    <span class="kw">fn</span> <span class="ident">new_extension</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">instance_id</span>: <span class="ident">InstanceId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SampleHttpFilter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">new_extension</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">instance_id</span>: <span class="ident">InstanceId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Extension</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">SampleHttpFilter</span>::<span class="ident">new</span>(
             <span class="ident">Rc</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>),
             <span class="ident">Rc</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">stats</span>),

@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["context",""],["ops",""]],"trait":[["DownstreamDataOps",""],["Filter",""],["Ops",""],["UpstreamDataOps",""]],"type":[["FilterStatus",""]]});
+initSidebarItems({"trait":[["DownstreamDataOps",""],["Filter",""],["Ops",""],["UpstreamDataOps",""]],"type":[["FilterStatus",""]]});

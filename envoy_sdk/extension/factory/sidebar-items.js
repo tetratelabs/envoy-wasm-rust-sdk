@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["context",""],["ops",""]],"trait":[["ConfigureOps",""],["DrainOps",""],["Factory",""],["Ops",""]]});
+initSidebarItems({"trait":[["ConfigureOps",""],["DrainOps",""],["Factory",""],["Ops",""]]});

@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["envoy_sdk"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"envoy_sdk/extension/struct.Registry.html\" title=\"struct envoy_sdk::extension::Registry\">Registry</a>","synthetic":false,"types":["envoy_sdk::extension::module::registry::Registry"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

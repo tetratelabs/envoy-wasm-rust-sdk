@@ -13,6 +13,15 @@
 <span id="13">13</span>
 <span id="14">14</span>
 <span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -27,6 +36,15 @@
 <span class="comment">// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="comment">// See the License for the specific language governing permissions and</span>
 <span class="comment">// limitations under the License.</span>
+
+<span class="doccomment">//! ABI between Envoy and Wasm extensions.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! At the moment, [`proxy-wasm`] is the only such ABI.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! In the long term, we anticipate `Envoy` will also get feature-specific ABIs,</span>
+<span class="doccomment">//! e.g. one for HTTP Tracers, another for custom Clusters, etc.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! [`proxy-wasm`]: https://github.com/proxy-wasm/spec</span>
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">proxy_wasm_ext</span>;
 </pre></div>

@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["context",""]],"trait":[["ConfigureOps",""],["LogOps",""],["Logger",""],["Ops",""]]});
+initSidebarItems({"trait":[["ConfigureOps",""],["LogOps",""],["Logger",""],["Ops",""]]});

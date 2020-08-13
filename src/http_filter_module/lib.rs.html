@@ -36,35 +36,6 @@
 <span id="36">36</span>
 <span id="37">37</span>
 <span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -80,48 +51,19 @@
 <span class="comment">// See the License for the specific language governing permissions and</span>
 <span class="comment">// limitations under the License.</span>
 
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">proxy_wasm</span>;
-<span class="kw">use</span> <span class="ident">proxy_wasm</span>::<span class="ident">traits</span>::{<span class="ident">ChildContext</span>, <span class="ident">RootContext</span>};
-<span class="kw">use</span> <span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">LogLevel</span>;
-
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>;
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::<span class="ident">factory</span>;
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::<span class="ident">filter</span>::<span class="ident">http</span>;
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">on_module_load</span>;
+<span class="kw">use</span> <span class="ident">envoy</span>::{<span class="ident">extension</span>, <span class="ident">extension</span>::<span class="ident">Registry</span>, <span class="ident">on_module_load</span>};
 
 <span class="kw">use</span> <span class="ident">http_filter</span>::<span class="ident">SampleHttpFilterFactory</span>;
 
-<span class="comment">// Generate a `_start` function with a given code that will be called by Envoy</span>
-<span class="comment">// to let WebAssembly module initialize itself.</span>
-<span class="macro">on_module_load</span><span class="macro">!</span> { <span class="ident">initialize</span>(); }
+<span class="comment">// Generate the `_start` function that will be called by `Envoy` to let</span>
+<span class="comment">// WebAssembly module initialize itself.</span>
+<span class="macro">on_module_load</span><span class="macro">!</span> { <span class="ident">initialize</span> }
 
 <span class="doccomment">/// Does one-time initialization.</span>
-<span class="kw">fn</span> <span class="ident">initialize</span>() {
-    <span class="ident">proxy_wasm</span>::<span class="ident">set_log_level</span>(<span class="ident">LogLevel</span>::<span class="ident">Info</span>);
-
-    <span class="comment">// Register HTTP filter extension</span>
-    <span class="ident">proxy_wasm</span>::<span class="ident">set_root_context</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RootContext</span><span class="op">&gt;</span> {
-        <span class="comment">// Inject dependencies on Envoy host APIs</span>
-        <span class="kw">let</span> <span class="ident">http_filter_factory</span> <span class="op">=</span>
-            <span class="ident">SampleHttpFilterFactory</span>::<span class="ident">with_default_ops</span>().<span class="ident">expect</span>(<span class="string">&quot;unable to initialize extension&quot;</span>);
-
-        <span class="comment">// Bridge between HTTP filter factory abstraction and Envoy ABI</span>
-        <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">factory</span>::<span class="ident">FactoryContext</span>::<span class="ident">with_default_ops</span>(
-            <span class="ident">http_filter_factory</span>,
-            <span class="op">|</span><span class="ident">http_filter_factory</span>, <span class="ident">instance_id</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ChildContext</span> {
-                <span class="kw">let</span> <span class="ident">http_filter</span> <span class="op">=</span> <span class="op">&lt;</span><span class="kw">_</span> <span class="kw">as</span> <span class="ident">extension</span>::<span class="ident">factory</span>::<span class="ident">Factory</span><span class="op">&gt;</span>::<span class="ident">new_extension</span>(
-                    <span class="ident">http_filter_factory</span>,
-                    <span class="ident">instance_id</span>,
-                )
-                .<span class="ident">unwrap</span>();
-
-                <span class="comment">// Bridge between HTTP filter abstraction and Envoy ABI</span>
-                <span class="ident">ChildContext</span>::<span class="ident">HttpContext</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">http</span>::<span class="ident">FilterContext</span>::<span class="ident">with_default_ops</span>(
-                    <span class="ident">http_filter</span>,
-                )))
-            },
-        ))
-    });
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns a registry of extensions provided by this module.</span>
+<span class="kw">fn</span> <span class="ident">initialize</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">extension</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Registry</span><span class="op">&gt;</span> {
+    <span class="prelude-val">Ok</span>(<span class="ident">Registry</span>::<span class="ident">new</span>().<span class="ident">add_http_filter</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">SampleHttpFilterFactory</span>::<span class="ident">default</span>()))
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -130,7 +72,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">should_initialize</span>() {
-        <span class="ident">initialize</span>()
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">initialize</span>().<span class="ident">is_ok</span>());
     }
 }
 </pre></div>
