@@ -163,7 +163,7 @@ impl<'a> dyn StreamInfo + 'a {
     }
 }
 
-/// Provides access to the properties of a stream.
+/// Provides access to properties of a stream.
 struct StreamInfoAccessor<'a> {
     stream_info: &'a dyn StreamInfo,
 }

@@ -301,7 +301,7 @@ pub trait ExtensionFactory {
 }
 
 /// An interface for accessing extension config.
-pub trait ContextOps {
+pub(crate) trait ContextOps {
     /// Returns extension config.
     fn configuration(&self) -> host::Result<ByteString>;
 }
