@@ -16,7 +16,8 @@ use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::BufferType;
 
 use super::{
-    ConnectionCompleteOps, DownstreamCloseOps, DownstreamDataOps, UpstreamCloseOps, UpstreamDataOps, BufferAction,
+    BufferAction, ConnectionCompleteOps, DownstreamCloseOps, DownstreamDataOps, UpstreamCloseOps,
+    UpstreamDataOps,
 };
 use crate::host::{self, Bytes};
 

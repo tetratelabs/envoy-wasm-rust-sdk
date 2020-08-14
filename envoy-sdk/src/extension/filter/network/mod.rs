@@ -104,8 +104,8 @@ use crate::extension::Result;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 use crate::host::{self, Bytes};
 
-pub use crate::abi::proxy_wasm::types::CloseType;
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
+pub use crate::abi::proxy_wasm::types::CloseType;
 
 mod context;
 mod ops;
@@ -317,21 +317,28 @@ pub struct BufferAction<'a> {
 
 impl<'a> BufferAction<'a> {
     pub fn prepend(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction { inner: BufferActionKind::Prepend(data) }
+        BufferAction {
+            inner: BufferActionKind::Prepend(data),
+        }
     }
 
     pub fn append(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction { inner: BufferActionKind::Append(data) }
+        BufferAction {
+            inner: BufferActionKind::Append(data),
+        }
     }
 
     pub fn replace_with(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction { inner: BufferActionKind::Replace(data) }
+        BufferAction {
+            inner: BufferActionKind::Replace(data),
+        }
     }
 
     #[doc(hidden)]
-    pub fn execute<F>(self, mutate: F) -> host::Result<()> 
+    pub fn execute<F>(self, mutate: F) -> host::Result<()>
     where
-        F: FnOnce(usize, usize, &[u8]) -> host::Result<()> {
+        F: FnOnce(usize, usize, &[u8]) -> host::Result<()>,
+    {
         // implementation based on `envoyproxy/envoy-wasm`
         use BufferActionKind::*;
         match self.inner {

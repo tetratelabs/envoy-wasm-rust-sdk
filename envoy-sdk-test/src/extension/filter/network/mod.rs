@@ -13,3 +13,7 @@
 // limitations under the License.
 
 //! `Envoy` `Network Filter` extension.
+
+pub(crate) use self::factory::DynNetworkFilterFactory;
+
+mod factory;

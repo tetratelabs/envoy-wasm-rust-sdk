@@ -20,7 +20,7 @@ use envoy_sdk_test as envoy_test;
 use envoy_test::FakeEnvoy;
 
 #[test]
-fn test_stats() -> Result<()> {
+fn test_network_filter() -> Result<()> {
     struct TestFilter<'a> {
         stats: &'a dyn Stats,
     }
@@ -93,42 +93,40 @@ fn test_stats() -> Result<()> {
 
     let mut connection = fake_listener.new_connection()?;
     {
-        let status = connection.receive_connect_from_downstream()?;
+        let status = connection.simulate_connect_from_downstream()?;
 
         assert_eq!(status, network::FilterStatus::Continue);
         assert_eq!(fake.stats.counter("test_filter.cx_total")?.value()?, 1);
         assert_eq!(connection.upstream().received_connect(), true);
 
-        let status = connection.receive_data_from_downstream(b"hello")?;
+        let status = connection.simulate_data_from_downstream(b"hello")?;
 
         assert_eq!(status, FilterStatus::Continue);
-        assert_eq!(*connection.downstream_read_buffer(), b"");
+        assert_eq!(connection.peek_downstream_read_buffer(), b"");
         assert_eq!(connection.upstream().drain_received_bytes(), b"ello");
 
-        let status = connection.receive_data_from_downstream(b"world")?;
+        let status = connection.simulate_data_from_downstream(b"world")?;
 
         assert_eq!(status, FilterStatus::Continue);
-        assert_eq!(*connection.downstream_read_buffer(), b"");
+        assert_eq!(connection.peek_downstream_read_buffer(), b"");
         assert_eq!(connection.upstream().drain_received_bytes(), b"orld");
 
-        let status = connection.receive_close_from_downstream()?;
+        let status = connection.simulate_close_from_downstream()?;
 
         assert_eq!(status, FilterStatus::Continue);
         assert_eq!(connection.upstream().received_close(), true);
 
-        let status = connection.receive_data_from_upstream(b"hi")?;
+        let status = connection.simulate_data_from_upstream(b"hi")?;
 
         assert_eq!(status, FilterStatus::Continue);
-        assert_eq!(*connection.upstream_read_buffer(), b"");
         assert_eq!(connection.downstream().drain_received_bytes(), b"hi!");
 
-        let status = connection.receive_data_from_upstream(b"there")?;
+        let status = connection.simulate_data_from_upstream(b"there")?;
 
         assert_eq!(status, FilterStatus::Continue);
-        assert_eq!(*connection.upstream_read_buffer(), b"");
         assert_eq!(connection.downstream().drain_received_bytes(), b"there!");
 
-        let status = connection.receive_close_from_upstream()?;
+        let status = connection.simulate_close_from_upstream()?;
 
         assert_eq!(status, FilterStatus::Continue);
         assert_eq!(connection.downstream().received_close(), true);
@@ -136,9 +134,201 @@ fn test_stats() -> Result<()> {
 
     let mut connection2 = fake_listener.new_connection()?;
     {
-        let status = connection2.receive_connect_from_downstream()?;
+        let status = connection2.simulate_connect_from_downstream()?;
         assert_eq!(status, network::FilterStatus::Continue);
         assert_eq!(fake.stats.counter("test_filter.cx_total")?.value()?, 2);
+    }
+
+    Ok(())
+}
+
+#[test]
+fn test_network_filter_downstream_stop_iteration() -> Result<()> {
+    struct TestFilter<'a> {
+        stats: &'a dyn Stats,
+    }
+    impl NetworkFilter for TestFilter<'_> {
+        fn on_new_connection(&mut self) -> extension::Result<network::FilterStatus> {
+            self.stats.counter("test_filter.on_new_connection")?.inc()?;
+            Ok(network::FilterStatus::StopIteration)
+        }
+
+        fn on_downstream_data(
+            &mut self,
+            _data_size: usize,
+            _end_of_stream: bool,
+            _ops: &dyn network::DownstreamDataOps,
+        ) -> extension::Result<network::FilterStatus> {
+            self.stats
+                .counter("test_filter.on_downstream_data")?
+                .inc()?;
+            Ok(network::FilterStatus::StopIteration)
+        }
+    }
+
+    struct TestFilterFactory<'a> {
+        stats: &'a dyn Stats,
+    }
+    impl<'a> ExtensionFactory for TestFilterFactory<'a> {
+        type Extension = TestFilter<'a>;
+
+        fn name() -> &'static str {
+            "test"
+        }
+
+        fn new_extension(
+            &mut self,
+            _instance_id: InstanceId,
+        ) -> extension::Result<Self::Extension> {
+            Ok(TestFilter { stats: self.stats })
+        }
+    }
+    impl<'a> TestFilterFactory<'a> {
+        fn new(stats: &'a dyn Stats) -> Self {
+            TestFilterFactory { stats }
+        }
+    }
+
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(TestFilterFactory::new(&fake.stats))?
+        .configure("{}")?;
+
+    {
+        let mut connection = fake_listener.new_connection()?;
+
+        let status = connection.simulate_connect_from_downstream()?;
+
+        assert_eq!(status, network::FilterStatus::StopIteration);
+        assert_eq!(
+            fake.stats
+                .counter("test_filter.on_new_connection")?
+                .value()?,
+            1
+        );
+        assert_eq!(connection.upstream().received_connect(), false); // because of StopIteration in `on_downstream_data`
+
+        let status = connection.simulate_data_from_downstream(b"hello")?;
+
+        assert_eq!(status, FilterStatus::StopIteration);
+        assert_eq!(
+            fake.stats
+                .counter("test_filter.on_downstream_data")?
+                .value()?,
+            1
+        );
+        assert_eq!(connection.peek_downstream_read_buffer(), b"hello");
+        assert_eq!(connection.upstream().received_connect(), false);
+        assert_eq!(connection.upstream().drain_received_bytes(), b"");
+
+        let status = connection.simulate_data_from_downstream(b"world")?;
+
+        assert_eq!(status, FilterStatus::StopIteration);
+        assert_eq!(
+            fake.stats
+                .counter("test_filter.on_downstream_data")?
+                .value()?,
+            2
+        );
+        assert_eq!(connection.peek_downstream_read_buffer(), b"helloworld");
+        assert_eq!(connection.upstream().received_connect(), false);
+        assert_eq!(connection.upstream().drain_received_bytes(), b"");
+    }
+
+    Ok(())
+}
+
+#[test]
+fn test_network_filter_upstream_stop_iteration() -> Result<()> {
+    struct TestFilter<'a> {
+        stats: &'a dyn Stats,
+    }
+    impl NetworkFilter for TestFilter<'_> {
+        fn on_new_connection(&mut self) -> extension::Result<network::FilterStatus> {
+            self.stats.counter("test_filter.on_new_connection")?.inc()?;
+            Ok(network::FilterStatus::Continue)
+        }
+
+        fn on_upstream_data(
+            &mut self,
+            _data_size: usize,
+            _end_of_stream: bool,
+            _ops: &dyn network::UpstreamDataOps,
+        ) -> Result<FilterStatus> {
+            self.stats.counter("test_filter.on_upstream_data")?.inc()?;
+            Ok(network::FilterStatus::StopIteration)
+        }
+
+        fn on_upstream_close(
+            &mut self,
+            _close_type: network::CloseType,
+            _ops: &dyn network::UpstreamCloseOps,
+        ) -> Result<()> {
+            self.stats.counter("test_filter.on_upstream_close")?.inc()?;
+            Ok(())
+        }
+    }
+
+    struct TestFilterFactory<'a> {
+        stats: &'a dyn Stats,
+    }
+    impl<'a> ExtensionFactory for TestFilterFactory<'a> {
+        type Extension = TestFilter<'a>;
+
+        fn name() -> &'static str {
+            "test"
+        }
+
+        fn new_extension(
+            &mut self,
+            _instance_id: InstanceId,
+        ) -> extension::Result<Self::Extension> {
+            Ok(TestFilter { stats: self.stats })
+        }
+    }
+    impl<'a> TestFilterFactory<'a> {
+        fn new(stats: &'a dyn Stats) -> Self {
+            TestFilterFactory { stats }
+        }
+    }
+
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(TestFilterFactory::new(&fake.stats))?
+        .configure("{}")?;
+
+    {
+        let mut connection = fake_listener.new_connection()?;
+
+        let status = connection.simulate_connect_from_downstream()?;
+
+        assert_eq!(status, network::FilterStatus::Continue);
+        assert_eq!(
+            fake.stats
+                .counter("test_filter.on_new_connection")?
+                .value()?,
+            1
+        );
+        assert_eq!(connection.upstream().received_connect(), true);
+
+        let status = connection.simulate_data_from_upstream(b"hi")?;
+
+        assert_eq!(status, FilterStatus::StopIteration);
+        assert_eq!(connection.downstream().drain_received_bytes(), b"");
+
+        let status = connection.simulate_data_from_upstream(b"there")?;
+
+        assert_eq!(status, FilterStatus::StopIteration);
+        assert_eq!(connection.downstream().drain_received_bytes(), b"");
+
+        let status = connection.simulate_close_from_upstream()?;
+
+        assert_eq!(status, FilterStatus::StopIteration);
+        assert_eq!(connection.downstream().received_close(), false); // because of StopIteration in `on_upstream_data`
     }
 
     Ok(())

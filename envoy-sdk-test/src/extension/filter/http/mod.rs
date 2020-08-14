@@ -13,3 +13,7 @@
 // limitations under the License.
 
 //! `Envoy` `HTTP Filter` extension.
+
+//TODO(yskopets) pub(crate) use self::factory::DynHttpFilterFactory;
+
+//TODO(yskopets) mod factory;

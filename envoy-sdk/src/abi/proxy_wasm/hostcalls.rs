@@ -52,7 +52,7 @@ pub fn set_map(map_type: MapType, headers: &HeaderMap) -> host::Result<()> {
     hostcalls::set_map(map_type, headers.as_slice())
 }
 
-pub use hostcalls::{get_map_value, set_map_value, add_map_value};
+pub use hostcalls::{add_map_value, get_map_value, set_map_value};
 
 // HTTP Flow API
 
