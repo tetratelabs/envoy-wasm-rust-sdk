@@ -14,7 +14,7 @@
 
 //! Fake `Envoy` `Host APIs` for use in unit tests.
 
-pub use http::client::FakeHttpClient;
+pub use http::client::{FakeHttpClient, FakeHttpClientRequest, FakeHttpClientResponse};
 pub use stats::FakeStats;
 pub use time::FakeClock;
 

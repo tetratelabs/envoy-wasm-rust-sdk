@@ -54,7 +54,7 @@ use std::cell::RefCell;
 use std::time::Duration;
 
 use envoy::host::http::client::{HttpClient, HttpClientRequestHandle};
-use envoy::host::{Bytes, HeaderMap, Result};
+use envoy::host::{Bytes, HeaderMap, HeaderName, HeaderValue, Result};
 
 /// Fake `HTTP Client`.
 #[derive(Debug, Default)]
@@ -66,22 +66,56 @@ pub struct FakeHttpClient {
 /// Snapshot of an HTTP request made through [`FakeHttpClient`].
 ///
 /// [`FakeHttpClient`]: struct.FakeHttpClient.html
-#[derive(Debug, Default)]
-pub struct FakeHttpRequest {
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct FakeHttpClientRequest {
     pub upstream: String,
+    pub message: FakeHttpMessage,
+    pub timeout: Duration,
+}
+
+/// HTTP message.
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct FakeHttpMessage {
     pub headers: HeaderMap,
     pub body: Bytes,
     pub trailers: HeaderMap,
-    pub timeout: Duration,
 }
 
 /// Record of a pending HTTP request made through [`FakeHttpClient`].
 ///
 /// [`FakeHttpClient`]: struct.FakeHttpClient.html
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct FakePendingRequest {
-    pub request: FakeHttpRequest,
+    pub request: FakeHttpClientRequest,
     pub handle: HttpClientRequestHandle,
+}
+
+/// Builder of a [`FakeHttpClientRequest`].
+///
+/// [`FakeHttpClientRequest`]: struct.FakeHttpClientRequest.html
+#[derive(Debug, Default, Clone)]
+pub struct FakeHttpClientRequestBuilder {
+    request: FakeHttpClientRequest,
+}
+
+/// Snapshot of a response to an HTTP request made through [`FakeHttpClient`].
+///
+/// [`FakeHttpClient`]: struct.FakeHttpClient.html
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct FakeHttpClientResponse {
+    pub message: FakeHttpMessage,
+}
+
+/// Builder of a [`FakeHttpClientResponse`].
+///
+/// [`FakeHttpClientResponse`]: struct.FakeHttpClientResponse.html
+#[derive(Debug, Default, Clone)]
+pub struct FakeHttpClientResponseBuilder {
+    response: FakeHttpClientResponse,
 }
 
 impl HttpClient for FakeHttpClient {
@@ -96,11 +130,13 @@ impl HttpClient for FakeHttpClient {
     ) -> Result<HttpClientRequestHandle> {
         let handle = HttpClientRequestHandle::from(*self.counter.borrow());
         *self.counter.borrow_mut() += 1;
-        let request = FakeHttpRequest {
+        let request = FakeHttpClientRequest {
             upstream: upstream.to_owned(),
-            headers: headers.into(),
-            body: body.map(|o| o.to_vec()).into(),
-            trailers: trailers.into(),
+            message: FakeHttpMessage {
+                headers: headers.into(),
+                body: body.map(|o| o.to_vec()).into(),
+                trailers: trailers.into(),
+            },
             timeout,
         };
         self.requests
@@ -112,7 +148,104 @@ impl HttpClient for FakeHttpClient {
 
 impl FakeHttpClient {
     /// Returns a list of HTTP requests made since the last call to this method.
-    pub fn drain_pending_requests(&mut self) -> Vec<FakePendingRequest> {
+    pub fn drain_pending_requests(&self) -> Vec<FakePendingRequest> {
         self.requests.borrow_mut().drain(..).collect()
+    }
+}
+
+impl FakeHttpClientRequest {
+    pub fn builder() -> FakeHttpClientRequestBuilder {
+        FakeHttpClientRequestBuilder::default()
+    }
+}
+
+impl FakeHttpClientRequestBuilder {
+    pub fn upstream<U>(mut self, upsteam: U) -> Self
+    where
+        U: Into<String>,
+    {
+        self.request.upstream = upsteam.into();
+        self
+    }
+
+    pub fn header<K, V>(mut self, name: K, value: V) -> Self
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        let mut headers = self.request.message.headers.into_vec();
+        headers.push((name.into(), value.into()));
+        self.request.message.headers = headers.into();
+        self
+    }
+
+    pub fn body<B>(mut self, body: B) -> Self
+    where
+        B: Into<Vec<u8>>,
+    {
+        self.request.message.body = body.into().into();
+        self
+    }
+
+    pub fn trailer<K, V>(mut self, name: K, value: V) -> Self
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        let mut trailers = self.request.message.trailers.into_vec();
+        trailers.push((name.into(), value.into()));
+        self.request.message.trailers = trailers.into();
+        self
+    }
+
+    pub fn timeout(mut self, timeout: Duration) -> Self {
+        self.request.timeout = timeout;
+        self
+    }
+
+    pub fn build(self) -> FakeHttpClientRequest {
+        self.request
+    }
+}
+
+impl FakeHttpClientResponse {
+    pub fn builder() -> FakeHttpClientResponseBuilder {
+        FakeHttpClientResponseBuilder::default()
+    }
+}
+
+impl FakeHttpClientResponseBuilder {
+    pub fn header<K, V>(mut self, name: K, value: V) -> Self
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        let mut headers = self.response.message.headers.into_vec();
+        headers.push((name.into(), value.into()));
+        self.response.message.headers = headers.into();
+        self
+    }
+
+    pub fn body<B>(mut self, body: B) -> Self
+    where
+        B: Into<Vec<u8>>,
+    {
+        self.response.message.body = body.into().into();
+        self
+    }
+
+    pub fn trailer<K, V>(mut self, name: K, value: V) -> Self
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        let mut trailers = self.response.message.trailers.into_vec();
+        trailers.push((name.into(), value.into()));
+        self.response.message.trailers = trailers.into();
+        self
+    }
+
+    pub fn build(self) -> FakeHttpClientResponse {
+        self.response
     }
 }

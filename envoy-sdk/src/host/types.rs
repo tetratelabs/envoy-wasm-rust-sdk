@@ -18,7 +18,7 @@ use std::{fmt, ops};
 
 pub use crate::abi::proxy_wasm::types::HeaderValue;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Bytes {
     data: Vec<u8>,
 }
@@ -68,7 +68,7 @@ impl From<Option<Vec<u8>>> for Bytes {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct HeaderMap {
     entries: Vec<(HeaderName, HeaderValue)>,
 }
@@ -98,6 +98,19 @@ impl HeaderMap {
         Iter {
             inner: self.entries.iter(),
         }
+    }
+
+    pub fn get<K>(&self, key: K) -> Option<&HeaderValue>
+    where
+        K: Into<HeaderName>,
+    {
+        let expected = key.into();
+        for (name, value) in self.iter() {
+            if *name == expected {
+                return Some(value);
+            }
+        }
+        None
     }
 }
 
@@ -160,6 +173,12 @@ impl Iterator for IntoIter {
 
 impl FusedIterator for IntoIter {}
 
+impl From<Vec<(HeaderName, HeaderValue)>> for HeaderMap {
+    fn from(entries: Vec<(HeaderName, HeaderValue)>) -> Self {
+        Self::new(entries)
+    }
+}
+
 impl From<Vec<(String, HeaderValue)>> for HeaderMap {
     fn from(entries: Vec<(String, HeaderValue)>) -> Self {
         Self::new(
@@ -182,7 +201,7 @@ impl From<&[(&str, &[u8])]> for HeaderMap {
     }
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct HeaderName {
     inner: String,
 }

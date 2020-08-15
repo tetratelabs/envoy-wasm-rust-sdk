@@ -15,14 +15,15 @@
 use std::time::Duration;
 
 use envoy::host::http::client::HttpClient;
-use envoy::host::{HeaderMap, Result};
+use envoy::host::Result;
 
 use envoy_sdk_test as envoy_test;
+use envoy_test::host::http::client::FakeHttpClientRequest;
 use envoy_test::host::FakeHttpClient;
 
 #[test]
 fn test_fake_http_client() -> Result<()> {
-    let mut http_client = FakeHttpClient::default();
+    let http_client = FakeHttpClient::default();
 
     let request_handle = http_client.send_request(
         "example_cluster",
@@ -43,32 +44,19 @@ fn test_fake_http_client() -> Result<()> {
     let pending = &pending_requests[0];
 
     assert_eq!(pending.handle, request_handle);
-    assert_eq!(pending.request.upstream, "example_cluster");
     assert_eq!(
-        pending.request.headers.as_slice(),
-        HeaderMap::from(
-            [
-                (":method", "GET".as_bytes()),
-                (":path", "/stuff".as_bytes()),
-                (":authority", "example.org".as_bytes()),
-            ]
-            .as_ref()
-        )
-        .as_slice(),
+        pending.request,
+        FakeHttpClientRequest::builder()
+            .upstream("example_cluster")
+            .header(":method", "GET")
+            .header(":path", "/stuff")
+            .header(":authority", "example.org")
+            .body("example body")
+            .trailer("grpc-status", "0")
+            .trailer("grpc-message", "OK")
+            .timeout(Duration::from_secs(3))
+            .build()
     );
-    assert_eq!(pending.request.body.as_bytes(), b"example body");
-    assert_eq!(
-        pending.request.trailers.as_slice(),
-        HeaderMap::from(
-            [
-                ("grpc-status", "0".as_bytes()),
-                ("grpc-message", "OK".as_bytes()),
-            ]
-            .as_ref()
-        )
-        .as_slice(),
-    );
-    assert_eq!(pending.request.timeout, Duration::from_secs(3));
 
     Ok(())
 }

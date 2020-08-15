@@ -17,10 +17,11 @@ use std::cell::RefCell;
 use envoy::extension::factory;
 use envoy::extension::filter::network::{self, CloseType};
 use envoy::extension::{self, ExtensionFactory, InstanceId, NetworkFilter};
-use envoy::host::{self, Bytes};
+use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
+use envoy::host::{self, Bytes, HeaderMap, HeaderValue};
 
 use crate::extension::filter::network::DynNetworkFilterFactory;
-use crate::host::{FakeClock, FakeHttpClient, FakeStats};
+use crate::host::{FakeClock, FakeHttpClient, FakeHttpClientResponse, FakeStats};
 
 mod envoy_mock;
 
@@ -356,6 +357,27 @@ impl<'a, 'b> FakeTcpConnection<'a, 'b> {
         status
     }
 
+    /// Simulate a response to an HTTP request made through [`FakeHttpClient`].
+    ///
+    /// [`FakeHttpClient`]: ../host/http/client/struct.FakeHttpClient.html
+    pub fn simulate_http_client_response(
+        &mut self,
+        request_id: HttpClientRequestHandle,
+        response: FakeHttpClientResponse,
+    ) -> extension::Result<()> {
+        match &mut self.filter {
+            Some(filter) => filter.on_http_call_response(
+                request_id,
+                response.message.headers.len(),
+                response.message.body.len(),
+                response.message.trailers.len(),
+                &self.state,
+                &response,
+            ),
+            None => Ok(()),
+        }
+    }
+
     /// Peeks into the read buffer of `Downstream -> Envoy` connection.
     pub fn peek_downstream_read_buffer(&self) -> Vec<u8> {
         self.state.downstream_read_buffer.borrow().clone()
@@ -404,6 +426,30 @@ impl network::DownstreamCloseOps for FakeTcpConnectionState {}
 
 impl network::UpstreamCloseOps for FakeTcpConnectionState {}
 
+impl network::ConnectionCompleteOps for FakeTcpConnectionState {}
+
 struct NoOps;
 
 impl factory::ConfigureOps for NoOps {}
+
+impl HttpClientResponseOps for FakeHttpClientResponse {
+    fn http_call_response_headers(&self) -> host::Result<HeaderMap> {
+        Ok(self.message.headers.clone())
+    }
+
+    fn http_call_response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        Ok(self.message.headers.get(name).map(Clone::clone))
+    }
+
+    fn http_call_response_body(&self, offset: usize, max_size: usize) -> host::Result<Bytes> {
+        envoy_mock::get_buffer_bytes(self.message.body.as_slice(), offset, max_size)
+    }
+
+    fn http_call_response_trailers(&self) -> host::Result<HeaderMap> {
+        Ok(self.message.trailers.clone())
+    }
+
+    fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        Ok(self.message.trailers.get(name).map(Clone::clone))
+    }
+}
