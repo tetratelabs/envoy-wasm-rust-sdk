@@ -17,7 +17,7 @@ use std::time::{Duration, SystemTime};
 use envoy::host::{Clock, Result};
 
 use envoy_sdk_test as envoy_test;
-use envoy_test::host::FakeClock;
+use envoy_test::FakeClock;
 
 #[test]
 fn test_fake_clock() -> Result<()> {
@@ -31,7 +31,7 @@ fn test_fake_clock() -> Result<()> {
 
 #[test]
 fn test_fake_clock_at_given_time() -> Result<()> {
-    let mut clock = FakeClock::default();
+    let clock = FakeClock::default();
 
     let t0 = SystemTime::UNIX_EPOCH + Duration::from_secs(5);
 
@@ -45,7 +45,7 @@ fn test_fake_clock_at_given_time() -> Result<()> {
 
 #[test]
 fn test_fake_clock_at_given_times() -> Result<()> {
-    let mut clock = FakeClock::default();
+    let clock = FakeClock::default();
 
     let t0 = SystemTime::UNIX_EPOCH;
     let moments = (0..).map(move |i| t0 + Duration::from_secs(i));

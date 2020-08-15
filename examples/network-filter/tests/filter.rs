@@ -17,8 +17,7 @@ use std::time::Duration;
 use envoy::extension::filter::network::FilterStatus;
 use envoy::host::{Result, Stats};
 
-use envoy_test::host::{FakeHttpClientRequest, FakeHttpClientResponse};
-use envoy_test::FakeEnvoy;
+use envoy_test::{FakeEnvoy, FakeHttpClientRequest, FakeHttpClientResponse};
 
 use network_filter::SampleNetworkFilterFactory;
 

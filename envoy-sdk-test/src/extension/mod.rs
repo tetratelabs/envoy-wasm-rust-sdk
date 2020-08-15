@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Fake `Envoy` `Extension APIs` for use in unit tests.
-
-mod module;
+//! `Envoy` `Extension APIs` for use in unit tests.
 
 pub mod access_logger;
-pub mod factory;
 pub mod filter;

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` `HTTP Filter` extension.
+//! `Envoy` `HTTP Filter` APIs for use in unit tests.
 
 //TODO(yskopets) pub(crate) use self::factory::DynHttpFilterFactory;
 

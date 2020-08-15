@@ -18,8 +18,7 @@ use envoy::host::http::client::HttpClient;
 use envoy::host::Result;
 
 use envoy_sdk_test as envoy_test;
-use envoy_test::host::http::client::FakeHttpClientRequest;
-use envoy_test::host::FakeHttpClient;
+use envoy_test::{FakeHttpClient, FakeHttpClientRequest};
 
 #[test]
 fn test_fake_http_client() -> Result<()> {

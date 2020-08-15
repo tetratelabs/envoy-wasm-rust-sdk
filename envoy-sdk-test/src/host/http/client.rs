@@ -22,7 +22,7 @@
 //! # use envoy_sdk_test as envoy_test;
 //! use std::time::Duration;
 //! use envoy::host::HttpClient;
-//! use envoy_test::host::FakeHttpClient;
+//! use envoy_test::FakeHttpClient;
 //!
 //! # fn main() -> envoy::host::Result<()> {
 //! let mut http_client = FakeHttpClient::default();

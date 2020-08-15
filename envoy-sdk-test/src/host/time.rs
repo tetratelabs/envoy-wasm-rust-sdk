@@ -22,7 +22,7 @@
 //! # use envoy_sdk_test as envoy_test;
 //! use std::time::{Duration, SystemTime};
 //! use envoy::host::Clock;
-//! use envoy_test::host::FakeClock;
+//! use envoy_test::FakeClock;
 //!
 //! # fn main() -> envoy::host::Result<()> {
 //! let clock = FakeClock::default();
@@ -39,7 +39,7 @@
 //! # use envoy_sdk_test as envoy_test;
 //! use std::time::{Duration, SystemTime};
 //! use envoy::host::Clock;
-//! use envoy_test::host::FakeClock;
+//! use envoy_test::FakeClock;
 //!
 //! # fn main() -> envoy::host::Result<()> {
 //! let mut clock = FakeClock::default();
@@ -60,7 +60,7 @@
 //! # use envoy_sdk_test as envoy_test;
 //! use std::time::{Duration, SystemTime};
 //! use envoy::host::Clock;
-//! use envoy_test::host::FakeClock;
+//! use envoy_test::FakeClock;
 //!
 //! # fn main() -> envoy::host::Result<()> {
 //! let mut clock = FakeClock::default();
@@ -124,8 +124,8 @@ impl FakeClock {
     /// ```
     /// # use envoy_sdk_test as envoy_test;
     /// use std::time::{Duration, SystemTime};
-    /// use envoy::host::time::Clock;
-    /// use envoy_test::host::time::FakeClock;
+    /// use envoy::host::Clock;
+    /// use envoy_test::FakeClock;
     ///
     /// # fn main() -> envoy::host::Result<()> {
     /// let mut clock = FakeClock::default();
@@ -139,7 +139,7 @@ impl FakeClock {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn freeze_at(&mut self, time: SystemTime) -> &mut Self {
+    pub fn freeze_at(&self, time: SystemTime) -> &Self {
         drop(self.0.replace(Box::new(iter::repeat(time))));
         self
     }
@@ -151,8 +151,8 @@ impl FakeClock {
     /// ```
     /// # use envoy_sdk_test as envoy_test;
     /// use std::time::{Duration, SystemTime};
-    /// use envoy::host::time::Clock;
-    /// use envoy_test::host::time::FakeClock;
+    /// use envoy::host::Clock;
+    /// use envoy_test::FakeClock;
     ///
     /// # fn main() -> envoy::host::Result<()> {
     /// let mut clock = FakeClock::default();
@@ -168,7 +168,7 @@ impl FakeClock {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn tick_at<T>(&mut self, ticker: T) -> &mut Self
+    pub fn tick_at<T>(&self, ticker: T) -> &Self
     where
         T: IntoIterator<Item = SystemTime>,
         T::IntoIter: 'static,

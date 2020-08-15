@@ -15,7 +15,7 @@
 use envoy::host::{Result, Stats};
 
 use envoy_sdk_test as envoy_test;
-use envoy_test::host::FakeStats;
+use envoy_test::FakeStats;
 
 #[test]
 fn test_fake_counter() -> Result<()> {

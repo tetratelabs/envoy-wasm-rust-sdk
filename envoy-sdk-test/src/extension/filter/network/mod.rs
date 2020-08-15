@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` `Network Filter` extension.
+//! `Envoy` `Network Filter` APIs for use in unit tests.
 
 pub(crate) use self::factory::DynNetworkFilterFactory;
 

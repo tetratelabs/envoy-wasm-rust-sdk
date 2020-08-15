@@ -21,7 +21,7 @@
 //! ```
 //! # use envoy_sdk_test as envoy_test;
 //! use envoy::host::Stats;
-//! use envoy_test::host::FakeStats;
+//! use envoy_test::FakeStats;
 //!
 //! # fn main() -> envoy::host::Result<()> {
 //! let stats = FakeStats::default();

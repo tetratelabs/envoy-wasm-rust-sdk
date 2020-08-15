@@ -12,6 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Fake `Envoy` environment for use in unit tests.
+//!
+//! Most importantly, it attempts to reproduce (to a reasonable degree)
+//! the original request processing flow of `Envoy`, including such notions
+//! as `Downstream`, `Upstream`, `Read Buffer`, etc.
+//!
+//! This way, instead of making assumptions about how `Envoy` would iteract with
+//! your extension at runtime, you can rely on the test environment for that.
+//!
+//! Overall, fake `Envoy` environment lets you focus in your tests on the
+//! observed behaviour from the perspective of the `Downstream` and the `Upstream`
+//! instead of focusing merely on the mechanics of `Envoy <=> Wasm` interaction.
+
 use std::cell::RefCell;
 
 use envoy::extension::factory;
