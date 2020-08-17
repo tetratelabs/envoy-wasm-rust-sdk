@@ -14,4 +14,5 @@
 
 //! `Envoy` `Extension APIs` for use in unit tests.
 
+pub mod access_logger;
 pub mod filter;

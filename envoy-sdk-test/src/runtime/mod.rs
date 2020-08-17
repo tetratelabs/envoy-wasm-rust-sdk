@@ -35,6 +35,10 @@ pub use self::tcp_listener::{FakeTcpListener, FakeTcpListenerBuilder};
 
 mod tcp_listener;
 
+pub use self::access_log::{FakeAccessLog, FakeAccessLogBuilder};
+
+mod access_log;
+
 /// Fake `Envoy` environment to run unit tests in.
 #[derive(Default)]
 pub struct FakeEnvoy {
@@ -64,6 +68,11 @@ impl FakeEnvoy {
     /// Returns a factory for building a fake `Envoy` `Listener`.
     pub fn listener(&self) -> FakeListenerBuilder<'_> {
         FakeListenerBuilder::new(self)
+    }
+
+    /// Returns a factory for building a fake `Envoy` `Access Log`.
+    pub fn access_log(&self) -> FakeAccessLogBuilder<'_> {
+        FakeAccessLogBuilder::new(self)
     }
 }
 
