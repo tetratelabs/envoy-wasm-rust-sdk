@@ -144,6 +144,12 @@ impl fmt::Display for ResponseFlags {
     }
 }
 
+impl Default for ResponseFlags {
+    fn default() -> Self {
+        ResponseFlags::empty()
+    }
+}
+
 /// Identifies the direction of the traffic relative to the local Envoy.
 #[repr(i32)]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

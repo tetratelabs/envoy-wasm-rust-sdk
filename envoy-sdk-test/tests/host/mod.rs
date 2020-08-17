@@ -14,4 +14,5 @@
 
 mod http;
 mod stats;
+mod stream_info;
 mod time;
