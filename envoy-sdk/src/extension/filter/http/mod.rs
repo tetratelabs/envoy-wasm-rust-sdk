@@ -124,12 +124,23 @@ mod ops;
 pub enum FilterHeadersStatus {
     /// Continue filter chain iteration.
     Continue = 0,
-    /// Do not iterate to any of the remaining filters in the chain.
+    /// Do not forward headers to any of the remaining filters in the chain.
     ///
-    /// To resume filter iteration at a later point, e.g. after the external
-    /// authorization request has completed, call [`resume_request`] or
-    /// [`resume_response`] respectively.
+    /// NOTE: Returning `StopIteration` from [`on_request_headers`]/[`on_response_headers`]
+    /// does not stop Envoy from calling [`on_request_body`]/[`on_response_body`].
     ///
+    /// To forward headers to the remaining filters in the chain, do one of the following:
+    ///
+    /// 1. Either return [`Continue`] from [`on_request_body`]/[`on_response_body`], e.g.
+    ///    after enough data has been buffered to make a decision
+    /// 2. Or call [`resume_request`]/[`resume_response`], e.g. after receiving response to
+    ///    the external authorization request
+    ///
+    /// [`Continue`]: enum.FilterDataStatus.html#variant.Continue
+    /// [`on_request_headers`]: trait.HttpFilter.html#tymethod.on_request_headers
+    /// [`on_response_headers`]: trait.HttpFilter.html#tymethod.on_response_headers
+    /// [`on_request_body`]: trait.HttpFilter.html#tymethod.on_request_body
+    /// [`on_response_body`]: trait.HttpFilter.html#tymethod.on_response_body
     /// [`resume_request`]: trait.RequestFlowOps.html#tymethod.resume_request
     /// [`resume_response`]: trait.ResponseFlowOps.html#tymethod.resume_response
     StopIteration = 1,
@@ -484,7 +495,7 @@ pub trait RequestHeadersOps: RequestFlowOps {
     fn remove_request_header(&self, name: &str) -> host::Result<()>;
 }
 
-/// An interface for manipulating request body.
+/// An interface for manipulating request data.
 pub trait RequestBodyOps: RequestFlowOps {
     /// Returns request data received from `Downstream`.
     ///

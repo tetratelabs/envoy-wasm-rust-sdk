@@ -12,5 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod http;
-mod network;
+//! No-op `HTTP Filter` for use in unit tests.
+
+use envoy::extension::{ExtensionFactory, HttpFilter, InstanceId, Result};
+
+#[derive(Debug, Default)]
+pub struct NoOpHttpFilter;
+
+impl HttpFilter for NoOpHttpFilter {}
+
+#[derive(Debug, Default)]
+pub struct NoOpHttpFilterFactory;
+
+impl ExtensionFactory for NoOpHttpFilterFactory {
+    type Extension = NoOpHttpFilter;
+
+    fn name() -> &'static str {
+        "noop"
+    }
+
+    fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
+        Ok(NoOpHttpFilter)
+    }
+}
