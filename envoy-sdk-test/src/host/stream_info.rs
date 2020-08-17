@@ -13,3 +13,94 @@
 // limitations under the License.
 
 //! Fake `Stream Info API`.
+
+use envoy::extension::access_logger;
+use envoy::host::stream_info::StreamInfo;
+use envoy::host::{self, Bytes, HeaderMap, HeaderValue};
+
+use crate::host::http::FakeHttpMessage;
+
+/// Represents fake `Stream Info`.
+#[derive(Debug, Default)]
+#[non_exhaustive]
+pub struct FakeStreamInfo {
+    pub connection: ConnectionInfo,
+
+    pub http_stream: Option<RequestInfo>,
+}
+
+/// Represents TCP connection-level info.
+#[derive(Debug, Default)]
+pub struct ConnectionInfo {}
+
+/// Represents HTTP request-level info.
+#[derive(Debug, Default, Clone)]
+pub struct RequestInfo {
+    request: FakeHttpMessage,
+
+    response: FakeHttpMessage,
+}
+
+impl StreamInfo for FakeStreamInfo {
+    fn stream_property(&self, _path: &[&str]) -> host::Result<Option<Bytes>> {
+        Ok(Some(Bytes::default()))
+    }
+
+    fn set_stream_property(&self, _path: &[&str], _value: &[u8]) -> host::Result<()> {
+        Ok(())
+    }
+}
+
+impl access_logger::LogOps for FakeStreamInfo {
+    fn request_headers(&self) -> host::Result<HeaderMap> {
+        Ok(self
+            .http_stream
+            .as_ref()
+            .map(|o| o.request.headers.clone())
+            .unwrap_or_else(Default::default))
+    }
+
+    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        Ok(self
+            .http_stream
+            .as_ref()
+            .map(|o| o.request.headers.get(name).map(Clone::clone))
+            .flatten())
+    }
+
+    fn response_headers(&self) -> host::Result<HeaderMap> {
+        Ok(self
+            .http_stream
+            .as_ref()
+            .map(|o| o.response.headers.clone())
+            .unwrap_or_else(Default::default))
+    }
+
+    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        Ok(self
+            .http_stream
+            .as_ref()
+            .map(|o| o.response.headers.get(name).map(Clone::clone))
+            .flatten())
+    }
+
+    fn response_trailers(&self) -> host::Result<HeaderMap> {
+        Ok(self
+            .http_stream
+            .as_ref()
+            .map(|o| o.response.trailers.clone())
+            .unwrap_or_else(Default::default))
+    }
+
+    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        Ok(self
+            .http_stream
+            .as_ref()
+            .map(|o| o.response.trailers.get(name).map(Clone::clone))
+            .flatten())
+    }
+
+    fn stream_info(&self) -> &dyn StreamInfo {
+        self
+    }
+}

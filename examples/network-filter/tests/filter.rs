@@ -31,7 +31,7 @@ fn test_network_filter() -> Result<()> {
             &fake.clock,
             &fake.http_client,
             &fake.stats,
-        )?)?
+        )?)
         .configure("{}")?;
 
     let mut connection = fake_listener.new_connection()?;

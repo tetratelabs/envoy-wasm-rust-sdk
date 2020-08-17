@@ -14,4 +14,15 @@
 
 //! Fake `HTTP API`.
 
+use envoy::host::{Bytes, HeaderMap};
+
 pub mod client;
+
+/// HTTP message.
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub struct FakeHttpMessage {
+    pub headers: HeaderMap,
+    pub body: Bytes,
+    pub trailers: HeaderMap,
+}

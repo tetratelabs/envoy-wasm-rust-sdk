@@ -54,7 +54,9 @@ use std::cell::RefCell;
 use std::time::Duration;
 
 use envoy::host::http::client::{HttpClient, HttpClientRequestHandle};
-use envoy::host::{Bytes, HeaderMap, HeaderName, HeaderValue, Result};
+use envoy::host::{HeaderName, HeaderValue, Result};
+
+use super::FakeHttpMessage;
 
 /// Fake `HTTP Client`.
 #[derive(Debug, Default)]
@@ -72,15 +74,6 @@ pub struct FakeHttpClientRequest {
     pub upstream: String,
     pub message: FakeHttpMessage,
     pub timeout: Duration,
-}
-
-/// HTTP message.
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
-#[non_exhaustive]
-pub struct FakeHttpMessage {
-    pub headers: HeaderMap,
-    pub body: Bytes,
-    pub trailers: HeaderMap,
 }
 
 /// Record of a pending HTTP request made through [`FakeHttpClient`].

@@ -36,6 +36,9 @@ use envoy::host::{self, Bytes, HeaderMap, HeaderValue};
 use crate::extension::filter::network::DynNetworkFilterFactory;
 use crate::host::{FakeClock, FakeHttpClient, FakeHttpClientResponse, FakeStats};
 
+pub use self::access_log::{FakeAccessLog, FakeAccessLogBuilder};
+
+mod access_log;
 mod envoy_mock;
 
 /// Fake `Envoy` environment to run unit tests in.
@@ -60,13 +63,13 @@ pub struct FakeTcpListenerBuilder<'a> {
     filter_factory: Option<Box<dyn ExtensionFactory<Extension = Box<dyn NetworkFilter + 'a>> + 'a>>,
 }
 
-/// Fake `Envoy` `Listener` for testing `TCP`-level extensions.
+/// Fake `Envoy` `Listener` for testing `Network Filter` extensions.
 pub struct FakeTcpListener<'a> {
     _envoy: &'a FakeEnvoy,
     filter_factory: Option<Box<dyn ExtensionFactory<Extension = Box<dyn NetworkFilter + 'a>> + 'a>>,
 }
 
-/// Fake `Envoy` `Connection` for testing `TCP`-level extensions.
+/// Fake `Envoy` `Connection` for testing `Network Filter` extensions.
 pub struct FakeTcpConnection<'a, 'b> {
     _listener: &'b FakeTcpListener<'a>,
     filter: Option<Box<dyn NetworkFilter + 'a>>,
@@ -105,11 +108,20 @@ pub struct FakeTcpDownstream {
 impl FakeEnvoy {
     /// Returns a factory for building a fake `Envoy` `Listener`.
     pub fn listener(&self) -> FakeListenerBuilder<'_> {
-        FakeListenerBuilder { envoy: self }
+        FakeListenerBuilder::new(self)
+    }
+
+    /// Returns a factory for building a fake `Envoy` `Access Log`.
+    pub fn access_log(&self) -> FakeAccessLogBuilder<'_> {
+        FakeAccessLogBuilder::new(self)
     }
 }
 
 impl<'a> FakeListenerBuilder<'a> {
+    pub(super) fn new(envoy: &'a FakeEnvoy) -> Self {
+        FakeListenerBuilder { envoy }
+    }
+
     /// Returns a factory for building a fake `Envoy` `Listener` with `TCP`-level extensions.
     pub fn tcp(self) -> FakeTcpListenerBuilder<'a> {
         FakeTcpListenerBuilder {
@@ -121,13 +133,13 @@ impl<'a> FakeListenerBuilder<'a> {
 
 impl<'a> FakeTcpListenerBuilder<'a> {
     /// Adds a given `NetworkFilter` extension to the fake `Envoy` `Listener`.
-    pub fn network_filter<T>(mut self, filter_factory: T) -> extension::Result<Self>
+    pub fn network_filter<T>(mut self, filter_factory: T) -> Self
     where
         T: ExtensionFactory + 'a,
         T::Extension: NetworkFilter,
     {
         self.filter_factory = Some(Box::new(DynNetworkFilterFactory::wrap(filter_factory)));
-        Ok(self)
+        self
     }
 
     /// Finishes building a fake `Envoy` `Listener` by applying a given configuration to

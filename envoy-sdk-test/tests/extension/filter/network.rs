@@ -88,7 +88,7 @@ fn test_network_filter() -> Result<()> {
     let mut fake_listener = fake
         .listener()
         .tcp()
-        .network_filter(TestFilterFactory::new(&fake.stats))?
+        .network_filter(TestFilterFactory::new(&fake.stats))
         .configure("{}")?;
 
     let mut connection = fake_listener.new_connection()?;
@@ -193,7 +193,7 @@ fn test_network_filter_downstream_stop_iteration() -> Result<()> {
     let mut fake_listener = fake
         .listener()
         .tcp()
-        .network_filter(TestFilterFactory::new(&fake.stats))?
+        .network_filter(TestFilterFactory::new(&fake.stats))
         .configure("{}")?;
 
     {
@@ -298,7 +298,7 @@ fn test_network_filter_upstream_stop_iteration() -> Result<()> {
     let mut fake_listener = fake
         .listener()
         .tcp()
-        .network_filter(TestFilterFactory::new(&fake.stats))?
+        .network_filter(TestFilterFactory::new(&fake.stats))
         .configure("{}")?;
 
     {

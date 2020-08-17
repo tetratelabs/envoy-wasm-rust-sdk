@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Factory of `Envoy` `Network Filter` extensions.
+//! `Envoy` `Network Filter` factory APIs for use in unit tests.
 
 use std::marker::PhantomData;
 
@@ -20,7 +20,7 @@ use envoy::extension::factory::{self, ExtensionFactory};
 use envoy::extension::{self, ConfigStatus, DrainStatus, InstanceId, NetworkFilter};
 use envoy::host::Bytes;
 
-/// Factory of `Envoy` `Network Filter` extensions.
+/// Reference to an `Envoy` `Network Filter` factory.
 pub(crate) struct DynNetworkFilterFactory<'a, F> {
     factory: F,
     phantom: PhantomData<&'a F>,

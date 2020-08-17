@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Factory of `Envoy` `Http Filter` extensions.
+//! `Envoy` `HTTP Filter` factory APIs for use in unit tests.
 
 use std::marker::PhantomData;
 
@@ -20,7 +20,7 @@ use envoy::extension::{self, ConfigStatus, DrainStatus, HttpFilter, InstanceId};
 use envoy::extension::factory::{self, ExtensionFactory};
 use envoy::host::Bytes;
 
-/// Factory of `Envoy` `Http Filter` extensions.
+/// Reference to an `Envoy` `Http Filter` factory.
 pub(crate) struct DynHttpFilterFactory<F> {
     factory: F,
 }
