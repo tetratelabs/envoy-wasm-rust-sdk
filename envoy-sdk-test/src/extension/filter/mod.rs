@@ -14,4 +14,5 @@
 
 //! `Envoy` filter APIs for use in unit tests.
 
+pub mod http;
 pub mod network;

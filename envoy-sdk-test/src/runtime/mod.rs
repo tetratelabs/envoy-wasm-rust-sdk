@@ -31,13 +31,13 @@ use envoy::extension::InstanceId;
 
 use crate::host::{FakeClock, FakeHttpClient, FakeStats};
 
+pub use self::access_log::{FakeAccessLog, FakeAccessLogBuilder};
+pub use self::http_listener::{FakeHttpListener, FakeHttpListenerBuilder};
 pub use self::tcp_listener::{FakeTcpListener, FakeTcpListenerBuilder};
 
-mod tcp_listener;
-
-pub use self::access_log::{FakeAccessLog, FakeAccessLogBuilder};
-
 mod access_log;
+mod http_listener;
+mod tcp_listener;
 
 /// Fake `Envoy` environment to run unit tests in.
 #[derive(Default)]
@@ -84,6 +84,11 @@ impl<'a> FakeListenerBuilder<'a> {
     /// Returns a factory for building a fake `Envoy` `Listener` with `TCP`-level extensions.
     pub fn tcp(self) -> FakeTcpListenerBuilder<'a> {
         FakeTcpListenerBuilder::new(self)
+    }
+
+    /// Returns a factory for building a fake `Envoy` `Listener` with `HTTP`-level extensions.
+    pub fn http(self) -> FakeHttpListenerBuilder<'a> {
+        FakeHttpListenerBuilder::new(self)
     }
 }
 
