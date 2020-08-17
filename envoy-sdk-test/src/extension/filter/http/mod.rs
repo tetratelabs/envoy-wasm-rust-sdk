@@ -14,6 +14,6 @@
 
 //! `Envoy` `HTTP Filter` APIs for use in unit tests.
 
-//TODO(yskopets) pub(crate) use self::factory::DynHttpFilterFactory;
+pub(crate) use self::factory::DynHttpFilterFactory;
 
-//TODO(yskopets) mod factory;
+mod factory;

@@ -15,8 +15,8 @@
 //! Fake `Envoy` environment for `Access Log` extensions.
 
 use envoy::extension::{self, access_logger, AccessLogger};
-use envoy::host::Bytes;
 use envoy::host::http::client::HttpClientRequestHandle;
+use envoy::host::Bytes;
 
 use super::{FakeEnvoy, FakeHttpClientResponse};
 use crate::extension::access_logger::DynAccessLogger;

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy::extension::filter::network::{self, BufferAction, FilterStatus};
+use envoy::extension::filter::network::{self, FilterStatus};
 use envoy::extension::{self, ExtensionFactory, InstanceId, NetworkFilter};
-use envoy::host::{Result, Stats};
+use envoy::host::{BufferAction, Result, Stats};
 
 use envoy_sdk_test as envoy_test;
 use envoy_test::FakeEnvoy;

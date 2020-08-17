@@ -102,7 +102,7 @@
 use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, Bytes, HeaderMap, HeaderValue};
+use crate::host::{self, BufferAction, Bytes, HeaderMap, HeaderValue};
 
 pub(crate) use self::context::{HttpFilterContext, VoidHttpFilterContext};
 
@@ -314,7 +314,7 @@ pub trait HttpFilter {
     ///
     /// # Arguments
     ///
-    /// * `body_size`     - size of data accumulated in the read buffer.
+    /// * `data_size`     - size of data accumulated in the read buffer.
     /// * `end_of_stream` - supplies whether this is the last data frame.
     /// * `ops`           - a [`trait object`][`RequestBodyOps`] through which `HTTP Filter` can
     ///                     manipulate request body.
@@ -340,7 +340,7 @@ pub trait HttpFilter {
     /// # struct MyHttpFilter;
     /// #
     /// # impl HttpFilter for MyHttpFilter {
-    ///   fn on_request_body(&mut self, _body_size: usize, _end_of_stream: bool, ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
+    ///   fn on_request_body(&mut self, _data_size: usize, _end_of_stream: bool, ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
     ///       let chunk_prefix = ops.request_body(0, 10)?;
     ///       log::info!("body chunk starts with: {:?}", chunk_prefix);
     ///       Ok(FilterDataStatus::Continue)
@@ -349,7 +349,7 @@ pub trait HttpFilter {
     /// ```
     fn on_request_body(
         &mut self,
-        _body_size: usize,
+        _data_size: usize,
         _end_of_stream: bool,
         _ops: &dyn RequestBodyOps,
     ) -> Result<FilterDataStatus> {
@@ -410,17 +410,17 @@ pub trait HttpFilter {
         Ok(FilterHeadersStatus::Continue)
     }
 
-    /// Called with response body to be encoded
+    /// Called with response body to be encoded.
     fn on_response_body(
         &mut self,
-        _body_size: usize,
+        _data_size: usize,
         _end_of_stream: bool,
         _ops: &dyn ResponseBodyOps,
     ) -> Result<FilterDataStatus> {
         Ok(FilterDataStatus::Continue)
     }
 
-    /// Called with response trailers to be encoded
+    /// Called with response trailers to be encoded.
     fn on_response_trailers(
         &mut self,
         _num_trailers: usize,
@@ -481,7 +481,20 @@ pub trait RequestHeadersOps: RequestFlowOps {
 
 /// An interface for manipulating request body.
 pub trait RequestBodyOps: RequestFlowOps {
+    /// Returns request data received from `Downstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset`   - offset to start reading data from.
+    /// * `max_size` - maximum size of data to return.
     fn request_body(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
+
+    /// Mutate request data received from `Downstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `action` - mutate action to take.
+    fn mutate_request_body(&self, action: BufferAction) -> host::Result<()>;
 }
 
 /// An interface for manipulating request trailers.
@@ -526,7 +539,20 @@ pub trait ResponseHeadersOps: ResponseFlowOps {
 
 /// An interface for manipulating response body.
 pub trait ResponseBodyOps: ResponseFlowOps {
+    /// Returns response data received from `Upstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset`   - offset to start reading data from.
+    /// * `max_size` - maximum size of data to return.
     fn response_body(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
+
+    /// Mutate response data received from `Upstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `action` - mutate action to take.
+    fn mutate_response_body(&self, action: BufferAction) -> host::Result<()>;
 }
 
 /// An interface for manipulating response trailers.

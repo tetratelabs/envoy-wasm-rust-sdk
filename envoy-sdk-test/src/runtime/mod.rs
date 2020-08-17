@@ -31,15 +31,17 @@ use envoy::extension::factory;
 use envoy::extension::filter::network::{self, CloseType};
 use envoy::extension::{self, ExtensionFactory, InstanceId, NetworkFilter};
 use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use envoy::host::{self, Bytes, HeaderMap, HeaderValue};
+use envoy::host::{self, BufferAction, Bytes, HeaderMap, HeaderValue};
 
 use crate::extension::filter::network::DynNetworkFilterFactory;
 use crate::host::{FakeClock, FakeHttpClient, FakeHttpClientResponse, FakeStats};
 
 pub use self::access_log::{FakeAccessLog, FakeAccessLogBuilder};
+pub use self::http_listener::{FakeHttpListener, FakeHttpListenerBuilder};
 
 mod access_log;
 mod envoy_mock;
+mod http_listener;
 
 /// Fake `Envoy` environment to run unit tests in.
 #[derive(Default)]
@@ -124,14 +126,23 @@ impl<'a> FakeListenerBuilder<'a> {
 
     /// Returns a factory for building a fake `Envoy` `Listener` with `TCP`-level extensions.
     pub fn tcp(self) -> FakeTcpListenerBuilder<'a> {
-        FakeTcpListenerBuilder {
-            listener: self,
-            filter_factory: None,
-        }
+        FakeTcpListenerBuilder::new(self)
+    }
+
+    /// Returns a factory for building a fake `Envoy` `Listener` with `HTTP`-level extensions.
+    pub fn http(self) -> FakeHttpListenerBuilder<'a> {
+        FakeHttpListenerBuilder::new(self)
     }
 }
 
 impl<'a> FakeTcpListenerBuilder<'a> {
+    pub(super) fn new(listener: FakeListenerBuilder<'a>) -> Self {
+        FakeTcpListenerBuilder {
+            listener,
+            filter_factory: None,
+        }
+    }
+
     /// Adds a given `NetworkFilter` extension to the fake `Envoy` `Listener`.
     pub fn network_filter<T>(mut self, filter_factory: T) -> Self
     where
@@ -425,7 +436,7 @@ impl network::DownstreamDataOps for FakeTcpConnectionState {
         envoy_mock::get_buffer_bytes(&buf, offset, max_size)
     }
 
-    fn mutate_downstream_data(&self, action: network::BufferAction) -> host::Result<()> {
+    fn mutate_downstream_data(&self, action: BufferAction) -> host::Result<()> {
         action.execute(|start: usize, length: usize, data: &[u8]| {
             let mut buf = self.downstream_read_buffer.borrow_mut();
             envoy_mock::set_buffer_bytes(&mut *buf, start, length, data)
@@ -439,7 +450,7 @@ impl network::UpstreamDataOps for FakeTcpConnectionState {
         envoy_mock::get_buffer_bytes(&buf, offset, max_size)
     }
 
-    fn mutate_upstream_data(&self, action: network::BufferAction) -> host::Result<()> {
+    fn mutate_upstream_data(&self, action: BufferAction) -> host::Result<()> {
         action.execute(|start: usize, length: usize, data: &[u8]| {
             let mut buf = self.upstream_read_buffer.borrow_mut();
             envoy_mock::set_buffer_bytes(&mut *buf, start, length, data)

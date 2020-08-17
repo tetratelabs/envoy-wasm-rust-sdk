@@ -102,7 +102,7 @@
 use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, Bytes};
+use crate::host::{self, BufferAction, Bytes};
 
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
 pub use crate::abi::proxy_wasm::types::CloseType;
@@ -311,54 +311,9 @@ pub trait NetworkFilter {
     }
 }
 
-pub struct BufferAction<'a> {
-    inner: BufferActionKind<'a>,
-}
-
-impl<'a> BufferAction<'a> {
-    pub fn prepend(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction {
-            inner: BufferActionKind::Prepend(data),
-        }
-    }
-
-    pub fn append(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction {
-            inner: BufferActionKind::Append(data),
-        }
-    }
-
-    pub fn replace_with(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction {
-            inner: BufferActionKind::Replace(data),
-        }
-    }
-
-    #[doc(hidden)]
-    pub fn execute<F>(self, mutate: F) -> host::Result<()>
-    where
-        F: FnOnce(usize, usize, &[u8]) -> host::Result<()>,
-    {
-        // implementation based on `envoyproxy/envoy-wasm`
-        use BufferActionKind::*;
-        match self.inner {
-            Prepend(data) => mutate(0, 0, data),
-            Replace(data) => mutate(0, usize::MAX, data),
-            Append(data) => mutate(usize::MAX, usize::MAX, data),
-        }
-    }
-}
-
-/// List of mutations supported by `Proxy Wasm` on `Envoy` side.
-pub(crate) enum BufferActionKind<'a> {
-    Prepend(&'a [u8]),
-    Append(&'a [u8]),
-    Replace(&'a [u8]),
-}
-
-/// An interface for manipulating data in the read buffer (data read from the downstream connection).
+/// An interface for manipulating data in the read buffer from `Downstream`.
 pub trait DownstreamDataOps {
-    /// Returns data from the read buffer.
+    /// Returns data in the read buffer from `Downstream`.
     ///
     /// # Arguments
     ///
@@ -366,7 +321,7 @@ pub trait DownstreamDataOps {
     /// * `max_size` - maximum size of data to return.
     fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
 
-    /// Mutate data in the read buffer.
+    /// Mutate data in the read buffer from `Downstream`.
     ///
     /// # Arguments
     ///
@@ -374,9 +329,10 @@ pub trait DownstreamDataOps {
     fn mutate_downstream_data(&self, action: BufferAction) -> host::Result<()>;
 }
 
-/// An interface for manipulating data in the write buffer (data to be written to the downstream connection).
+/// An interface for manipulating data received from `Upstream`
+/// before they reach the write buffer for `Downstream`.
 pub trait UpstreamDataOps {
-    /// Returns data from the write buffer.
+    /// Returns data received from `Upstream`.
     ///
     /// # Arguments
     ///
@@ -384,7 +340,7 @@ pub trait UpstreamDataOps {
     /// * `max_size` - maximum size of data to return.
     fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
 
-    /// Mutate data in the write buffer.
+    /// Mutate data received from `Upstream`.
     ///
     /// # Arguments
     ///

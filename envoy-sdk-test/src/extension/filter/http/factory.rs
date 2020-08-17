@@ -16,21 +16,35 @@
 
 use std::marker::PhantomData;
 
-use envoy::extension::{self, ConfigStatus, DrainStatus, HttpFilter, InstanceId};
 use envoy::extension::factory::{self, ExtensionFactory};
+use envoy::extension::{self, ConfigStatus, DrainStatus, HttpFilter, InstanceId};
 use envoy::host::Bytes;
 
 /// Reference to an `Envoy` `Http Filter` factory.
-pub(crate) struct DynHttpFilterFactory<F> {
+pub(crate) struct DynHttpFilterFactory<'a, F> {
     factory: F,
+    phantom: PhantomData<&'a F>,
 }
 
-impl<F> ExtensionFactory for DynHttpFilterFactory<F>
+impl<'a, F> DynHttpFilterFactory<'a, F>
 where
-    F: ExtensionFactory + 'static,
+    F: ExtensionFactory,
     F::Extension: HttpFilter,
 {
-    type Extension = Box<dyn HttpFilter>;
+    pub fn wrap(factory: F) -> Self {
+        Self {
+            factory,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<'a, F> ExtensionFactory for DynHttpFilterFactory<'a, F>
+where
+    F: ExtensionFactory,
+    F::Extension: HttpFilter,
+{
+    type Extension = Box<dyn HttpFilter + 'a>;
 
     fn name() -> &'static str {
         F::name()
