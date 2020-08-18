@@ -53,10 +53,11 @@
 use std::cell::RefCell;
 use std::time::Duration;
 
-use envoy::host::http::client::{HttpClient, HttpClientRequestHandle};
-use envoy::host::{HeaderName, HeaderValue, Result};
+use envoy::host::http::client::{HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
+use envoy::host::{self, Bytes, HeaderMap, HeaderName, HeaderValue, Result};
 
 use super::FakeHttpMessage;
+use crate::runtime::envoy_mime;
 
 /// Fake `HTTP Client`.
 #[derive(Debug, Default)]
@@ -240,5 +241,27 @@ impl FakeHttpClientResponseBuilder {
 
     pub fn build(self) -> FakeHttpClientResponse {
         self.response
+    }
+}
+
+impl HttpClientResponseOps for FakeHttpClientResponse {
+    fn http_call_response_headers(&self) -> host::Result<HeaderMap> {
+        Ok(self.message.headers.clone())
+    }
+
+    fn http_call_response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        Ok(self.message.headers.get(name).map(Clone::clone))
+    }
+
+    fn http_call_response_body(&self, offset: usize, max_size: usize) -> host::Result<Bytes> {
+        envoy_mime::get_buffer_bytes(self.message.body.as_slice(), offset, max_size)
+    }
+
+    fn http_call_response_trailers(&self) -> host::Result<HeaderMap> {
+        Ok(self.message.trailers.clone())
+    }
+
+    fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        Ok(self.message.trailers.get(name).map(Clone::clone))
     }
 }
