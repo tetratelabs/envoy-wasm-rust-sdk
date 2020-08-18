@@ -30,8 +30,9 @@ use std::cell::RefCell;
 use envoy::extension::factory;
 use envoy::extension::filter::network::{self, CloseType};
 use envoy::extension::{self, ExtensionFactory, InstanceId, NetworkFilter};
+use envoy::host::buffer::{internal::TransformExecutor, Transform};
 use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use envoy::host::{self, BufferAction, Bytes, HeaderMap, HeaderValue};
+use envoy::host::{self, Bytes, HeaderMap, HeaderValue};
 
 use crate::extension::filter::network::DynNetworkFilterFactory;
 use crate::host::{FakeClock, FakeHttpClient, FakeHttpClientResponse, FakeStats};
@@ -436,8 +437,8 @@ impl network::DownstreamDataOps for FakeTcpConnectionState {
         envoy_mock::get_buffer_bytes(&buf, offset, max_size)
     }
 
-    fn mutate_downstream_data(&self, action: BufferAction) -> host::Result<()> {
-        action.execute(|start: usize, length: usize, data: &[u8]| {
+    fn mutate_downstream_data(&self, change: Transform) -> host::Result<()> {
+        change.execute(|start: usize, length: usize, data: &[u8]| {
             let mut buf = self.downstream_read_buffer.borrow_mut();
             envoy_mock::set_buffer_bytes(&mut *buf, start, length, data)
         })
@@ -450,8 +451,8 @@ impl network::UpstreamDataOps for FakeTcpConnectionState {
         envoy_mock::get_buffer_bytes(&buf, offset, max_size)
     }
 
-    fn mutate_upstream_data(&self, action: BufferAction) -> host::Result<()> {
-        action.execute(|start: usize, length: usize, data: &[u8]| {
+    fn mutate_upstream_data(&self, change: Transform) -> host::Result<()> {
+        change.execute(|start: usize, length: usize, data: &[u8]| {
             let mut buf = self.upstream_read_buffer.borrow_mut();
             envoy_mock::set_buffer_bytes(&mut *buf, start, length, data)
         })

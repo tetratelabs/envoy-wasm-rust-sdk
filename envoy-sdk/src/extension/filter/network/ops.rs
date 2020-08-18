@@ -16,9 +16,9 @@ use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::BufferType;
 
 use super::{
-    BufferAction, ConnectionCompleteOps, DownstreamCloseOps, DownstreamDataOps, UpstreamCloseOps,
-    UpstreamDataOps,
+    ConnectionCompleteOps, DownstreamCloseOps, DownstreamDataOps, UpstreamCloseOps, UpstreamDataOps,
 };
+use crate::host::buffer::{Transform, TransformExecutor};
 use crate::host::{self, Bytes};
 
 pub(super) struct Host;
@@ -28,8 +28,8 @@ impl DownstreamDataOps for Host {
         hostcalls::get_buffer(BufferType::DownstreamData, start, max_size)
     }
 
-    fn mutate_downstream_data(&self, action: BufferAction) -> host::Result<()> {
-        action.execute(|start: usize, max_size: usize, data: &[u8]| {
+    fn mutate_downstream_data(&self, change: Transform) -> host::Result<()> {
+        change.execute(|start: usize, max_size: usize, data: &[u8]| {
             hostcalls::set_buffer(BufferType::DownstreamData, start, max_size, data)
         })
     }
@@ -40,8 +40,8 @@ impl UpstreamDataOps for Host {
         hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
     }
 
-    fn mutate_upstream_data(&self, action: BufferAction) -> host::Result<()> {
-        action.execute(|start: usize, max_size: usize, data: &[u8]| {
+    fn mutate_upstream_data(&self, change: Transform) -> host::Result<()> {
+        change.execute(|start: usize, max_size: usize, data: &[u8]| {
             hostcalls::set_buffer(BufferType::UpstreamData, start, max_size, data)
         })
     }

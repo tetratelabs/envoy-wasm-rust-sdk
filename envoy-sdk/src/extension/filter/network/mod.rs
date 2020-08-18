@@ -101,8 +101,9 @@
 
 use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
+use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, BufferAction, Bytes};
+use crate::host::{self, Bytes};
 
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
 pub use crate::abi::proxy_wasm::types::CloseType;
@@ -325,8 +326,8 @@ pub trait DownstreamDataOps {
     ///
     /// # Arguments
     ///
-    /// * `action` - mutate action to take.
-    fn mutate_downstream_data(&self, action: BufferAction) -> host::Result<()>;
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_downstream_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating data received from `Upstream`
@@ -344,8 +345,8 @@ pub trait UpstreamDataOps {
     ///
     /// # Arguments
     ///
-    /// * `action` - mutate action to take.
-    fn mutate_upstream_data(&self, action: BufferAction) -> host::Result<()>;
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_upstream_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for operations available in the context of [`on_downstream_close`]

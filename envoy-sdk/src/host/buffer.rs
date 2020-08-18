@@ -12,51 +12,83 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Interface for mutating data buffered in `Envoy`.
+//! Interface for mutating payload data proxied by `Envoy`.
 
-use crate::host;
+pub(crate) use self::internal::TransformExecutor;
 
-pub struct BufferAction<'a> {
-    inner: BufferActionKind<'a>,
+/// Represents a transformation on data proxied by `Envoy`, i.e. on
+/// `TCP`-level payload data or on `HTTP`-level request/response body data.
+#[derive(Debug)]
+pub struct Transform<'a> {
+    inner: TransformKind<'a>,
 }
 
-impl<'a> BufferAction<'a> {
-    pub fn prepend(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction {
-            inner: BufferActionKind::Prepend(data),
-        }
-    }
-
-    pub fn append(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction {
-            inner: BufferActionKind::Append(data),
-        }
-    }
-
-    pub fn replace_with(data: &'a [u8]) -> BufferAction<'a> {
-        BufferAction {
-            inner: BufferActionKind::Replace(data),
-        }
-    }
-
-    #[doc(hidden)]
-    pub fn execute<F>(self, mutate: F) -> host::Result<()>
-    where
-        F: FnOnce(usize, usize, &[u8]) -> host::Result<()>,
-    {
-        // implementation based on `envoyproxy/envoy-wasm`
-        use BufferActionKind::*;
-        match self.inner {
-            Prepend(data) => mutate(0, 0, data),
-            Replace(data) => mutate(0, usize::MAX, data),
-            Append(data) => mutate(usize::MAX, usize::MAX, data),
-        }
-    }
-}
-
-/// List of mutations supported by `Proxy Wasm` on `Envoy` side.
-pub(crate) enum BufferActionKind<'a> {
+/// List of transformations supported by `Proxy Wasm` inside `Envoy`.
+#[derive(Debug)]
+pub(crate) enum TransformKind<'a> {
+    /// Insert given data into the beginning of a buffer.
     Prepend(&'a [u8]),
+    /// Insert given data into the end of a buffer.
     Append(&'a [u8]),
+    /// Replace contents of a buffer with given data.
     Replace(&'a [u8]),
+}
+
+impl<'a> Transform<'a> {
+    fn new(kind: TransformKind<'a>) -> Self {
+        Transform { inner: kind }
+    }
+
+    /// Returns a transformation that will insert given data into the beginning of a buffer.
+    pub fn prepend<T>(data: &'a T) -> Self
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        Self::new(TransformKind::Prepend(data.as_ref()))
+    }
+
+    /// Returns a transformation that will insert given data into the end of a buffer.
+    pub fn append<T>(data: &'a T) -> Self
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        Self::new(TransformKind::Append(data.as_ref()))
+    }
+
+    /// Returns a transformation that will replace contents of a buffer with given data.
+    pub fn replace_with<T>(data: &'a T) -> Self
+    where
+        T: AsRef<[u8]> + ?Sized,
+    {
+        Self::new(TransformKind::Replace(data.as_ref()))
+    }
+}
+
+#[doc(hidden)]
+pub mod internal {
+    use super::*;
+    use crate::host;
+
+    /// Applies a transformation to data proxied by `Envoy`.
+    pub trait TransformExecutor {
+        fn execute<F>(self, mutate: F) -> host::Result<()>
+        where
+            F: FnOnce(usize, usize, &[u8]) -> host::Result<()>;
+    }
+
+    impl<'a> TransformExecutor for Transform<'a> {
+        /// Executes transformation in terms of primitives supported by `Proxy Wasm`.
+        fn execute<F>(self, mutate: F) -> host::Result<()>
+        where
+            F: FnOnce(usize, usize, &[u8]) -> host::Result<()>,
+        {
+            // implementation based on `envoyproxy/envoy-wasm`
+            use TransformKind::*;
+            match self.inner {
+                Prepend(data) => mutate(0, 0, data),
+                Replace(data) => mutate(0, usize::MAX, data),
+                Append(data) => mutate(usize::MAX, usize::MAX, data),
+            }
+        }
+    }
 }

@@ -101,8 +101,9 @@
 
 use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
+use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, BufferAction, Bytes, HeaderMap, HeaderValue};
+use crate::host::{self, Bytes, HeaderMap, HeaderValue};
 
 pub(crate) use self::context::{HttpFilterContext, VoidHttpFilterContext};
 
@@ -341,8 +342,8 @@ pub trait HttpFilter {
     /// #
     /// # impl HttpFilter for MyHttpFilter {
     ///   fn on_request_body(&mut self, _data_size: usize, _end_of_stream: bool, ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
-    ///       let chunk_prefix = ops.request_body(0, 10)?;
-    ///       log::info!("body chunk starts with: {:?}", chunk_prefix);
+    ///       let head = ops.request_data(0, 10)?;
+    ///       log::info!("body chunk starts with: {:?}", head);
     ///       Ok(FilterDataStatus::Continue)
     ///   }
     /// # }
@@ -479,7 +480,7 @@ pub trait RequestHeadersOps: RequestFlowOps {
     fn add_request_header(&self, name: &str, value: &HeaderValue) -> host::Result<()>;
 }
 
-/// An interface for manipulating request body.
+/// An interface for manipulating request data.
 pub trait RequestBodyOps: RequestFlowOps {
     /// Returns request data received from `Downstream`.
     ///
@@ -487,14 +488,14 @@ pub trait RequestBodyOps: RequestFlowOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn request_body(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
+    fn request_data(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
 
     /// Mutate request data received from `Downstream`.
     ///
     /// # Arguments
     ///
-    /// * `action` - mutate action to take.
-    fn mutate_request_body(&self, action: BufferAction) -> host::Result<()>;
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_request_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating request trailers.
@@ -537,7 +538,7 @@ pub trait ResponseHeadersOps: ResponseFlowOps {
     fn add_response_header(&self, name: &str, value: &HeaderValue) -> host::Result<()>;
 }
 
-/// An interface for manipulating response body.
+/// An interface for manipulating response data.
 pub trait ResponseBodyOps: ResponseFlowOps {
     /// Returns response data received from `Upstream`.
     ///
@@ -545,14 +546,14 @@ pub trait ResponseBodyOps: ResponseFlowOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn response_body(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
+    fn response_data(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
 
     /// Mutate response data received from `Upstream`.
     ///
     /// # Arguments
     ///
-    /// * `action` - mutate action to take.
-    fn mutate_response_body(&self, action: BufferAction) -> host::Result<()>;
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_response_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating response trailers.

@@ -56,7 +56,6 @@
 
 pub(crate) use self::error::function;
 
-pub use self::buffer::BufferAction;
 pub use self::error::{Error, Result};
 pub use self::http::client::HttpClient;
 pub use self::shared_data::SharedData;

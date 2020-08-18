@@ -14,7 +14,8 @@
 
 use envoy::extension::filter::http::{self, FilterDataStatus, FilterHeadersStatus};
 use envoy::extension::{self, ExtensionFactory, HttpFilter, InstanceId};
-use envoy::host::{BufferAction, Result, Stats};
+use envoy::host::buffer::Transform;
+use envoy::host::{Result, Stats};
 
 use envoy_sdk_test as envoy_test;
 use envoy_test::FakeEnvoy;
@@ -41,11 +42,11 @@ fn test_http_filter() -> Result<()> {
             ops: &dyn http::RequestBodyOps,
         ) -> Result<FilterDataStatus> {
             if data_size > 0 {
-                let mut data = ops.request_body(0, data_size)?.into_vec();
+                let mut data = ops.request_data(0, data_size)?.into_vec();
                 if !data.is_empty() {
                     data.remove(0);
                 }
-                ops.mutate_request_body(BufferAction::replace_with(&data))?;
+                ops.mutate_request_data(Transform::replace_with(&data))?;
             }
             Ok(FilterDataStatus::Continue)
         }
@@ -57,9 +58,9 @@ fn test_http_filter() -> Result<()> {
             ops: &dyn http::ResponseBodyOps,
         ) -> extension::Result<FilterDataStatus> {
             if data_size > 0 {
-                let mut data = ops.response_body(0, data_size)?.into_vec();
+                let mut data = ops.response_data(0, data_size)?.into_vec();
                 data.extend("!".bytes());
-                ops.mutate_response_body(BufferAction::replace_with(&data))?;
+                ops.mutate_response_data(Transform::replace_with(&data))?;
             }
             Ok(FilterDataStatus::Continue)
         }

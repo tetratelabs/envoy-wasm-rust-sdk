@@ -14,7 +14,8 @@
 
 use envoy::extension::filter::network::{self, FilterStatus};
 use envoy::extension::{self, ExtensionFactory, InstanceId, NetworkFilter};
-use envoy::host::{BufferAction, Result, Stats};
+use envoy::host::buffer::Transform;
+use envoy::host::{Result, Stats};
 
 use envoy_sdk_test as envoy_test;
 use envoy_test::FakeEnvoy;
@@ -41,7 +42,7 @@ fn test_network_filter() -> Result<()> {
                 if !data.is_empty() {
                     data.remove(0);
                 }
-                ops.mutate_downstream_data(BufferAction::replace_with(&data))?;
+                ops.mutate_downstream_data(Transform::replace_with(&data))?;
             }
             Ok(network::FilterStatus::Continue)
         }
@@ -55,7 +56,7 @@ fn test_network_filter() -> Result<()> {
             if data_size > 0 {
                 let mut data = ops.upstream_data(0, data_size)?.into_vec();
                 data.extend("!".bytes());
-                ops.mutate_upstream_data(BufferAction::replace_with(&data))?;
+                ops.mutate_upstream_data(Transform::replace_with(&data))?;
             }
             Ok(network::FilterStatus::Continue)
         }
