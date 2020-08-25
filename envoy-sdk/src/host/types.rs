@@ -75,7 +75,7 @@ impl HeaderMap {
     ///     .header(":authority", "example.org")
     ///     .build();
     ///
-    /// assert_eq!(headers.get(":authority"), Some("example.org".into()));
+    /// assert_eq!(headers.get(":authority"), Some(&"example.org".into()));
     /// assert_eq!(headers.get(":method"), None);
     /// ```
     pub fn get<Q>(&self, key: Q) -> Option<&ByteString>
