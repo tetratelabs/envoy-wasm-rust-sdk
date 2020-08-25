@@ -17,7 +17,7 @@ use std::time::Duration;
 
 use envoy::extension::{access_logger, AccessLogger, ConfigStatus, Result};
 use envoy::host::{
-    log, Bytes, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats,
+    log, ByteString, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats,
 };
 
 use chrono::offset::Local;
@@ -81,13 +81,13 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
     /// Use logger_ops to get ahold of configuration.
     fn on_configure(
         &mut self,
-        config: Bytes,
+        config: ByteString,
         _ops: &dyn access_logger::ConfigureOps,
     ) -> Result<ConfigStatus> {
         self.config = if config.is_empty() {
             SampleAccessLoggerConfig::default()
         } else {
-            SampleAccessLoggerConfig::try_from(config.as_slice())?
+            SampleAccessLoggerConfig::try_from(config.as_bytes())?
         };
         Ok(ConfigStatus::Accepted)
     }
@@ -118,12 +118,9 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         for (name, value) in &response_headers {
             log::info!("    {}: {}", name, value);
         }
-        let upstream_address = logger_ops.stream_property(&["upstream", "address"])?;
-        let upstream_address = upstream_address
-            .map(Bytes::into_vec)
-            .map(String::from_utf8)
-            .transpose()?
-            .unwrap_or_else(String::default);
+        let upstream_address = logger_ops
+            .stream_property(&["upstream", "address"])?
+            .unwrap_or_else(ByteString::default);
         log::info!("  upstream info:");
         log::info!("    {}: {}", "upstream.address", upstream_address);
 
@@ -131,12 +128,12 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         self.active_request = Some(self.http_client.send_request(
             "mock_service",
             &[
-                (":method", b"GET"),
-                (":path", b"/mock"),
-                (":authority", b"mock.local"),
+                (":method", "GET"),
+                (":path", "/mock"),
+                (":authority", "mock.local"),
             ],
             None,
-            &[],
+            None,
             Duration::from_secs(3),
         )?);
         if let Some(request) = self.active_request {

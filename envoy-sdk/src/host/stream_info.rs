@@ -14,7 +14,7 @@
 
 //! `Envoy` `Stream Info API`.
 
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 /// An interface of the `Envoy` `Stream Info API`.
 ///
@@ -51,7 +51,7 @@ pub trait StreamInfo {
     /// [`HttpFilter`]: ../../extension/filter/http/trait.HttpFilter.html
     /// [`NetworkFilter`]: ../../extension/filter/network/trait.NetworkFilter.html
     /// [`AccessLogger`]: ../../extension/access_logger/trait.AccessLogger.html
-    fn stream_property(&self, path: &[&str]) -> host::Result<Option<Bytes>>;
+    fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>>;
 
     /// Saves a value in the enclosing context.
     ///
@@ -78,12 +78,12 @@ mod impls {
     use crate::abi::proxy_wasm::hostcalls;
 
     use super::StreamInfo;
-    use crate::host::{self, Bytes};
+    use crate::host::{self, ByteString};
 
     pub(super) struct Host;
 
     impl StreamInfo for Host {
-        fn stream_property(&self, path: &[&str]) -> host::Result<Option<Bytes>> {
+        fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>> {
             hostcalls::get_property(path)
         }
 

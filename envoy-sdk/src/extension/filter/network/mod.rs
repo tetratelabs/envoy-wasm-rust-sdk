@@ -99,10 +99,10 @@
 //! [`ExtensionFactory`]: ../../factory/trait.ExtensionFactory.html
 //! [`Register`]: ../../../macro.entrypoint.html
 
-use crate::abi::proxy_wasm::types::{Action, CloseType};
+use crate::abi::proxy_wasm::types::{Action, PeerType};
 use crate::extension::Result;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
 
@@ -226,10 +226,10 @@ pub trait NetworkFilter {
     ///
     /// # Arguments
     ///
-    /// * `close_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
+    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_downstream_close(
         &mut self,
-        _close_type: CloseType,
+        _peer_type: PeerType,
         _ops: &dyn DownstreamCloseOps,
     ) -> Result<()> {
         Ok(())
@@ -263,10 +263,10 @@ pub trait NetworkFilter {
     ///
     /// # Arguments
     ///
-    /// * `close_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
+    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_upstream_close(
         &mut self,
-        _close_type: CloseType,
+        _peer_type: PeerType,
         _ops: &dyn UpstreamCloseOps,
     ) -> Result<()> {
         Ok(())
@@ -318,7 +318,7 @@ pub trait DownstreamDataOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
+    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
 }
 
 /// An interface for manipulating data in the write buffer (data to be written to the downstream connection).
@@ -329,7 +329,7 @@ pub trait UpstreamDataOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
+    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
 }
 
 /// An interface for operations available in the context of [`on_downstream_close`]

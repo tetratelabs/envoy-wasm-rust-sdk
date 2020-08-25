@@ -14,12 +14,12 @@
 
 use super::{ConfigureOps, ContextOps, DrainOps};
 use crate::abi::proxy_wasm::hostcalls;
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 pub(super) struct Host;
 
 impl ContextOps for Host {
-    fn configuration(&self) -> host::Result<Bytes> {
+    fn configuration(&self) -> host::Result<ByteString> {
         hostcalls::get_configuration()
     }
 }

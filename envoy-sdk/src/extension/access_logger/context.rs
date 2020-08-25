@@ -17,7 +17,7 @@ use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::{ConfigStatus, DrainStatus};
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::Bytes;
+use crate::host::ByteString;
 
 pub(crate) struct AccessLoggerContext<'a, L>
 where
@@ -36,7 +36,7 @@ where
 {
     fn on_configure(&mut self, configuration_size: usize) -> bool {
         let config = if configuration_size == 0 {
-            Ok(Bytes::default())
+            Ok(ByteString::default())
         } else {
             self.context_ops.configuration()
         };

@@ -14,7 +14,7 @@
 
 //! `Envoy` `Shared Data API`.
 
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 pub use crate::abi::proxy_wasm::types::OptimisticLockVersion;
 
@@ -72,7 +72,7 @@ pub trait SharedData {
     ///
     /// * `value`   - an opaque blob of bytes.
     /// * `version` - optimistic lock version.
-    fn get(&self, key: &str) -> host::Result<(Option<Bytes>, Option<OptimisticLockVersion>)>;
+    fn get(&self, key: &str) -> host::Result<(Option<ByteString>, Option<OptimisticLockVersion>)>;
 
     /// Shares data under a given key.
     ///
@@ -103,12 +103,15 @@ mod impls {
     use super::SharedData;
     use crate::abi::proxy_wasm::hostcalls;
     use crate::abi::proxy_wasm::types::OptimisticLockVersion;
-    use crate::host::{self, Bytes};
+    use crate::host::{self, ByteString};
 
     pub(super) struct Host;
 
     impl SharedData for Host {
-        fn get(&self, key: &str) -> host::Result<(Option<Bytes>, Option<OptimisticLockVersion>)> {
+        fn get(
+            &self,
+            key: &str,
+        ) -> host::Result<(Option<ByteString>, Option<OptimisticLockVersion>)> {
             hostcalls::get_shared_data(key)
         }
 
