@@ -14,7 +14,7 @@
 
 //! `Envoy` `Shared Queue API`.
 
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 pub use crate::abi::proxy_wasm::types::SharedQueueHandle;
 
@@ -66,7 +66,7 @@ pub trait SharedQueue {
 
     fn lookup(&self, vm_id: &str, name: &str) -> host::Result<Option<SharedQueueHandle>>;
 
-    fn dequeue(&self, queue_id: SharedQueueHandle) -> host::Result<Option<Bytes>>;
+    fn dequeue(&self, queue_id: SharedQueueHandle) -> host::Result<Option<ByteString>>;
 
     fn enqueue(&self, queue_id: SharedQueueHandle, value: &[u8]) -> host::Result<()>;
 }
@@ -85,7 +85,7 @@ mod impls {
     use super::SharedQueue;
     use crate::abi::proxy_wasm::hostcalls;
     use crate::abi::proxy_wasm::types::SharedQueueHandle;
-    use crate::host::{self, Bytes};
+    use crate::host::{self, ByteString};
 
     pub(super) struct Host;
 
@@ -98,7 +98,7 @@ mod impls {
             hostcalls::resolve_shared_queue(vm_id, name)
         }
 
-        fn dequeue(&self, queue_id: SharedQueueHandle) -> host::Result<Option<Bytes>> {
+        fn dequeue(&self, queue_id: SharedQueueHandle) -> host::Result<Option<ByteString>> {
             hostcalls::dequeue_shared_queue(queue_id)
         }
 

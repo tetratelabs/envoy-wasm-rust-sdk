@@ -22,7 +22,7 @@ use self::property::{
     Upstream,
 };
 use crate::host::error::function;
-use crate::host::{self, Bytes, HeaderValue};
+use crate::host::{self, ByteString};
 
 pub use self::types::{ResponseFlags, TrafficDirection};
 
@@ -67,7 +67,7 @@ pub trait StreamInfo {
     /// [`HttpFilter`]: ../../extension/filter/http/trait.HttpFilter.html
     /// [`NetworkFilter`]: ../../extension/filter/network/trait.NetworkFilter.html
     /// [`AccessLogger`]: ../../extension/access_logger/trait.AccessLogger.html
-    fn stream_property(&self, path: &[&str]) -> host::Result<Option<Bytes>>;
+    fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>>;
 
     /// Saves a value in the enclosing context.
     ///
@@ -162,7 +162,7 @@ impl<'a> dyn StreamInfo + 'a {
     }
 }
 
-/// Provides access to the properties of a stream.
+/// Provides access to properties of a stream.
 struct StreamInfoAccessor<'a> {
     stream_info: &'a dyn StreamInfo,
 }
@@ -172,8 +172,8 @@ impl<'a> StreamInfoAccessor<'a> {
     where
         T: TryFrom<proxy_wasm::Value<W>, Error = host::Error>,
     {
-        if let Some(bytes) = self.stream_info.stream_property(prop.path())? {
-            let encoded = proxy_wasm::Value::<W>::new(bytes.into_vec());
+        if let Some(byte_string) = self.stream_info.stream_property(prop.path())? {
+            let encoded = proxy_wasm::Value::<W>::new(byte_string.into_bytes());
             let decoded: host::Result<T> = encoded.try_into();
             decoded.map(Option::from).map_err(|err| {
                 function("env", "proxy_get_property")
@@ -200,7 +200,7 @@ pub struct RequestInfo<'a> {
 
 impl<'a> RequestInfo<'a> {
     /// Returns request header by name.
-    pub fn header<K>(&self, name: K) -> host::Result<Option<HeaderValue>>
+    pub fn header<K>(&self, name: K) -> host::Result<Option<ByteString>>
     where
         K: AsRef<str>,
     {
@@ -263,12 +263,12 @@ impl<'a> RequestInfo<'a> {
     }
 
     /// Returns referer request header.
-    pub fn referer(&self) -> host::Result<Option<HeaderValue>> {
+    pub fn referer(&self) -> host::Result<Option<ByteString>> {
         self.stream.property(Request::REFERER)
     }
 
     /// Returns user agent request header.
-    pub fn user_agent(&self) -> host::Result<Option<HeaderValue>> {
+    pub fn user_agent(&self) -> host::Result<Option<ByteString>> {
         self.stream.property(Request::USER_AGENT)
     }
 }
@@ -280,7 +280,7 @@ pub struct ResponseInfo<'a> {
 
 impl<'a> ResponseInfo<'a> {
     /// Returns response header by name.
-    pub fn header<K>(&self, name: K) -> host::Result<Option<HeaderValue>>
+    pub fn header<K>(&self, name: K) -> host::Result<Option<ByteString>>
     where
         K: AsRef<str>,
     {
@@ -288,7 +288,7 @@ impl<'a> ResponseInfo<'a> {
     }
 
     /// Returns response trailer by name.
-    pub fn trailer<K>(&self, name: K) -> host::Result<Option<HeaderValue>>
+    pub fn trailer<K>(&self, name: K) -> host::Result<Option<ByteString>>
     where
         K: AsRef<str>,
     {
@@ -536,12 +536,12 @@ mod impls {
     use crate::abi::proxy_wasm::hostcalls;
 
     use super::StreamInfo;
-    use crate::host::{self, Bytes};
+    use crate::host::{self, ByteString};
 
     pub(super) struct Host;
 
     impl StreamInfo for Host {
-        fn stream_property(&self, path: &[&str]) -> host::Result<Option<Bytes>> {
+        fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>> {
             hostcalls::get_property(path)
         }
 

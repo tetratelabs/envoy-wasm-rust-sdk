@@ -103,7 +103,7 @@ use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
 use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, Bytes, HeaderMap, HeaderValue};
+use crate::host::{self, ByteString, HeaderMap};
 
 pub(crate) use self::context::{HttpFilterContext, VoidHttpFilterContext};
 
@@ -482,13 +482,17 @@ pub trait HttpFilter {
 pub trait RequestHeadersOps: RequestFlowOps {
     fn request_headers(&self) -> host::Result<HeaderMap>;
 
-    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
     fn set_request_headers(&self, headers: &HeaderMap) -> host::Result<()>;
 
-    fn set_request_header(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()>;
+    fn set_request_header(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_request_header_bytes(name, value.as_bytes())
+    }
 
-    fn add_request_header(&self, name: &str, value: &HeaderValue) -> host::Result<()>;
+    fn set_request_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_request_header(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for manipulating request data.
@@ -499,7 +503,7 @@ pub trait RequestBodyOps: RequestFlowOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn request_data(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
+    fn request_data(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
 
     /// Mutate request data received from `Downstream`.
     ///
@@ -513,13 +517,17 @@ pub trait RequestBodyOps: RequestFlowOps {
 pub trait RequestTrailersOps: RequestFlowOps {
     fn request_trailers(&self) -> host::Result<HeaderMap>;
 
-    fn request_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn request_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
     fn set_request_trailers(&self, trailers: &HeaderMap) -> host::Result<()>;
 
-    fn set_request_trailer(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()>;
+    fn set_request_trailer(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_request_trailer_bytes(name, value.as_bytes())
+    }
 
-    fn add_request_trailer(&self, name: &str, value: &HeaderValue) -> host::Result<()>;
+    fn set_request_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_request_trailer(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for changing request flow.
@@ -531,7 +539,7 @@ pub trait RequestFlowOps {
     fn send_response(
         &self,
         status_code: u32,
-        headers: &[(&str, &[u8])],
+        headers: &[(&str, &str)],
         body: Option<&[u8]>,
     ) -> host::Result<()>;
 }
@@ -540,13 +548,17 @@ pub trait RequestFlowOps {
 pub trait ResponseHeadersOps: ResponseFlowOps {
     fn response_headers(&self) -> host::Result<HeaderMap>;
 
-    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
     fn set_response_headers(&self, headers: &HeaderMap) -> host::Result<()>;
 
-    fn set_response_header(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()>;
+    fn set_response_header(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_response_header_bytes(name, value.as_bytes())
+    }
 
-    fn add_response_header(&self, name: &str, value: &HeaderValue) -> host::Result<()>;
+    fn set_response_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_response_header(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for manipulating response data.
@@ -557,7 +569,7 @@ pub trait ResponseBodyOps: ResponseFlowOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn response_data(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
+    fn response_data(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
 
     /// Mutate response data received from `Upstream`.
     ///
@@ -571,13 +583,17 @@ pub trait ResponseBodyOps: ResponseFlowOps {
 pub trait ResponseTrailersOps: ResponseFlowOps {
     fn response_trailers(&self) -> host::Result<HeaderMap>;
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
     fn set_response_trailers(&self, headers: &HeaderMap) -> host::Result<()>;
 
-    fn set_response_trailer(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()>;
+    fn set_response_trailer(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_response_trailer_bytes(name, value.as_bytes())
+    }
 
-    fn add_response_trailer(&self, name: &str, value: &HeaderValue) -> host::Result<()>;
+    fn set_response_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_response_trailer(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for changing response flow.

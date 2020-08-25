@@ -16,10 +16,10 @@
 
 use std::cmp;
 
-use envoy::host::{self, Bytes};
+use envoy::host::{self, ByteString};
 
 /// Reads buffer similarly to `Proxy Wasm` inside Envoy.
-pub fn get_buffer_bytes(buf: &[u8], offset: usize, max_size: usize) -> host::Result<Bytes> {
+pub fn get_buffer_bytes(buf: &[u8], offset: usize, max_size: usize) -> host::Result<ByteString> {
     // implementation based on `proxy-wasm/proxy-wasm-cpp-host`
 
     // Check for overflow.
@@ -30,7 +30,7 @@ pub fn get_buffer_bytes(buf: &[u8], offset: usize, max_size: usize) -> host::Res
     if max_size > 0 {
         return Ok(buf[offset..offset + max_size].to_owned().into());
     }
-    Ok(Bytes::default())
+    Ok(ByteString::default())
 }
 
 /// Mutates buffer similarly to `Proxy Wasm` inside `Envoy`.

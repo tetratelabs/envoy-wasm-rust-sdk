@@ -111,7 +111,7 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
             Some(path) if path == "/ping" => {
                 filter_ops.send_response(
                     200,
-                    &[("x-sample-response", b"pong")],
+                    &[("x-sample-response", "pong")],
                     Some(b"Pong!\n"),
                 )?;
                 Ok(http::FilterHeadersStatus::StopIteration)
@@ -120,12 +120,12 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
                 self.active_request = Some(self.http_client.send_request(
                     "mock_service",
                     &[
-                        (":method", b"GET"),
-                        (":path", b"/authz"),
-                        (":authority", b"mock.local"),
+                        (":method", "GET"),
+                        (":path", "/authz"),
+                        (":authority", "mock.local"),
                     ],
                     None,
-                    &[],
+                    None,
                     Duration::from_secs(3),
                 )?);
                 if let Some(request) = self.active_request {
@@ -141,12 +141,12 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
                 self.active_request = Some(self.http_client.send_request(
                     "httpbin_service",
                     &[
-                        (":method", b"GET"),
-                        (":path", b"/delay/5"),
-                        (":authority", b"httpbin.org"),
+                        (":method", "GET"),
+                        (":path", "/delay/5"),
+                        (":authority", "httpbin.org"),
                     ],
                     None,
-                    &[],
+                    None,
                     Duration::from_secs(3),
                 )?);
                 if let Some(request) = self.active_request {

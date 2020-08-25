@@ -16,7 +16,6 @@
 
 use envoy::extension::{self, access_logger, AccessLogger};
 use envoy::host::http::client::HttpClientRequestHandle;
-use envoy::host::Bytes;
 
 use super::{FakeEnvoy, FakeHttpClientResponse};
 use crate::extension::access_logger::DynAccessLogger;
@@ -58,7 +57,7 @@ impl<'a> FakeAccessLogBuilder<'a> {
         C: AsRef<[u8]>,
     {
         if let Some(ref mut logger) = self.logger {
-            logger.on_configure(Bytes::from(config.as_ref().to_owned()), &NoOps)?;
+            logger.on_configure(config.as_ref().into(), &NoOps)?;
         }
         Ok(FakeAccessLog {
             _envoy: self.envoy,

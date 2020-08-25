@@ -17,11 +17,11 @@
 use std::cell::RefCell;
 
 use envoy::extension::factory;
-use envoy::extension::filter::network::{self, CloseType};
+use envoy::extension::filter::network::{self, PeerType};
 use envoy::extension::{self, ExtensionFactory, InstanceId, NetworkFilter};
 use envoy::host::buffer::{internal::TransformExecutor, Transform};
 use envoy::host::http::client::HttpClientRequestHandle;
-use envoy::host::{self, Bytes};
+use envoy::host::{self, ByteString};
 
 use super::envoy_mime;
 use super::{FakeEnvoy, FakeListenerBuilder};
@@ -102,7 +102,7 @@ impl<'a> FakeTcpListenerBuilder<'a> {
     {
         let filter_factory = match self.filter_factory {
             Some(mut filter_factory) => {
-                filter_factory.on_configure(Bytes::from(config.as_ref().to_owned()), &NoOps)?;
+                filter_factory.on_configure(config.as_ref().into(), &NoOps)?;
                 Some(filter_factory)
             }
             None => None,
@@ -216,7 +216,7 @@ impl<'a, 'b> FakeTcpConnection<'a, 'b> {
     pub fn simulate_close_from_downstream(&mut self) -> extension::Result<network::FilterStatus> {
         let status = self.receive_data_from_downstream(&[], true)?;
         if let Some(filter) = &mut self.filter {
-            filter.on_downstream_close(CloseType::Remote, &self.state)?;
+            filter.on_downstream_close(PeerType::Remote, &self.state)?;
         }
         Ok(status)
     }
@@ -285,8 +285,8 @@ impl<'a, 'b> FakeTcpConnection<'a, 'b> {
     pub fn simulate_close_from_upstream(&mut self) -> extension::Result<network::FilterStatus> {
         let status = self.receive_data_from_upstream(&[], true)?;
         if let Some(filter) = &mut self.filter {
-            // use CloseType::Unknown to simulate the exact behaviour of `envoyproxy/envoy-wasm`
-            filter.on_upstream_close(CloseType::Unknown, &self.state)?;
+            // use PeerType::Unknown to simulate the exact behaviour of `envoyproxy/envoy-wasm`
+            filter.on_upstream_close(PeerType::Unknown, &self.state)?;
         }
         Ok(status)
     }
@@ -372,7 +372,7 @@ impl<'a, 'b> FakeTcpConnection<'a, 'b> {
 }
 
 impl network::DownstreamDataOps for FakeTcpConnectionState {
-    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes> {
+    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString> {
         let buf = self.downstream_read_buffer.borrow();
         envoy_mime::get_buffer_bytes(&buf, offset, max_size)
     }
@@ -386,7 +386,7 @@ impl network::DownstreamDataOps for FakeTcpConnectionState {
 }
 
 impl network::UpstreamDataOps for FakeTcpConnectionState {
-    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes> {
+    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString> {
         let buf = self.upstream_read_buffer.borrow();
         envoy_mime::get_buffer_bytes(&buf, offset, max_size)
     }

@@ -27,12 +27,12 @@ fn test_fake_http_client() -> Result<()> {
     let request_handle = http_client.send_request(
         "example_cluster",
         &[
-            (":method", b"GET"),
-            (":path", b"/stuff"),
-            (":authority", b"example.org"),
+            (":method", "GET"),
+            (":path", "/stuff"),
+            (":authority", "example.org"),
         ],
         Some(b"example body"),
-        &[("grpc-status", b"0"), ("grpc-message", b"OK")],
+        Some(&[("grpc-status", "0"), ("grpc-message", "OK")]),
         Duration::from_secs(3),
     )?;
 

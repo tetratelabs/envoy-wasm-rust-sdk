@@ -46,7 +46,7 @@ fn test_request_response() -> Result<()> {
             ops: &dyn http::RequestBodyOps,
         ) -> Result<FilterDataStatus> {
             if data_size > 0 {
-                let mut data = ops.request_data(0, data_size)?.into_vec();
+                let mut data = ops.request_data(0, data_size)?.into_bytes();
                 if !data.is_empty() {
                     data.remove(0);
                 }
@@ -62,7 +62,7 @@ fn test_request_response() -> Result<()> {
             ops: &dyn http::ResponseBodyOps,
         ) -> extension::Result<FilterDataStatus> {
             if data_size > 0 {
-                let mut data = ops.response_data(0, data_size)?.into_vec();
+                let mut data = ops.response_data(0, data_size)?.into_bytes();
                 data.extend("!".bytes());
                 ops.mutate_response_data(Transform::replace_with(&data))?;
             }
@@ -209,7 +209,7 @@ fn test_local_reply_on_request_headers() -> Result<()> {
             _num_headers: usize,
             ops: &dyn http::RequestHeadersOps,
         ) -> Result<FilterHeadersStatus> {
-            ops.send_response(401, &[("header", b"value")], Some(b"body"))?;
+            ops.send_response(401, &[("header", "value")], Some(b"body"))?;
             Ok(FilterHeadersStatus::StopIteration)
         }
     }

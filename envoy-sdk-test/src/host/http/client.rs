@@ -54,7 +54,7 @@ use std::cell::RefCell;
 use std::time::Duration;
 
 use envoy::host::http::client::{HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
-use envoy::host::{self, Bytes, HeaderMap, HeaderName, HeaderValue, Result};
+use envoy::host::{self, ByteString, HeaderMap, Result};
 
 use super::FakeHttpMessage;
 use crate::runtime::envoy_mime;
@@ -117,9 +117,9 @@ impl HttpClient for FakeHttpClient {
     fn send_request(
         &self,
         upstream: &str,
-        headers: &[(&str, &[u8])],
+        headers: &[(&str, &str)],
         body: Option<&[u8]>,
-        trailers: &[(&str, &[u8])],
+        trailers: Option<&[(&str, &str)]>,
         timeout: Duration,
     ) -> Result<HttpClientRequestHandle> {
         let handle = HttpClientRequestHandle::from(*self.counter.borrow());
@@ -128,8 +128,8 @@ impl HttpClient for FakeHttpClient {
             upstream: upstream.to_owned(),
             message: FakeHttpMessage {
                 headers: headers.iter().collect(),
-                body: body.map(|o| o.to_vec()).into(),
-                trailers: trailers.iter().collect(),
+                body: body.unwrap_or_default().into(),
+                trailers: trailers.unwrap_or_default().iter().collect(),
             },
             timeout,
         };
@@ -164,8 +164,8 @@ impl FakeHttpClientRequestBuilder {
 
     pub fn header<K, V>(mut self, name: K, value: V) -> Self
     where
-        K: Into<HeaderName>,
-        V: Into<HeaderValue>,
+        K: Into<ByteString>,
+        V: Into<ByteString>,
     {
         self.request.message.headers.insert(name, value);
         self
@@ -181,8 +181,8 @@ impl FakeHttpClientRequestBuilder {
 
     pub fn trailer<K, V>(mut self, name: K, value: V) -> Self
     where
-        K: Into<HeaderName>,
-        V: Into<HeaderValue>,
+        K: Into<ByteString>,
+        V: Into<ByteString>,
     {
         self.request.message.trailers.insert(name, value);
         self
@@ -207,8 +207,8 @@ impl FakeHttpClientResponse {
 impl FakeHttpClientResponseBuilder {
     pub fn header<K, V>(mut self, name: K, value: V) -> Self
     where
-        K: Into<HeaderName>,
-        V: Into<HeaderValue>,
+        K: Into<ByteString>,
+        V: Into<ByteString>,
     {
         self.response.message.headers.insert(name, value);
         self
@@ -224,8 +224,8 @@ impl FakeHttpClientResponseBuilder {
 
     pub fn trailer<K, V>(mut self, name: K, value: V) -> Self
     where
-        K: Into<HeaderName>,
-        V: Into<HeaderValue>,
+        K: Into<ByteString>,
+        V: Into<ByteString>,
     {
         self.response.message.trailers.insert(name, value);
         self
@@ -241,19 +241,19 @@ impl HttpClientResponseOps for FakeHttpClientResponse {
         Ok(self.message.headers.clone())
     }
 
-    fn http_call_response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn http_call_response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self.message.headers.get(name).map(Clone::clone))
     }
 
-    fn http_call_response_body(&self, offset: usize, max_size: usize) -> host::Result<Bytes> {
-        envoy_mime::get_buffer_bytes(self.message.body.as_slice(), offset, max_size)
+    fn http_call_response_body(&self, offset: usize, max_size: usize) -> host::Result<ByteString> {
+        envoy_mime::get_buffer_bytes(self.message.body.as_bytes(), offset, max_size)
     }
 
     fn http_call_response_trailers(&self) -> host::Result<HeaderMap> {
         Ok(self.message.trailers.clone())
     }
 
-    fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self.message.trailers.get(name).map(Clone::clone))
     }
 }

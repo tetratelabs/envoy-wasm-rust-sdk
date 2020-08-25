@@ -19,7 +19,7 @@ use std::marker::PhantomData;
 use envoy::extension::access_logger;
 use envoy::extension::{self, AccessLogger, ConfigStatus, DrainStatus};
 use envoy::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use envoy::host::Bytes;
+use envoy::host::ByteString;
 
 /// Reference to an `Access Logger` extension.
 pub(crate) struct DynAccessLogger<'a, L> {
@@ -49,7 +49,7 @@ where
 
     fn on_configure(
         &mut self,
-        config: Bytes,
+        config: ByteString,
         ops: &dyn access_logger::ConfigureOps,
     ) -> extension::Result<ConfigStatus> {
         self.logger.on_configure(config, ops)

@@ -19,7 +19,7 @@ use std::marker::PhantomData;
 use std::time::SystemTime;
 
 use super::types::{ResponseFlags, TrafficDirection};
-use crate::host::{self, HeaderValue};
+use crate::host;
 
 use self::types::*;
 
@@ -67,7 +67,7 @@ impl TryFrom<Value<ByteString>> for String {
     }
 }
 
-impl TryFrom<Value<ByteString>> for HeaderValue {
+impl TryFrom<Value<ByteString>> for host::ByteString {
     type Error = host::Error;
 
     fn try_from(value: Value<ByteString>) -> host::Result<Self> {

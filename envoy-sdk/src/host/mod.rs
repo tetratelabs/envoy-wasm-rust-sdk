@@ -63,7 +63,7 @@ pub use self::shared_queue::SharedQueue;
 pub use self::stats::Stats;
 pub use self::stream_info::StreamInfo;
 pub use self::time::Clock;
-pub use self::types::{Bytes, HeaderMap, HeaderName, HeaderValue};
+pub use self::types::{ByteString, HeaderMap};
 
 mod types;
 

@@ -103,10 +103,10 @@ use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
 use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
-pub use crate::abi::proxy_wasm::types::CloseType;
+pub use crate::abi::proxy_wasm::types::PeerType;
 
 mod context;
 mod ops;
@@ -228,10 +228,10 @@ pub trait NetworkFilter {
     ///
     /// # Arguments
     ///
-    /// * `close_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
+    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_downstream_close(
         &mut self,
-        _close_type: CloseType,
+        _peer_type: PeerType,
         _ops: &dyn DownstreamCloseOps,
     ) -> Result<()> {
         Ok(())
@@ -265,10 +265,10 @@ pub trait NetworkFilter {
     ///
     /// # Arguments
     ///
-    /// * `close_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
+    /// * `peer_type` - supplies who closed the connection (either the remote party or `Envoy` itself).
     fn on_upstream_close(
         &mut self,
-        _close_type: CloseType,
+        _peer_type: PeerType,
         _ops: &dyn UpstreamCloseOps,
     ) -> Result<()> {
         Ok(())
@@ -320,7 +320,7 @@ pub trait DownstreamDataOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
+    fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
 
     /// Mutate data in the read buffer from `Downstream`.
     ///
@@ -339,7 +339,7 @@ pub trait UpstreamDataOps {
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
-    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes>;
+    fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
 
     /// Mutate data received from `Upstream`.
     ///

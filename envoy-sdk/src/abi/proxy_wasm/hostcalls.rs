@@ -24,12 +24,12 @@ use super::types::{
     BufferType, HttpRequestHandle, MapType, MetricHandle, MetricType, OptimisticLockVersion,
     SharedQueueHandle, Status,
 };
-use crate::host::{self, Bytes, HeaderMap, HeaderName};
+use crate::host::{self, ByteString, HeaderMap};
 
 // Configuration API
 
-pub fn get_configuration() -> host::Result<Bytes> {
-    hostcalls::get_configuration().map(Bytes::from)
+pub fn get_configuration() -> host::Result<ByteString> {
+    hostcalls::get_configuration().map(Option::unwrap_or_default)
 }
 
 // Lifecycle API
@@ -38,18 +38,18 @@ pub use hostcalls::done;
 
 // Headers/Body manipulation API
 
-pub fn get_buffer(buffer_type: BufferType, start: usize, max_size: usize) -> host::Result<Bytes> {
-    hostcalls::get_buffer(buffer_type, start, max_size).map(Bytes::from)
+pub fn get_buffer(
+    buffer_type: BufferType,
+    start: usize,
+    max_size: usize,
+) -> host::Result<ByteString> {
+    hostcalls::get_buffer(buffer_type, start, max_size).map(Option::unwrap_or_default)
 }
 
 pub use hostcalls::set_buffer;
 
 pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
-    hostcalls::get_map(map_type).map(|list| {
-        list.into_iter()
-            .map(|(name, value)| (HeaderName::from(name), value))
-            .collect()
-    })
+    hostcalls::get_map(map_type).map(HeaderMap::from)
 }
 
 pub fn set_map(map_type: MapType, headers: &HeaderMap) -> host::Result<()> {
@@ -74,8 +74,8 @@ pub fn resolve_shared_queue(vm_id: &str, name: &str) -> host::Result<Option<Shar
     hostcalls::resolve_shared_queue(vm_id, name).map(|o| o.map(SharedQueueHandle::from))
 }
 
-pub fn dequeue_shared_queue(queue_id: SharedQueueHandle) -> host::Result<Option<Bytes>> {
-    hostcalls::dequeue_shared_queue(queue_id.as_id()).map(|data| data.map(Bytes::from))
+pub fn dequeue_shared_queue(queue_id: SharedQueueHandle) -> host::Result<Option<ByteString>> {
+    hostcalls::dequeue_shared_queue(queue_id.as_id())
 }
 
 pub fn enqueue_shared_queue<V>(queue_id: SharedQueueHandle, value: V) -> host::Result<()>
@@ -99,9 +99,9 @@ pub fn dispatch_http_call<K1, V1, K2, V2, B>(
     timeout: Duration,
 ) -> host::Result<HttpRequestHandle>
 where
-    K1: AsRef<str>,
+    K1: AsRef<[u8]>,
     V1: AsRef<[u8]>,
-    K2: AsRef<str>,
+    K2: AsRef<[u8]>,
     V2: AsRef<[u8]>,
     B: AsRef<[u8]>,
 {
@@ -111,11 +111,11 @@ where
 
 // Stream Info API
 
-pub fn get_property<P>(path: &[P]) -> host::Result<Option<Bytes>>
+pub fn get_property<P>(path: &[P]) -> host::Result<Option<ByteString>>
 where
     P: AsRef<str>,
 {
-    hostcalls::get_property(path).map(|data| data.map(Bytes::from))
+    hostcalls::get_property(path)
 }
 
 pub fn set_property<P, V>(path: &[P], value: V) -> host::Result<()>
@@ -128,8 +128,10 @@ where
 
 // Shared data API
 
-pub fn get_shared_data(key: &str) -> host::Result<(Option<Bytes>, Option<OptimisticLockVersion>)> {
-    hostcalls::get_shared_data(key).map(|(value, version)| (value.map(Bytes::from), version))
+pub fn get_shared_data(
+    key: &str,
+) -> host::Result<(Option<ByteString>, Option<OptimisticLockVersion>)> {
+    hostcalls::get_shared_data(key)
 }
 
 pub fn set_shared_data(
@@ -146,12 +148,6 @@ pub fn set_shared_data(
 
 // Stats API
 
-// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
-// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
-//
-// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
-// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
-#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_define_metric(
         metric_type: MetricType,
@@ -178,12 +174,6 @@ pub fn define_metric(metric_type: MetricType, metric_name: &str) -> host::Result
     }
 }
 
-// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
-// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
-//
-// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
-// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
-#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_increment_metric(metric_id: u32, offset: i64) -> Status;
 }
@@ -199,12 +189,6 @@ pub fn increment_metric(metric_handle: MetricHandle, offset: i64) -> host::Resul
     }
 }
 
-// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
-// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
-//
-// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
-// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
-#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_record_metric(metric_id: u32, value: u64) -> Status;
 }
@@ -220,12 +204,6 @@ pub fn record_metric(metric_handle: MetricHandle, value: u64) -> host::Result<()
     }
 }
 
-// NOTE: once `Status` was marked with `#[non_exhaustive]`, compiler started emitting warnings
-// "`extern` block uses type `proxy_wasm_experimental::types::Status`, which is not FFI-safe".
-//
-// To fix that, we're using `#[allow(improper_ctypes)]` - the same approach as in Rust Core
-// https://github.com/rust-lang/rust/blob/master/library/std/src/sys/cloudabi/abi/cloudabi.rs
-#[allow(improper_ctypes)]
 extern "C" {
     fn proxy_get_metric(metric_id: u32, return_metric_value: *mut u64) -> Status;
 }

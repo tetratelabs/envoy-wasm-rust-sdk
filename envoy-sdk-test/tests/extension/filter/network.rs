@@ -38,7 +38,7 @@ fn test_network_filter() -> Result<()> {
             ops: &dyn network::DownstreamDataOps,
         ) -> extension::Result<network::FilterStatus> {
             if data_size > 0 {
-                let mut data = ops.downstream_data(0, data_size)?.into_vec();
+                let mut data = ops.downstream_data(0, data_size)?.into_bytes();
                 if !data.is_empty() {
                     data.remove(0);
                 }
@@ -54,7 +54,7 @@ fn test_network_filter() -> Result<()> {
             ops: &dyn network::UpstreamDataOps,
         ) -> extension::Result<network::FilterStatus> {
             if data_size > 0 {
-                let mut data = ops.upstream_data(0, data_size)?.into_vec();
+                let mut data = ops.upstream_data(0, data_size)?.into_bytes();
                 data.extend("!".bytes());
                 ops.mutate_upstream_data(Transform::replace_with(&data))?;
             }
@@ -264,7 +264,7 @@ fn test_network_filter_upstream_stop_iteration() -> Result<()> {
 
         fn on_upstream_close(
             &mut self,
-            _close_type: network::CloseType,
+            _peer_type: network::PeerType,
             _ops: &dyn network::UpstreamCloseOps,
         ) -> Result<()> {
             self.stats.counter("test_filter.on_upstream_close")?.inc()?;

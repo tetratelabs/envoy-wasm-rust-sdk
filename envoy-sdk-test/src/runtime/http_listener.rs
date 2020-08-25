@@ -19,7 +19,7 @@ use std::cell::{Ref, RefCell, RefMut};
 use envoy::extension::filter::http;
 use envoy::extension::{self, factory, ExtensionFactory, HttpFilter};
 use envoy::host::buffer::{internal::TransformExecutor, Transform};
-use envoy::host::{self, Bytes, HeaderMap, HeaderValue};
+use envoy::host::{self, ByteString, HeaderMap};
 
 use super::envoy_mime;
 use super::{FakeEnvoy, FakeListenerBuilder};
@@ -76,10 +76,10 @@ struct FakeHttpStreamState {
 enum IterationState {
     Continue,            // Iteration has not stopped for any frame type.
     StopSingleIteration, // Iteration has stopped for headers, 100-continue, or data.
-    StopAllBuffer,       // Iteration has stopped for all frame types, and following data should
+    _StopAllBuffer,      // Iteration has stopped for all frame types, and following data should
     // be buffered.
-    StopAllWatermark, // Iteration has stopped for all frame types, and following data should
-                      // be buffered until high watermark is reached.
+    _StopAllWatermark, // Iteration has stopped for all frame types, and following data should
+                       // be buffered until high watermark is reached.
 }
 
 impl Default for IterationState {
@@ -141,7 +141,7 @@ impl<'a> FakeHttpListenerBuilder<'a> {
         let mut filter_factory = self.filter_factory.expect(
             "HTTP Filter extension factory must be added prior to calling `configure(...)`",
         );
-        filter_factory.on_configure(Bytes::from(config.as_ref().to_owned()), &NoOps)?;
+        filter_factory.on_configure(config.as_ref().into(), &NoOps)?;
         Ok(FakeHttpListener {
             envoy: self.listener.envoy,
             filter_factory,
@@ -624,7 +624,7 @@ impl<'a> http::RequestHeadersOps for FakeHttpStream<'a> {
         Ok(self.state.borrow().request_headers.clone())
     }
 
-    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self
             .state
             .borrow()
@@ -638,22 +638,19 @@ impl<'a> http::RequestHeadersOps for FakeHttpStream<'a> {
         Ok(())
     }
 
-    fn set_request_header(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        match value {
-            Some(value) => self.state.borrow_mut().request_headers.insert(name, value),
-            None => self.state.borrow_mut().request_headers.remove(name),
-        };
+    fn set_request_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
+        self.state.borrow_mut().request_headers.insert(name, value);
         Ok(())
     }
 
-    fn add_request_header(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
-        self.state.borrow_mut().request_headers.insert(name, value);
+    fn remove_request_header(&self, name: &str) -> host::Result<()> {
+        self.state.borrow_mut().request_headers.remove(name);
         Ok(())
     }
 }
 
 impl<'a> http::RequestBodyOps for FakeHttpStream<'a> {
-    fn request_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes> {
+    fn request_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString> {
         envoy_mime::get_buffer_bytes(&self.request_data(), offset, max_size)
     }
 
@@ -669,7 +666,7 @@ impl<'a> http::RequestTrailersOps for FakeHttpStream<'a> {
         Ok(self.state.borrow().request_trailers.clone())
     }
 
-    fn request_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn request_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self
             .state
             .borrow()
@@ -683,16 +680,13 @@ impl<'a> http::RequestTrailersOps for FakeHttpStream<'a> {
         Ok(())
     }
 
-    fn set_request_trailer(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        match value {
-            Some(value) => self.state.borrow_mut().request_trailers.insert(name, value),
-            None => self.state.borrow_mut().request_trailers.remove(name),
-        };
+    fn set_request_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
+        self.state.borrow_mut().request_trailers.insert(name, value);
         Ok(())
     }
 
-    fn add_request_trailer(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
-        self.state.borrow_mut().request_trailers.insert(name, value);
+    fn remove_request_trailer(&self, name: &str) -> host::Result<()> {
+        self.state.borrow_mut().request_trailers.remove(name);
         Ok(())
     }
 }
@@ -710,7 +704,7 @@ impl<'a> http::RequestFlowOps for FakeHttpStream<'a> {
     fn send_response(
         &self,
         status_code: u32,
-        headers: &[(&str, &[u8])],
+        headers: &[(&str, &str)],
         body: Option<&[u8]>,
     ) -> host::Result<()> {
         assert_eq!(self.state.borrow().downstream.has_received_headers(), false, "unit test is trying to do something that actual Envoy would never do: it is not possible to send local reply once response headers have already been sent to downstream");
@@ -741,7 +735,7 @@ impl<'a> http::ResponseHeadersOps for FakeHttpStream<'a> {
         Ok(self.state.borrow().response_headers.clone())
     }
 
-    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self
             .state
             .borrow()
@@ -755,22 +749,19 @@ impl<'a> http::ResponseHeadersOps for FakeHttpStream<'a> {
         Ok(())
     }
 
-    fn set_response_header(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        match value {
-            Some(value) => self.state.borrow_mut().response_headers.insert(name, value),
-            None => self.state.borrow_mut().response_headers.remove(name),
-        };
+    fn set_response_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
+        self.state.borrow_mut().response_headers.insert(name, value);
         Ok(())
     }
 
-    fn add_response_header(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
-        self.state.borrow_mut().response_headers.insert(name, value);
+    fn remove_response_header(&self, name: &str) -> host::Result<()> {
+        self.state.borrow_mut().response_headers.remove(name);
         Ok(())
     }
 }
 
 impl<'a> http::ResponseBodyOps for FakeHttpStream<'a> {
-    fn response_data(&self, offset: usize, max_size: usize) -> host::Result<Bytes> {
+    fn response_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString> {
         envoy_mime::get_buffer_bytes(&self.response_data(), offset, max_size)
     }
 
@@ -786,7 +777,7 @@ impl<'a> http::ResponseTrailersOps for FakeHttpStream<'a> {
         Ok(self.state.borrow().response_trailers.clone())
     }
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self
             .state
             .borrow()
@@ -800,23 +791,16 @@ impl<'a> http::ResponseTrailersOps for FakeHttpStream<'a> {
         Ok(())
     }
 
-    fn set_response_trailer(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        match value {
-            Some(value) => self
-                .state
-                .borrow_mut()
-                .response_trailers
-                .insert(name, value),
-            None => self.state.borrow_mut().response_trailers.remove(name),
-        };
-        Ok(())
-    }
-
-    fn add_response_trailer(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
+    fn set_response_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
         self.state
             .borrow_mut()
             .response_trailers
             .insert(name, value);
+        Ok(())
+    }
+
+    fn remove_response_trailer(&self, name: &str) -> host::Result<()> {
+        self.state.borrow_mut().response_trailers.remove(name);
         Ok(())
     }
 }

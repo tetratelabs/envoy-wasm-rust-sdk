@@ -16,7 +16,7 @@
 
 use envoy::extension::access_logger;
 use envoy::host::stream_info::StreamInfo;
-use envoy::host::{self, Bytes, HeaderMap, HeaderValue};
+use envoy::host::{self, ByteString, HeaderMap};
 
 use crate::host::http::FakeHttpMessage;
 
@@ -42,8 +42,8 @@ pub struct RequestInfo {
 }
 
 impl StreamInfo for FakeStreamInfo {
-    fn stream_property(&self, _path: &[&str]) -> host::Result<Option<Bytes>> {
-        Ok(Some(Bytes::default()))
+    fn stream_property(&self, _path: &[&str]) -> host::Result<Option<ByteString>> {
+        Ok(None)
     }
 
     fn set_stream_property(&self, _path: &[&str], _value: &[u8]) -> host::Result<()> {
@@ -57,10 +57,10 @@ impl access_logger::LogOps for FakeStreamInfo {
             .http_stream
             .as_ref()
             .map(|o| o.request.headers.clone())
-            .unwrap_or_else(Default::default))
+            .unwrap_or_default())
     }
 
-    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self
             .http_stream
             .as_ref()
@@ -73,10 +73,10 @@ impl access_logger::LogOps for FakeStreamInfo {
             .http_stream
             .as_ref()
             .map(|o| o.response.headers.clone())
-            .unwrap_or_else(Default::default))
+            .unwrap_or_default())
     }
 
-    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self
             .http_stream
             .as_ref()
@@ -89,10 +89,10 @@ impl access_logger::LogOps for FakeStreamInfo {
             .http_stream
             .as_ref()
             .map(|o| o.response.trailers.clone())
-            .unwrap_or_else(Default::default))
+            .unwrap_or_default())
     }
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
         Ok(self
             .http_stream
             .as_ref()

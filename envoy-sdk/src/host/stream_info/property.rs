@@ -19,7 +19,7 @@ use std::time::{Duration, SystemTime};
 
 use super::proxy_wasm;
 use super::types::{ResponseFlags, TrafficDirection};
-use crate::host::HeaderValue;
+use crate::host::ByteString;
 
 /// Represents a property path.
 struct Path<'a> {
@@ -67,7 +67,7 @@ pub(super) struct Request {}
 
 impl Request {
     /// Request header by name.
-    pub fn header(name: &str) -> Property<'_, HeaderValue, proxy_wasm::types::ByteString> {
+    pub fn header(name: &str) -> Property<'_, ByteString, proxy_wasm::types::ByteString> {
         Property {
             path: Path {
                 inner: PathKind::Custom(vec!["request", "headers", name]),
@@ -183,7 +183,7 @@ impl Request {
         };
 
     /// Referer request header.
-    pub const REFERER: &'static Property<'static, HeaderValue, proxy_wasm::types::ByteString> =
+    pub const REFERER: &'static Property<'static, ByteString, proxy_wasm::types::ByteString> =
         &Property {
             path: Path {
                 inner: PathKind::Static(&["request", "referer"]),
@@ -193,7 +193,7 @@ impl Request {
         };
 
     /// User agent request header.
-    pub const USER_AGENT: &'static Property<'static, HeaderValue, proxy_wasm::types::ByteString> =
+    pub const USER_AGENT: &'static Property<'static, ByteString, proxy_wasm::types::ByteString> =
         &Property {
             path: Path {
                 inner: PathKind::Static(&["request", "user_agent"]),
@@ -208,7 +208,7 @@ pub(super) struct Response {}
 
 impl Response {
     /// Response header by name.
-    pub fn header(name: &str) -> Property<'_, HeaderValue, proxy_wasm::types::ByteString> {
+    pub fn header(name: &str) -> Property<'_, ByteString, proxy_wasm::types::ByteString> {
         Property {
             path: Path {
                 inner: PathKind::Custom(vec!["response", "headers", name]),
@@ -219,7 +219,7 @@ impl Response {
     }
 
     /// Response trailer by name.
-    pub fn trailer(name: &str) -> Property<'_, HeaderValue, proxy_wasm::types::ByteString> {
+    pub fn trailer(name: &str) -> Property<'_, ByteString, proxy_wasm::types::ByteString> {
         Property {
             path: Path {
                 inner: PathKind::Custom(vec!["response", "trailers", name]),

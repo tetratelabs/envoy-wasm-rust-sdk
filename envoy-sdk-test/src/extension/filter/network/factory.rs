@@ -18,7 +18,7 @@ use std::marker::PhantomData;
 
 use envoy::extension::factory::{self, ExtensionFactory};
 use envoy::extension::{self, ConfigStatus, DrainStatus, InstanceId, NetworkFilter};
-use envoy::host::Bytes;
+use envoy::host::ByteString;
 
 /// Reference to an `Envoy` `Network Filter` factory.
 pub(crate) struct DynNetworkFilterFactory<'a, F> {
@@ -52,7 +52,7 @@ where
 
     fn on_configure(
         &mut self,
-        config: Bytes,
+        config: ByteString,
         ops: &dyn factory::ConfigureOps,
     ) -> extension::Result<ConfigStatus> {
         self.factory.on_configure(config, ops)
