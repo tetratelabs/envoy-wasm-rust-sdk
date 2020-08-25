@@ -43,7 +43,7 @@ static_resources:
               - match:
                   prefix: "/"
                 route:
-                  cluster: mock_service
+                  cluster: httpbin_service
           http_filters:
           - name: envoy.filters.http.wasm
             typed_config:
@@ -89,11 +89,19 @@ static_resources:
           - name: envoy.router
 
   clusters:
-  - name: mock_service
-    connect_timeout: 0.25s
-    type: static
+  # - name: mock_service
+  #   connect_timeout: 0.25s
+  #   type: static
+  #   lb_policy: round_robin
+  #   hosts:
+  #   - socket_address:
+  #       address: 127.0.0.1
+  #       port_value: 10001
+  - name: httpbin_service
+    connect_timeout: 10s
+    type: strict_dns
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: 127.0.0.1
-        port_value: 10001
+        address: httpbin.org
+        port_value: 80

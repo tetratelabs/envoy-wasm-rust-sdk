@@ -25,6 +25,10 @@
 //! observed behaviour from the perspective of the `Downstream` and the `Upstream`
 //! instead of focusing merely on the mechanics of `Envoy <=> Wasm` interaction.
 
+use std::cell::RefCell;
+
+use envoy::extension::InstanceId;
+
 use crate::host::{FakeClock, FakeHttpClient, FakeHttpClientResponse, FakeStats};
 
 pub use self::access_log::{FakeAccessLog, FakeAccessLogBuilder};
@@ -46,6 +50,9 @@ pub struct FakeEnvoy {
     pub stats: FakeStats,
     /// Fake `Clock API`.
     pub clock: FakeClock,
+
+    /// Fake id generator.
+    generator: FakeIdGenerator,
 }
 
 /// Factory of fake `Envoy` `Listeners`.
@@ -78,5 +85,20 @@ impl<'a> FakeListenerBuilder<'a> {
     /// Returns a factory for building a fake `Envoy` `Listener` with `HTTP`-level extensions.
     pub fn http(self) -> FakeHttpListenerBuilder<'a> {
         FakeHttpListenerBuilder::new(self)
+    }
+}
+
+/// Fake id generator.
+#[derive(Default)]
+struct FakeIdGenerator {
+    next_instance_id: RefCell<u32>,
+}
+
+impl FakeIdGenerator {
+    /// Returns a unique id for a new extension instance.
+    fn new_instance_id(&self) -> InstanceId {
+        let next = *self.next_instance_id.borrow();
+        *self.next_instance_id.borrow_mut() += 1;
+        next.into()
     }
 }

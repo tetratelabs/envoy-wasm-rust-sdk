@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use core::iter::FusedIterator;
+use core::iter::{FromIterator, FusedIterator};
 use core::str;
 use std::{fmt, ops};
 
@@ -74,8 +74,18 @@ pub struct HeaderMap {
 }
 
 impl HeaderMap {
-    fn new(entries: Vec<(HeaderName, HeaderValue)>) -> Self {
-        HeaderMap { entries }
+    pub fn builder() -> HeaderMapBuilder {
+        HeaderMapBuilder::new()
+    }
+
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        HeaderMap {
+            entries: Vec::with_capacity(capacity),
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -100,17 +110,117 @@ impl HeaderMap {
         }
     }
 
-    pub fn get<K>(&self, key: K) -> Option<&HeaderValue>
+    /// Returns a reference to the header value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use envoy_sdk as envoy;
+    /// use envoy::host::HeaderMap;
+    ///
+    /// let mut headers = HeaderMap::builder()
+    ///     .header(":authority", "example.org")
+    ///     .build();
+    ///
+    /// assert_eq!(headers.get(":authority"), Some(&"example.org".into()));
+    /// assert_eq!(headers.get(":method"), None);
+    /// ```
+    pub fn get<Q>(&self, key: Q) -> Option<&HeaderValue>
     where
-        K: Into<HeaderName>,
+        Q: AsRef<str>,
     {
-        let expected = key.into();
-        for (name, value) in self.iter() {
-            if *name == expected {
-                return Some(value);
+        for i in 0..self.entries.len() {
+            if self.entries[i].0.as_ref() == key.as_ref() {
+                return Some(&self.entries[i].1);
             }
         }
         None
+    }
+
+    /// Inserts a header.
+    ///
+    /// If the header has not ben present before, [`None`] is returned.
+    /// Otherwise, the value is updated, and the old value is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use envoy_sdk as envoy;
+    /// use envoy::host::HeaderMap;
+    ///
+    /// let mut headers = HeaderMap::builder()
+    ///     .header(":authority", "example.org")
+    ///     .build();
+    ///
+    /// assert_eq!(headers.insert(":authority", "example.com"), Some("example.org".into()));
+    /// assert_eq!(headers.insert(":method", "GET"), None);
+    /// # assert_eq!(headers, HeaderMap::builder().header(":authority", "example.com").header(":method", "GET").build());
+    /// ```
+    pub fn insert<K, V>(&mut self, key: K, value: V) -> Option<HeaderValue>
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        self.entries.push((key.into(), value.into()));
+        for i in 0..self.entries.len() - 1 {
+            if self.entries[i].0.as_ref() == self.entries[self.entries.len() - 1].0.as_ref() {
+                return Some(self.entries.swap_remove(i).1);
+            }
+        }
+        None
+    }
+
+    /// Removes a header by name, returning its value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use envoy_sdk as envoy;
+    /// use envoy::host::HeaderMap;
+    ///
+    /// let mut headers = HeaderMap::builder()
+    ///     .header(":authority", "example.org")
+    ///     .header(":method", "GET")
+    ///     .build();
+    ///
+    /// assert_eq!(headers.remove(":authority"), Some("example.org".into()));
+    /// assert_eq!(headers.remove("content-type"), None);
+    /// # assert_eq!(headers, HeaderMap::builder().header(":method", "GET").build());
+    /// ```
+    pub fn remove<Q>(&mut self, key: Q) -> Option<HeaderValue>
+    where
+        Q: AsRef<str>,
+    {
+        for i in 0..self.entries.len() {
+            if self.entries[i].0.as_ref() == key.as_ref() {
+                return Some(self.entries.remove(i).1);
+            }
+        }
+        None
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct HeaderMapBuilder {
+    map: HeaderMap,
+}
+
+impl HeaderMapBuilder {
+    pub fn new() -> Self {
+        HeaderMapBuilder::default()
+    }
+
+    pub fn header<K, V>(mut self, name: K, value: V) -> Self
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        self.map.insert(name, value);
+        self
+    }
+
+    pub fn build(self) -> HeaderMap {
+        self.map
     }
 }
 
@@ -173,31 +283,33 @@ impl Iterator for IntoIter {
 
 impl FusedIterator for IntoIter {}
 
-impl From<Vec<(HeaderName, HeaderValue)>> for HeaderMap {
-    fn from(entries: Vec<(HeaderName, HeaderValue)>) -> Self {
-        Self::new(entries)
+impl FromIterator<(HeaderName, HeaderValue)> for HeaderMap {
+    fn from_iter<T: IntoIterator<Item = (HeaderName, HeaderValue)>>(iter: T) -> Self {
+        let iterator = iter.into_iter();
+        let (lower, _) = iterator.size_hint();
+        let mut headers = Self::with_capacity(lower);
+        for (name, value) in iterator {
+            headers.insert(name, value);
+        }
+        headers
     }
 }
 
-impl From<Vec<(String, HeaderValue)>> for HeaderMap {
-    fn from(entries: Vec<(String, HeaderValue)>) -> Self {
-        Self::new(
-            entries
-                .into_iter()
-                .map(|(name, value)| ((*name).into(), value))
-                .collect(),
-        )
+impl<'a> FromIterator<&'a (&'a str, &'a [u8])> for HeaderMap {
+    fn from_iter<T: IntoIterator<Item = &'a (&'a str, &'a [u8])>>(iter: T) -> Self {
+        let iterator = iter.into_iter();
+        let (lower, _) = iterator.size_hint();
+        let mut headers = Self::with_capacity(lower);
+        for (name, value) in iterator {
+            headers.insert(*name, *value);
+        }
+        headers
     }
 }
 
-impl From<&[(&str, &[u8])]> for HeaderMap {
-    fn from(entries: &[(&str, &[u8])]) -> Self {
-        Self::new(
-            entries
-                .iter()
-                .map(|(name, value)| ((*name).into(), (*value).to_owned().into()))
-                .collect(),
-        )
+impl From<&HeaderMap> for HeaderMap {
+    fn from(other: &HeaderMap) -> Self {
+        other.clone()
     }
 }
 

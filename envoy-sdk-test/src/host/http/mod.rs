@@ -14,7 +14,7 @@
 
 //! Fake `HTTP API`.
 
-use envoy::host::{Bytes, HeaderMap};
+use envoy::host::{Bytes, HeaderMap, HeaderName, HeaderValue};
 
 pub mod client;
 
@@ -25,4 +25,51 @@ pub struct FakeHttpMessage {
     pub headers: HeaderMap,
     pub body: Bytes,
     pub trailers: HeaderMap,
+}
+
+impl FakeHttpMessage {
+    pub fn builder() -> FakeHttpMessageBuilder {
+        FakeHttpMessageBuilder::new()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct FakeHttpMessageBuilder {
+    message: FakeHttpMessage,
+}
+
+impl FakeHttpMessageBuilder {
+    pub fn new() -> Self {
+        FakeHttpMessageBuilder::default()
+    }
+
+    pub fn header<K, V>(mut self, name: K, value: V) -> Self
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        self.message.headers.insert(name, value);
+        self
+    }
+
+    pub fn body<B>(mut self, body: B) -> Self
+    where
+        B: Into<Vec<u8>>,
+    {
+        self.message.body = body.into().into();
+        self
+    }
+
+    pub fn trailer<K, V>(mut self, name: K, value: V) -> Self
+    where
+        K: Into<HeaderName>,
+        V: Into<HeaderValue>,
+    {
+        self.message.trailers.insert(name, value);
+        self
+    }
+
+    pub fn build(self) -> FakeHttpMessage {
+        self.message
+    }
 }

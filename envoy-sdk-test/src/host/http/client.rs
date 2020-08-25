@@ -127,9 +127,9 @@ impl HttpClient for FakeHttpClient {
         let request = FakeHttpClientRequest {
             upstream: upstream.to_owned(),
             message: FakeHttpMessage {
-                headers: headers.into(),
+                headers: headers.iter().collect(),
                 body: body.map(|o| o.to_vec()).into(),
-                trailers: trailers.into(),
+                trailers: trailers.iter().collect(),
             },
             timeout,
         };
@@ -167,9 +167,7 @@ impl FakeHttpClientRequestBuilder {
         K: Into<HeaderName>,
         V: Into<HeaderValue>,
     {
-        let mut headers = self.request.message.headers.into_vec();
-        headers.push((name.into(), value.into()));
-        self.request.message.headers = headers.into();
+        self.request.message.headers.insert(name, value);
         self
     }
 
@@ -186,9 +184,7 @@ impl FakeHttpClientRequestBuilder {
         K: Into<HeaderName>,
         V: Into<HeaderValue>,
     {
-        let mut trailers = self.request.message.trailers.into_vec();
-        trailers.push((name.into(), value.into()));
-        self.request.message.trailers = trailers.into();
+        self.request.message.trailers.insert(name, value);
         self
     }
 
@@ -214,9 +210,7 @@ impl FakeHttpClientResponseBuilder {
         K: Into<HeaderName>,
         V: Into<HeaderValue>,
     {
-        let mut headers = self.response.message.headers.into_vec();
-        headers.push((name.into(), value.into()));
-        self.response.message.headers = headers.into();
+        self.response.message.headers.insert(name, value);
         self
     }
 
@@ -233,9 +227,7 @@ impl FakeHttpClientResponseBuilder {
         K: Into<HeaderName>,
         V: Into<HeaderValue>,
     {
-        let mut trailers = self.response.message.trailers.into_vec();
-        trailers.push((name.into(), value.into()));
-        self.response.message.trailers = trailers.into();
+        self.response.message.trailers.insert(name, value);
         self
     }
 

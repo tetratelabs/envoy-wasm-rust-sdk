@@ -137,8 +137,58 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
                 info!("#{} suspending http exchange processing", self.instance_id);
                 Ok(http::FilterHeadersStatus::StopIteration)
             }
-            _ => Ok(http::FilterHeadersStatus::Continue),
+            Some(path) if path == "/post" => {
+                self.active_request = Some(self.http_client.send_request(
+                    "httpbin_service",
+                    &[
+                        (":method", b"GET"),
+                        (":path", b"/delay/5"),
+                        (":authority", b"httpbin.org"),
+                    ],
+                    None,
+                    &[],
+                    Duration::from_secs(3),
+                )?);
+                if let Some(request) = self.active_request {
+                    info!(
+                        "#{} sent authorization request: @{}",
+                        self.instance_id, request,
+                    );
+                }
+                info!("#{} suspending http exchange processing", self.instance_id);
+                Ok(http::FilterHeadersStatus::StopIteration)
+            }
+            _ => Ok(http::FilterHeadersStatus::StopIteration),
         }
+    }
+
+    fn on_request_body(
+        &mut self,
+        data_size: usize,
+        end_of_stream: bool,
+        _ops: &dyn http::RequestBodyOps,
+    ) -> Result<http::FilterDataStatus> {
+        info!(
+            "#{} observing request body: data_size={}, end_of_stream={}",
+            self.instance_id, data_size, end_of_stream
+        );
+        // if end_of_stream {
+        //     Ok(http::FilterDataStatus::Continue)
+        // } else {
+        Ok(http::FilterDataStatus::StopIterationAndBuffer)
+        // }
+    }
+
+    fn on_request_trailers(
+        &mut self,
+        num_trailers: usize,
+        _ops: &dyn http::RequestTrailersOps,
+    ) -> Result<http::FilterTrailersStatus> {
+        info!(
+            "#{} observing request trailers: num_trailers={}",
+            self.instance_id, num_trailers
+        );
+        Ok(http::FilterTrailersStatus::Continue)
     }
 
     /// Is called when HTTP response headers have been received.

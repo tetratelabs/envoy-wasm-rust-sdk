@@ -24,7 +24,7 @@ use super::types::{
     BufferType, HttpRequestHandle, MapType, MetricHandle, MetricType, OptimisticLockVersion,
     SharedQueueHandle, Status,
 };
-use crate::host::{self, Bytes, HeaderMap};
+use crate::host::{self, Bytes, HeaderMap, HeaderName};
 
 // Configuration API
 
@@ -45,7 +45,11 @@ pub fn get_buffer(buffer_type: BufferType, start: usize, max_size: usize) -> hos
 pub use hostcalls::set_buffer;
 
 pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
-    hostcalls::get_map(map_type).map(HeaderMap::from)
+    hostcalls::get_map(map_type).map(|list| {
+        list.into_iter()
+            .map(|(name, value)| (HeaderName::from(name), value))
+            .collect()
+    })
 }
 
 pub fn set_map(map_type: MapType, headers: &HeaderMap) -> host::Result<()> {
