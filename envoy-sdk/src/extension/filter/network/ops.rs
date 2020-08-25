@@ -18,18 +18,18 @@ use crate::abi::proxy_wasm::types::BufferType;
 use super::{
     ConnectionCompleteOps, DownstreamCloseOps, DownstreamDataOps, UpstreamCloseOps, UpstreamDataOps,
 };
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 pub(super) struct Host;
 
 impl DownstreamDataOps for Host {
-    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<Bytes> {
+    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::DownstreamData, start, max_size)
     }
 }
 
 impl UpstreamDataOps for Host {
-    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<Bytes> {
+    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
     }
 }

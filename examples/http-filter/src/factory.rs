@@ -16,7 +16,7 @@ use std::convert::TryFrom;
 use std::rc::Rc;
 
 use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};
-use envoy::host::{Bytes, Clock, HttpClient, Stats};
+use envoy::host::{ByteString, Clock, HttpClient, Stats};
 
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
@@ -76,13 +76,13 @@ impl<'a> ExtensionFactory for SampleHttpFilterFactory<'a> {
     /// Is called when Envoy creates a new Listener that uses Sample HTTP Filter.
     fn on_configure(
         &mut self,
-        config: Bytes,
+        config: ByteString,
         _ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
         let config = if config.is_empty() {
             SampleHttpFilterConfig::default()
         } else {
-            SampleHttpFilterConfig::try_from(config.as_slice())?
+            SampleHttpFilterConfig::try_from(config.as_bytes())?
         };
         self.config = Rc::new(config);
         Ok(ConfigStatus::Accepted)

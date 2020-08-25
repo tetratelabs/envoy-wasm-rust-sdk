@@ -85,12 +85,12 @@ impl<'a> NetworkFilter for SampleNetworkFilter<'a> {
         self.active_request = Some(self.http_client.send_request(
             "mock_service",
             &[
-                (":method", b"GET"),
-                (":path", b"/mock"),
-                (":authority", b"mock.local"),
+                (":method", "GET"),
+                (":path", "/mock"),
+                (":authority", "mock.local"),
             ],
             None,
-            &[],
+            None,
             Duration::from_secs(3),
         )?);
         if let Some(request) = self.active_request {
