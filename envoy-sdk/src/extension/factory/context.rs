@@ -16,7 +16,7 @@ use super::{ContextOps, DrainStatus, ExtensionFactory, Ops};
 use crate::abi::proxy_wasm::traits::{ChildContext, Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::{ConfigStatus, InstanceId};
-use crate::host::Bytes;
+use crate::host::ByteString;
 
 pub(crate) struct ExtensionFactoryContext<'a, F>
 where
@@ -35,7 +35,7 @@ where
 {
     fn on_configure(&mut self, configuration_size: usize) -> bool {
         let config = if configuration_size == 0 {
-            Ok(Bytes::default())
+            Ok(ByteString::default())
         } else {
             self.context_ops.configuration()
         };

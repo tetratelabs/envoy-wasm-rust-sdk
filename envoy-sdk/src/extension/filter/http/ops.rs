@@ -18,7 +18,7 @@ use super::{
 };
 use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::{BufferType, MapType};
-use crate::host::{self, Bytes, HeaderMap, HeaderValue};
+use crate::host::{self, ByteString, HeaderMap};
 
 pub(super) struct Host;
 
@@ -27,7 +27,7 @@ impl RequestHeadersOps for Host {
         hostcalls::get_map(MapType::HttpRequestHeaders)
     }
 
-    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         hostcalls::get_map_value(MapType::HttpRequestHeaders, name)
     }
 
@@ -35,17 +35,17 @@ impl RequestHeadersOps for Host {
         hostcalls::set_map(MapType::HttpRequestHeaders, headers)
     }
 
-    fn set_request_header(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpRequestHeaders, name, value)
+    fn set_request_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpRequestHeaders, name, Some(value))
     }
 
-    fn add_request_header(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpRequestHeaders, name, value)
+    fn remove_request_header(&self, name: &str) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpRequestHeaders, name, None::<&[u8]>)
     }
 }
 
 impl RequestBodyOps for Host {
-    fn request_body(&self, start: usize, max_size: usize) -> host::Result<Bytes> {
+    fn request_body(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::HttpRequestBody, start, max_size)
     }
 }
@@ -55,7 +55,7 @@ impl RequestTrailersOps for Host {
         hostcalls::get_map(MapType::HttpRequestTrailers)
     }
 
-    fn request_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn request_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
         hostcalls::get_map_value(MapType::HttpRequestTrailers, name)
     }
 
@@ -63,12 +63,12 @@ impl RequestTrailersOps for Host {
         hostcalls::set_map(MapType::HttpRequestTrailers, trailers)
     }
 
-    fn set_request_trailer(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpRequestTrailers, name, value)
+    fn set_request_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpRequestTrailers, name, Some(value))
     }
 
-    fn add_request_trailer(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpRequestTrailers, name, value)
+    fn remove_request_trailer(&self, name: &str) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpRequestTrailers, name, None::<&[u8]>)
     }
 }
 
@@ -77,7 +77,7 @@ impl ResponseHeadersOps for Host {
         hostcalls::get_map(MapType::HttpResponseHeaders)
     }
 
-    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         hostcalls::get_map_value(MapType::HttpResponseHeaders, name)
     }
 
@@ -85,17 +85,17 @@ impl ResponseHeadersOps for Host {
         hostcalls::set_map(MapType::HttpResponseHeaders, headers)
     }
 
-    fn set_response_header(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpResponseHeaders, name, value)
+    fn set_response_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpResponseHeaders, name, Some(value))
     }
 
-    fn add_response_header(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpResponseHeaders, name, value)
+    fn remove_response_header(&self, name: &str) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpResponseHeaders, name, None::<&[u8]>)
     }
 }
 
 impl ResponseBodyOps for Host {
-    fn response_body(&self, start: usize, max_size: usize) -> host::Result<Bytes> {
+    fn response_body(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::HttpResponseBody, start, max_size)
     }
 }
@@ -105,7 +105,7 @@ impl ResponseTrailersOps for Host {
         hostcalls::get_map(MapType::HttpResponseTrailers)
     }
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
         hostcalls::get_map_value(MapType::HttpResponseTrailers, name)
     }
 
@@ -113,12 +113,12 @@ impl ResponseTrailersOps for Host {
         hostcalls::set_map(MapType::HttpResponseTrailers, trailers)
     }
 
-    fn set_response_trailer(&self, name: &str, value: Option<&HeaderValue>) -> host::Result<()> {
-        hostcalls::set_map_value(MapType::HttpResponseTrailers, name, value)
+    fn set_response_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpResponseTrailers, name, Some(value))
     }
 
-    fn add_response_trailer(&self, name: &str, value: &HeaderValue) -> host::Result<()> {
-        hostcalls::add_map_value(MapType::HttpResponseTrailers, name, value)
+    fn remove_response_trailer(&self, name: &str) -> host::Result<()> {
+        hostcalls::set_map_value(MapType::HttpResponseTrailers, name, None::<&[u8]>)
     }
 }
 
@@ -130,7 +130,7 @@ impl RequestFlowOps for Host {
     fn send_response(
         &self,
         status_code: u32,
-        headers: &[(&str, &[u8])],
+        headers: &[(&str, &str)],
         body: Option<&[u8]>,
     ) -> host::Result<()> {
         hostcalls::send_http_response(status_code, headers, body)

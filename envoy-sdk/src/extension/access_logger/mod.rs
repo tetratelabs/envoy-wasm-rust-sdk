@@ -63,7 +63,7 @@
 
 use crate::extension::{ConfigStatus, DrainStatus, Result};
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, Bytes, HeaderMap, HeaderValue, StreamInfo};
+use crate::host::{self, ByteString, HeaderMap, StreamInfo};
 
 pub(crate) use self::context::AccessLoggerContext;
 
@@ -84,7 +84,7 @@ mod ops;
 /// # use envoy_sdk as envoy;
 /// use envoy::extension::{AccessLogger, Result};
 /// use envoy::extension::access_logger::LogOps;
-/// use envoy::host::{Bytes, log};
+/// use envoy::host::{ByteString, log};
 ///
 /// /// My very own `AccessLogger`.
 /// struct MyAccessLogger;
@@ -92,8 +92,8 @@ mod ops;
 /// impl AccessLogger for MyAccessLogger {
 ///     const NAME: &'static str = "my_access_logger";
 ///
-///     fn on_log(&mut self, logger_ops: &dyn LogOps) -> Result<()> {
-///         let upstream_address = logger_ops.stream_info().upstream().address()?
+///     fn on_log(&mut self, ops: &dyn LogOps) -> Result<()> {
+///         let upstream_address = ops.stream_info().upstream().address()?
 ///             .unwrap_or_else(|| "<unknown>".into());
 ///         log::info!("upstream.address : {}", upstream_address);
 ///         Ok(())
@@ -132,7 +132,11 @@ pub trait AccessLogger {
     ///
     /// [`ConfigStatus`]: ../factory/enum.ConfigStatus.html
     /// [`ConfigureOps`]: trait.ConfigureOps.html
-    fn on_configure(&mut self, _config: Bytes, _ops: &dyn ConfigureOps) -> Result<ConfigStatus> {
+    fn on_configure(
+        &mut self,
+        _config: ByteString,
+        _ops: &dyn ConfigureOps,
+    ) -> Result<ConfigStatus> {
         Ok(ConfigStatus::Accepted)
     }
 
@@ -191,7 +195,7 @@ pub trait AccessLogger {
 /// An interface for accessing extension config.
 pub(crate) trait ContextOps {
     /// Returns extension config.
-    fn configuration(&self) -> host::Result<Bytes>;
+    fn configuration(&self) -> host::Result<ByteString>;
 }
 
 impl dyn ContextOps {
@@ -224,19 +228,19 @@ pub trait LogOps {
     fn request_headers(&self) -> host::Result<HeaderMap>;
 
     /// Returns request header by name.
-    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
     /// Returns response headers.
     fn response_headers(&self) -> host::Result<HeaderMap>;
 
     /// Returns response header by name.
-    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
     /// Returns response trailers.
     fn response_trailers(&self) -> host::Result<HeaderMap>;
 
     /// Returns response trailer by name.
-    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
     /// Provides access to properties of the stream.
     fn stream_info(&self) -> &dyn StreamInfo;

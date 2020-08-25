@@ -48,7 +48,7 @@
 //! [`ExtensionFactory`]: trait.ExtensionFactory.html
 
 use crate::extension::{factory, InstanceId, Result};
-use crate::host::{self, Bytes};
+use crate::host::{self, ByteString};
 
 pub(crate) use self::context::ExtensionFactoryContext;
 
@@ -151,7 +151,7 @@ impl DrainStatus {
 /// #
 /// use std::rc::Rc;
 /// use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};
-/// use envoy::host::Bytes;
+/// use envoy::host::ByteString;
 ///
 /// /// `ExtensionFactory` for `MyHttpFilter`.
 /// struct MyHttpFilterFactory {
@@ -166,7 +166,7 @@ impl DrainStatus {
 ///     const NAME: &'static str = "my_http_filter";
 ///
 ///     /// Called when extension is being (re-)configured on `Envoy Listener` update.
-///     fn on_configure(&mut self, config: Bytes, ops: &dyn factory::ConfigureOps) -> Result<ConfigStatus> {
+///     fn on_configure(&mut self, config: ByteString, ops: &dyn factory::ConfigureOps) -> Result<ConfigStatus> {
 ///         let config = if config.is_empty() { String::default() } else {
 ///             String::from_utf8(config.into_bytes())?
 ///         };
@@ -265,7 +265,7 @@ pub trait ExtensionFactory {
     /// [`ConfigureOps`]: trait.ConfigureOps.html
     fn on_configure(
         &mut self,
-        _config: Bytes,
+        _config: ByteString,
         _ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
         Ok(ConfigStatus::Accepted)
@@ -301,7 +301,7 @@ pub trait ExtensionFactory {
 /// An interface for accessing extension config.
 pub(crate) trait ContextOps {
     /// Returns extension config.
-    fn configuration(&self) -> host::Result<Bytes>;
+    fn configuration(&self) -> host::Result<ByteString>;
 }
 
 impl dyn ContextOps {

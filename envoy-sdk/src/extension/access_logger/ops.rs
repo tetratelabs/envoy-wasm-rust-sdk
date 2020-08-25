@@ -15,12 +15,12 @@
 use super::{ConfigureOps, ContextOps, DrainOps, LogOps, StreamInfo};
 use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::MapType;
-use crate::host::{self, Bytes, HeaderMap, HeaderValue};
+use crate::host::{self, ByteString, HeaderMap};
 
 pub(super) struct Host;
 
 impl ContextOps for Host {
-    fn configuration(&self) -> host::Result<Bytes> {
+    fn configuration(&self) -> host::Result<ByteString> {
         hostcalls::get_configuration()
     }
 }
@@ -32,7 +32,7 @@ impl LogOps for Host {
         hostcalls::get_map(MapType::HttpRequestHeaders)
     }
 
-    fn request_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         hostcalls::get_map_value(MapType::HttpRequestHeaders, name)
     }
 
@@ -40,7 +40,7 @@ impl LogOps for Host {
         hostcalls::get_map(MapType::HttpResponseHeaders)
     }
 
-    fn response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
         hostcalls::get_map_value(MapType::HttpResponseHeaders, name)
     }
 
@@ -48,7 +48,7 @@ impl LogOps for Host {
         hostcalls::get_map(MapType::HttpResponseTrailers)
     }
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
         hostcalls::get_map_value(MapType::HttpResponseTrailers, &name)
     }
 

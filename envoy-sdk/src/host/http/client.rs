@@ -16,7 +16,7 @@
 
 use std::time::Duration;
 
-use crate::host::{self, Bytes, HeaderMap, HeaderValue};
+use crate::host::{self, ByteString, HeaderMap};
 
 pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHandle;
 
@@ -37,9 +37,9 @@ pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHan
 ///
 /// let request_id = client.send_request(
 ///     "cluster_name",
-///     &[("header", b"value")],
+///     &[("header", "value")],
 ///     Some(b"request body"),
-///     &[("trailer", b"value")],
+///     Some(&[("trailer", "value")]),
 ///     Duration::from_secs(5),
 /// )?;
 /// # Ok(())
@@ -89,9 +89,9 @@ pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHan
 ///     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
 ///         self.http_client.send_request(
 ///             "cluster_name",
-///             &[("header", b"value")],
+///             &[("header", "value")],
 ///             Some(b"request body"),
-///             &[("trailer", b"value")],
+///             Some(&[("trailer", "value")]),
 ///             Duration::from_secs(5),
 ///         )?;
 ///         Ok(FilterHeadersStatus::StopIteration)  // stop further request processing
@@ -140,9 +140,9 @@ pub trait HttpClient {
     fn send_request(
         &self,
         upstream: &str,
-        headers: &[(&str, &[u8])],
+        headers: &[(&str, &str)],
         body: Option<&[u8]>,
-        trailers: &[(&str, &[u8])],
+        trailers: Option<&[(&str, &str)]>,
         timeout: Duration,
     ) -> host::Result<HttpClientRequestHandle>;
 }
@@ -163,13 +163,13 @@ impl dyn HttpClient {
 pub trait HttpClientResponseOps {
     fn http_call_response_headers(&self) -> host::Result<HeaderMap>;
 
-    fn http_call_response_header(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn http_call_response_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn http_call_response_body(&self, start: usize, max_size: usize) -> host::Result<Bytes>;
+    fn http_call_response_body(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
 
     fn http_call_response_trailers(&self) -> host::Result<HeaderMap>;
 
-    fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>>;
+    fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 }
 
 impl dyn HttpClientResponseOps {
@@ -189,7 +189,7 @@ mod impls {
     use crate::abi::proxy_wasm::types::{BufferType, MapType};
 
     use super::{HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
-    use crate::host::{self, Bytes, HeaderMap, HeaderValue};
+    use crate::host::{self, ByteString, HeaderMap};
 
     pub(super) struct Host;
 
@@ -197,12 +197,18 @@ mod impls {
         fn send_request(
             &self,
             upstream: &str,
-            headers: &[(&str, &[u8])],
+            headers: &[(&str, &str)],
             body: Option<&[u8]>,
-            trailers: &[(&str, &[u8])],
+            trailers: Option<&[(&str, &str)]>,
             timeout: Duration,
         ) -> host::Result<HttpClientRequestHandle> {
-            hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
+            hostcalls::dispatch_http_call(
+                upstream,
+                headers,
+                body,
+                trailers.unwrap_or_default(),
+                timeout,
+            )
         }
     }
 
@@ -211,11 +217,15 @@ mod impls {
             hostcalls::get_map(MapType::HttpCallResponseHeaders)
         }
 
-        fn http_call_response_header(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        fn http_call_response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
             hostcalls::get_map_value(MapType::HttpCallResponseHeaders, name)
         }
 
-        fn http_call_response_body(&self, start: usize, max_size: usize) -> host::Result<Bytes> {
+        fn http_call_response_body(
+            &self,
+            start: usize,
+            max_size: usize,
+        ) -> host::Result<ByteString> {
             hostcalls::get_buffer(BufferType::HttpCallResponseBody, start, max_size)
         }
 
@@ -223,7 +233,7 @@ mod impls {
             hostcalls::get_map(MapType::HttpCallResponseTrailers)
         }
 
-        fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<HeaderValue>> {
+        fn http_call_response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
             hostcalls::get_map_value(MapType::HttpCallResponseTrailers, name)
         }
     }
