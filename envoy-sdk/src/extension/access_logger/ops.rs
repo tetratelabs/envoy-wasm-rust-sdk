@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{ConfigureOps, ContextOps, DrainOps, LogOps, StreamInfo};
+use super::{ConfigureOps, ContextOps, DrainOps, LogOps};
 use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::MapType;
-use crate::host::{self, ByteString, HeaderMap};
+use crate::host::{self, ByteString, HeaderMap, StreamInfo};
 
 pub(super) struct Host;
 
