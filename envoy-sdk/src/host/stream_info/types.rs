@@ -68,6 +68,12 @@ bitflags! {
     }
 }
 
+impl Default for ResponseFlags {
+    fn default() -> Self {
+        ResponseFlags::empty()
+    }
+}
+
 impl fmt::Display for ResponseFlags {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut flags = vec![];
@@ -141,12 +147,6 @@ impl fmt::Display for ResponseFlags {
             flags.push("NFCF");
         }
         write!(f, "{}", flags.join(","))
-    }
-}
-
-impl Default for ResponseFlags {
-    fn default() -> Self {
-        ResponseFlags::empty()
     }
 }
 
