@@ -70,7 +70,9 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
     ///
     /// This name appears in `Envoy` configuration as a value of `root_id` field
     /// (also known as `group_name`).
-    const NAME: &'static str = "examples.access_logger";
+    fn name() -> &'static str {
+        "examples.access_logger"
+    }
 
     /// Is called when Envoy creates a new Listener that uses Sample Access Logger.
     ///
