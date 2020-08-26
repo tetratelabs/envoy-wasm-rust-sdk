@@ -54,12 +54,12 @@ pub fn set_buffer_bytes(
             buf.extend(data);
             Ok(())
         } else {
-            Err("WasmResult::BadArgument".into())
+            Err(format_err!("Status::BadArgument"))
         }
     } else if start >= buf.len() {
         buf.extend(data);
         Ok(())
     } else {
-        Err("WasmResult::BadArgument".into())
+        Err(format_err!("Status::BadArgument"))
     }
 }

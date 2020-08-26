@@ -178,7 +178,7 @@ impl FakeTcpUpstream {
 impl<'a> FakeTcpConnection<'a> {
     /// Simulate `Downstream -> Envoy` connect.
     pub fn simulate_connect_from_downstream(&mut self) -> extension::Result<network::FilterStatus> {
-        assert_eq!(self.state.received_connect, false, "unit test is trying to do something that actual Envoy would never do: don't connect for the second time");
+        assert_eq!(self.state.received_connect, false, "unit test is trying to do something that actual Envoy would never do: downstream has already connected");
         self.state.received_connect = true;
         let status = self.filter.on_new_connection();
         match status {
@@ -205,6 +205,7 @@ impl<'a> FakeTcpConnection<'a> {
 
     /// Simulate `Downstream -> Envoy` close of connection.
     pub fn simulate_close_from_downstream(&mut self) -> extension::Result<network::FilterStatus> {
+        assert_eq!(self.state.downstream_read_end_of_stream, false, "unit test is trying to do something that actual Envoy would never do: downstream cannot close connection for the second time");
         let status = self.receive_data_from_downstream(&[], true)?;
         self.filter
             .on_downstream_close(PeerType::Remote, &self.state)?;
@@ -271,6 +272,8 @@ impl<'a> FakeTcpConnection<'a> {
 
     /// Simulate `Envoy <- Upstream` close of connection.
     pub fn simulate_close_from_upstream(&mut self) -> extension::Result<network::FilterStatus> {
+        assert_eq!(self.upstream.received_connect, true, "unit test is trying to do something that actual Envoy would never do: upstream cannot close connection prior to receiving a connect");
+        assert_eq!(self.state.upstream_read_end_of_stream, false, "unit test is trying to do something that actual Envoy would never do: upstream cannot close connection for the second time");
         let status = self.receive_data_from_upstream(&[], true)?;
         // use CloseType::Unknown to simulate the exact behaviour of `envoyproxy/envoy-wasm`
         self.filter
@@ -283,7 +286,7 @@ impl<'a> FakeTcpConnection<'a> {
         data: &[u8],
         end_of_stream: bool,
     ) -> extension::Result<network::FilterStatus> {
-        assert_eq!(self.upstream.received_connect, true, "unit test is trying to do something that actual Envoy would never do: upstream cannot respond prior to receiving a connect");
+        assert_eq!(self.upstream.received_connect, true, "unit test is trying to do something that actual Envoy would never do: upstream cannot start sending data prior to receiving a connect");
         assert_eq!(self.state.upstream_read_end_of_stream, false, "unit test is trying to do something that actual Envoy would never do: upstream cannot keep sending data after closing the connection");
         self.state.upstream_read_buffer.replace(data.to_owned());
         // notice that Envoy doesn't memorize what status a Network Filter returned last time;
