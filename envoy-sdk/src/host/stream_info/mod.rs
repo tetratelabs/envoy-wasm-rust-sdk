@@ -324,6 +324,11 @@ pub struct ConnectionInfo<'a> {
     stream: StreamInfoAccessor<'a>,
 }
 
+/// Provides access to `TLS` properties of the downstream connection.
+pub struct DownstreamConnectionTlsInfo<'a> {
+    stream: StreamInfoAccessor<'a>,
+}
+
 impl<'a> ConnectionInfo<'a> {
     /// Returns connection ID.
     pub fn id(&self) -> host::Result<Option<u64>> {
@@ -340,8 +345,19 @@ impl<'a> ConnectionInfo<'a> {
         self.stream.property(Connection::REQUESTED_SERVER_NAME)
     }
 
+    /// Provides access to `TLS` properties of the downstream connection.
+    pub fn tls(&'a self) -> DownstreamConnectionTlsInfo<'a> {
+        DownstreamConnectionTlsInfo {
+            stream: StreamInfoAccessor {
+                stream_info: self.stream.stream_info,
+            },
+        }
+    }
+}
+
+impl<'a> DownstreamConnectionTlsInfo<'a> {
     /// Returns TLS version of the downstream TLS connection.
-    pub fn tls_version(&self) -> host::Result<Option<String>> {
+    pub fn version(&self) -> host::Result<Option<String>> {
         self.stream.property(Connection::TLS_VERSION)
     }
 
@@ -381,6 +397,11 @@ pub struct UpstreamInfo<'a> {
     stream: StreamInfoAccessor<'a>,
 }
 
+/// Provides access to `TLS` properties of the upstream connection.
+pub struct UpstreamConnectionTlsInfo<'a> {
+    stream: StreamInfoAccessor<'a>,
+}
+
 impl<'a> UpstreamInfo<'a> {
     /// Returns upstream connection remote address.
     pub fn address(&self) -> host::Result<Option<String>> {
@@ -402,8 +423,19 @@ impl<'a> UpstreamInfo<'a> {
         self.stream.property(Upstream::TRANSPORT_FAILURE_REASON)
     }
 
+    /// Provides access to `TLS` properties of the upstream connection.
+    pub fn tls(&'a self) -> UpstreamConnectionTlsInfo<'a> {
+        UpstreamConnectionTlsInfo {
+            stream: StreamInfoAccessor {
+                stream_info: self.stream.stream_info,
+            },
+        }
+    }
+}
+
+impl<'a> UpstreamConnectionTlsInfo<'a> {
     /// Returns TLS version of the upstream TLS connection.
-    pub fn tls_version(&self) -> host::Result<Option<String>> {
+    pub fn version(&self) -> host::Result<Option<String>> {
         self.stream.property(Upstream::TLS_VERSION)
     }
 
