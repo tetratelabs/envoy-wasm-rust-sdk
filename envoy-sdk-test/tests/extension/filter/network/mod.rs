@@ -20,6 +20,10 @@ use envoy::host::{Result, Stats};
 use envoy_sdk_test as envoy_test;
 use envoy_test::FakeEnvoy;
 
+use self::noop::NoOpNetworkFilterFactory;
+
+mod noop;
+
 #[test]
 fn test_network_filter() -> Result<()> {
     struct TestFilter<'a> {
@@ -333,4 +337,165 @@ fn test_network_filter_upstream_stop_iteration() -> Result<()> {
     }
 
     Ok(())
+}
+
+#[test]
+#[should_panic(
+    expected = "unit test is trying to do something that actual Envoy would never do: downstream has already connected"
+)]
+fn test_downstream_connects_second_time() {
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(NoOpNetworkFilterFactory::default())
+        .configure("{}")
+        .unwrap();
+
+    let mut connection = fake_listener.new_connection().unwrap();
+
+    let status = connection.simulate_connect_from_downstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    connection.simulate_connect_from_downstream().unwrap();
+}
+
+#[test]
+#[should_panic(
+    expected = "unit test is trying to do something that actual Envoy would never do: downstream cannot close connection for the second time"
+)]
+fn test_downstream_closes_second_time() {
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(NoOpNetworkFilterFactory::default())
+        .configure("{}")
+        .unwrap();
+
+    let mut connection = fake_listener.new_connection().unwrap();
+
+    let status = connection.simulate_connect_from_downstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    let status = connection.simulate_close_from_downstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    connection.simulate_close_from_downstream().unwrap();
+}
+
+#[test]
+#[should_panic(
+    expected = "unit test is trying to do something that actual Envoy would never do: downstream cannot keep sending data after closing the connection"
+)]
+fn test_downstream_sends_data_after_closing_connection() {
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(NoOpNetworkFilterFactory::default())
+        .configure("{}")
+        .unwrap();
+
+    let mut connection = fake_listener.new_connection().unwrap();
+
+    let status = connection.simulate_connect_from_downstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    let status = connection.simulate_data_from_downstream(b"hello").unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    let status = connection.simulate_close_from_downstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    connection
+        .simulate_data_from_downstream(b" world!")
+        .unwrap();
+}
+
+#[test]
+#[should_panic(
+    expected = "unit test is trying to do something that actual Envoy would never do: upstream cannot start sending data prior to receiving a connect"
+)]
+fn test_upstream_sends_data_prior_to_receiving_connect() {
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(NoOpNetworkFilterFactory::default())
+        .configure("{}")
+        .unwrap();
+
+    let mut connection = fake_listener.new_connection().unwrap();
+
+    connection.simulate_data_from_upstream(b"hello").unwrap();
+}
+
+#[test]
+#[should_panic(
+    expected = "unit test is trying to do something that actual Envoy would never do: upstream cannot close connection prior to receiving a connect"
+)]
+fn test_upstream_closes_prior_to_receiving_connect() {
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(NoOpNetworkFilterFactory::default())
+        .configure("{}")
+        .unwrap();
+
+    let mut connection = fake_listener.new_connection().unwrap();
+
+    connection.simulate_close_from_upstream().unwrap();
+}
+
+#[test]
+#[should_panic(
+    expected = "unit test is trying to do something that actual Envoy would never do: upstream cannot close connection for the second time"
+)]
+fn test_upstream_closes_second_time() {
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(NoOpNetworkFilterFactory::default())
+        .configure("{}")
+        .unwrap();
+
+    let mut connection = fake_listener.new_connection().unwrap();
+
+    let status = connection.simulate_connect_from_downstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    let status = connection.simulate_close_from_upstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    connection.simulate_close_from_upstream().unwrap();
+}
+
+#[test]
+#[should_panic(
+    expected = "unit test is trying to do something that actual Envoy would never do: upstream cannot keep sending data after closing the connection"
+)]
+fn test_upstream_sends_data_after_closing_connection() {
+    let fake = FakeEnvoy::default();
+    let mut fake_listener = fake
+        .listener()
+        .tcp()
+        .network_filter(NoOpNetworkFilterFactory::default())
+        .configure("{}")
+        .unwrap();
+
+    let mut connection = fake_listener.new_connection().unwrap();
+
+    let status = connection.simulate_connect_from_downstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    let status = connection.simulate_data_from_upstream(b"hi").unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    let status = connection.simulate_close_from_upstream().unwrap();
+    assert_eq!(status, network::FilterStatus::Continue);
+
+    connection.simulate_data_from_upstream(b" there!").unwrap();
 }
