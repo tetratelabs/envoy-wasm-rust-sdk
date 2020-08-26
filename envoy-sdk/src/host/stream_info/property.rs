@@ -196,7 +196,7 @@ impl Request {
     pub const USER_AGENT: &'static Property<'static, ByteString, proxy_wasm::types::ByteString> =
         &Property {
             path: Path {
-                inner: PathKind::Static(&["request", "user_agent"]),
+                inner: PathKind::Static(&["request", "useragent"]),
             },
             _type: PhantomData,
             _proxy_wasm_type: PhantomData,
