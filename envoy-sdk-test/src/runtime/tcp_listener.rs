@@ -37,12 +37,12 @@ pub struct FakeTcpListenerBuilder<'a> {
 /// Fake `Envoy` `Listener` for testing `Network Filter` extensions.
 pub struct FakeTcpListener<'a> {
     envoy: &'a FakeEnvoy,
-    filter_factory: Option<Box<dyn ExtensionFactory<Extension = Box<dyn NetworkFilter + 'a>> + 'a>>,
+    filter_factory: Box<dyn ExtensionFactory<Extension = Box<dyn NetworkFilter + 'a>> + 'a>,
 }
 
 /// Fake `Envoy` `Connection` for testing `Network Filter` extensions.
 pub struct FakeTcpConnection<'a> {
-    filter: Option<Box<dyn NetworkFilter + 'a>>,
+    filter: Box<dyn NetworkFilter + 'a>,
     state: FakeTcpConnectionState,
     downstream: FakeTcpDownstream,
     upstream: FakeTcpUpstream,
@@ -99,13 +99,10 @@ impl<'a> FakeTcpListenerBuilder<'a> {
     where
         C: AsRef<[u8]>,
     {
-        let filter_factory = match self.filter_factory {
-            Some(mut filter_factory) => {
-                filter_factory.on_configure(config.as_ref().into(), &NoOps)?;
-                Some(filter_factory)
-            }
-            None => None,
-        };
+        let mut filter_factory = self.filter_factory.expect(
+            "Network Filter extension factory must be added prior to calling `configure(...)`",
+        );
+        filter_factory.on_configure(config.as_ref().into(), &NoOps)?;
         Ok(FakeTcpListener {
             envoy: self.listener.envoy,
             filter_factory,
@@ -116,12 +113,9 @@ impl<'a> FakeTcpListenerBuilder<'a> {
 impl<'a> FakeTcpListener<'a> {
     /// Returns a new `TCP` connection.
     pub fn new_connection(&mut self) -> extension::Result<FakeTcpConnection<'a>> {
-        let filter = match &mut self.filter_factory {
-            Some(filter_factory) => {
-                Some(filter_factory.new_extension(self.envoy.generator.new_instance_id())?)
-            }
-            None => None,
-        };
+        let filter = self
+            .filter_factory
+            .new_extension(self.envoy.generator.new_instance_id())?;
         Ok(FakeTcpConnection {
             filter,
             state: FakeTcpConnectionState::default(),
@@ -186,10 +180,7 @@ impl<'a> FakeTcpConnection<'a> {
     pub fn simulate_connect_from_downstream(&mut self) -> extension::Result<network::FilterStatus> {
         assert_eq!(self.state.received_connect, false, "unit test is trying to do something that actual Envoy would never do: don't connect for the second time");
         self.state.received_connect = true;
-        let status = match &mut self.filter {
-            Some(filter) => filter.on_new_connection(),
-            None => Ok(network::FilterStatus::Continue),
-        };
+        let status = self.filter.on_new_connection();
         match status {
             Ok(network::FilterStatus::Continue) => {
                 self.upstream.receive_connect();
@@ -215,9 +206,8 @@ impl<'a> FakeTcpConnection<'a> {
     /// Simulate `Downstream -> Envoy` close of connection.
     pub fn simulate_close_from_downstream(&mut self) -> extension::Result<network::FilterStatus> {
         let status = self.receive_data_from_downstream(&[], true)?;
-        if let Some(filter) = &mut self.filter {
-            filter.on_downstream_close(PeerType::Remote, &self.state)?;
-        }
+        self.filter
+            .on_downstream_close(PeerType::Remote, &self.state)?;
         Ok(status)
     }
 
@@ -245,12 +235,10 @@ impl<'a> FakeTcpConnection<'a> {
         // during filter chain construction and has effect until `onNewConnection()` is called on `tcp_proxy`
         // (and even later after that). Which means that if a Filter returns StopIteration from `on_new_connection`,
         // `tcp_proxy` won't be called until `resume` is called first.
-        let status = match &mut self.filter {
-            Some(filter) => {
-                let buf_len = self.state.downstream_read_buffer.borrow().len();
-                filter.on_downstream_data(buf_len, end_of_stream, &self.state)
-            }
-            None => Ok(network::FilterStatus::Continue),
+        let status = {
+            let buf_len = self.state.downstream_read_buffer.borrow().len();
+            self.filter
+                .on_downstream_data(buf_len, end_of_stream, &self.state)
         };
         match status {
             Ok(network::FilterStatus::Continue) => {
@@ -284,10 +272,9 @@ impl<'a> FakeTcpConnection<'a> {
     /// Simulate `Envoy <- Upstream` close of connection.
     pub fn simulate_close_from_upstream(&mut self) -> extension::Result<network::FilterStatus> {
         let status = self.receive_data_from_upstream(&[], true)?;
-        if let Some(filter) = &mut self.filter {
-            // use CloseType::Unknown to simulate the exact behaviour of `envoyproxy/envoy-wasm`
-            filter.on_upstream_close(PeerType::Unknown, &self.state)?;
-        }
+        // use CloseType::Unknown to simulate the exact behaviour of `envoyproxy/envoy-wasm`
+        self.filter
+            .on_upstream_close(PeerType::Unknown, &self.state)?;
         Ok(status)
     }
 
@@ -302,12 +289,10 @@ impl<'a> FakeTcpConnection<'a> {
         // notice that Envoy doesn't memorize what status a Network Filter returned last time;
         // that is why `on_downstream_data` callback will typically be called on every data receival
         // even if the filter previously returned `StopIteration` and hasn't called `resume()` after that.
-        let status = match &mut self.filter {
-            Some(filter) => {
-                let buf_len = self.state.upstream_read_buffer.borrow().len();
-                filter.on_upstream_data(buf_len, end_of_stream, &self.state)
-            }
-            None => Ok(network::FilterStatus::Continue),
+        let status = {
+            let buf_len = self.state.upstream_read_buffer.borrow().len();
+            self.filter
+                .on_upstream_data(buf_len, end_of_stream, &self.state)
         };
         match status {
             Ok(network::FilterStatus::Continue) => {
@@ -342,17 +327,14 @@ impl<'a> FakeTcpConnection<'a> {
         request_id: HttpClientRequestHandle,
         response: FakeHttpClientResponse,
     ) -> extension::Result<()> {
-        match &mut self.filter {
-            Some(filter) => filter.on_http_call_response(
-                request_id,
-                response.message.headers.len(),
-                response.message.body.len(),
-                response.message.trailers.len(),
-                &self.state,
-                &response,
-            ),
-            None => Ok(()),
-        }
+        self.filter.on_http_call_response(
+            request_id,
+            response.message.headers.len(),
+            response.message.body.len(),
+            response.message.trailers.len(),
+            &self.state,
+            &response,
+        )
     }
 
     /// Peeks into the read buffer of `Downstream -> Envoy` connection.
