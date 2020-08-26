@@ -79,7 +79,9 @@ impl<'a> ExtensionFactory for SampleHttpFilterFactory<'a> {
     ///
     /// This name appears in `Envoy` configuration as a value of `root_id` field
     /// (also known as `group_name`).
-    const NAME: &'static str = "examples.http_filter";
+    fn name() -> &'static str {
+        "examples.http_filter"
+    }
 
     /// Is called when Envoy creates a new Listener that uses Sample HTTP Filter.
     fn on_configure(

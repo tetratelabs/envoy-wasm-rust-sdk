@@ -31,7 +31,7 @@
 //! struct MyAccessLogger;
 //!
 //! impl AccessLogger for MyAccessLogger {
-//!     const NAME: &'static str = "my_access_logger";
+//!     fn name() -> &'static str { "my_access_logger" }
 //! }
 //! ```
 //!
@@ -45,7 +45,7 @@
 //! # struct MyAccessLogger;
 //! #
 //! # impl AccessLogger for MyAccessLogger {
-//! #     const NAME: &'static str = "my_access_logger";
+//! #     fn name() -> &'static str { "my_access_logger" }
 //! # }
 //! #
 //! use envoy::extension::{entrypoint, Module, Result};
@@ -90,7 +90,7 @@ mod ops;
 /// struct MyAccessLogger;
 ///
 /// impl AccessLogger for MyAccessLogger {
-///     const NAME: &'static str = "my_access_logger";
+///     fn name() -> &'static str { "my_access_logger" }
 ///
 ///     fn on_log(&mut self, ops: &dyn LogOps) -> Result<()> {
 ///         let upstream_address = ops.stream_info().upstream().address()?
@@ -115,8 +115,10 @@ mod ops;
 /// [`NetworkFilter`]: ../filter/network/trait.NetworkFilter.html
 /// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err
 pub trait AccessLogger {
-    /// Name the extension should be referred to in `Envoy` configuration.
-    const NAME: &'static str;
+    /// Returns a name the extension should be referred to in `Envoy` configuration.
+    fn name() -> &'static str
+    where
+        Self: Sized;
 
     /// Called when `Access Logger` is being (re-)configured.
     ///

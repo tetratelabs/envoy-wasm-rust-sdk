@@ -53,7 +53,7 @@
 //! impl ExtensionFactory for MyNetworkFilterFactory {
 //!     type Extension = MyNetworkFilter;
 //!
-//!     const NAME: &'static str = "my_network_filter";
+//!     fn name() -> &'static str { "my_network_filter" }
 //!
 //!     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
 //!         Ok(MyNetworkFilter)
@@ -79,7 +79,7 @@
 //! # impl ExtensionFactory for MyNetworkFilterFactory {
 //! #     type Extension = MyNetworkFilter;
 //! #
-//! #     const NAME: &'static str = "my_network_filter";
+//! #     fn name() -> &'static str { "my_network_filter" }
 //! #
 //! #     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
 //! #         Ok(MyNetworkFilter)
