@@ -101,6 +101,7 @@
 
 use crate::abi::proxy_wasm::types::{Action, PeerType};
 use crate::extension::Result;
+use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 use crate::host::{self, ByteString};
 
@@ -310,26 +311,41 @@ pub trait NetworkFilter {
     }
 }
 
-/// An interface for manipulating data in the read buffer (data read from the downstream connection).
+/// An interface for manipulating data in the read buffer from `Downstream`.
 pub trait DownstreamDataOps {
-    /// Returns data from the read buffer.
+    /// Returns data in the read buffer from `Downstream`.
     ///
     /// # Arguments
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
     fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate data in the read buffer from `Downstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_downstream_data(&self, change: Transform) -> host::Result<()>;
 }
 
-/// An interface for manipulating data in the write buffer (data to be written to the downstream connection).
+/// An interface for manipulating data received from `Upstream`
+/// before they reach the write buffer for `Downstream`.
 pub trait UpstreamDataOps {
-    /// Returns data from the write buffer.
+    /// Returns data received from `Upstream`.
     ///
     /// # Arguments
     ///
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
     fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate data received from `Upstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_upstream_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for operations available in the context of [`on_downstream_close`]

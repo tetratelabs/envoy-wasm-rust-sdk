@@ -48,6 +48,8 @@ pub fn get_buffer(
     hostcalls::get_buffer(buffer_type, start, max_size).map(Option::unwrap_or_default)
 }
 
+pub use hostcalls::set_buffer;
+
 pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
     hostcalls::get_map(map_type).map(HeaderMap::from)
 }

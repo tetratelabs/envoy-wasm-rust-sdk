@@ -101,6 +101,7 @@
 
 use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
+use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 use crate::host::{self, ByteString, HeaderMap};
 
@@ -314,7 +315,7 @@ pub trait HttpFilter {
     ///
     /// # Arguments
     ///
-    /// * `body_size`     - size of data accumulated in the read buffer.
+    /// * `data_size`     - size of data accumulated in the read buffer.
     /// * `end_of_stream` - supplies whether this is the last data frame.
     /// * `ops`           - a [`trait object`][`RequestBodyOps`] through which `HTTP Filter` can
     ///                     manipulate request body.
@@ -340,16 +341,16 @@ pub trait HttpFilter {
     /// # struct MyHttpFilter;
     /// #
     /// # impl HttpFilter for MyHttpFilter {
-    ///   fn on_request_body(&mut self, _body_size: usize, _end_of_stream: bool, ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
-    ///       let chunk_prefix = ops.request_body(0, 10)?;
-    ///       log::info!("body chunk starts with: {:?}", chunk_prefix);
+    ///   fn on_request_body(&mut self, _data_size: usize, _end_of_stream: bool, ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
+    ///       let head = ops.request_data(0, 10)?;
+    ///       log::info!("body chunk starts with: {:?}", head);
     ///       Ok(FilterDataStatus::Continue)
     ///   }
     /// # }
     /// ```
     fn on_request_body(
         &mut self,
-        _body_size: usize,
+        _data_size: usize,
         _end_of_stream: bool,
         _ops: &dyn RequestBodyOps,
     ) -> Result<FilterDataStatus> {
@@ -410,17 +411,17 @@ pub trait HttpFilter {
         Ok(FilterHeadersStatus::Continue)
     }
 
-    /// Called with response body to be encoded
+    /// Called with response body to be encoded.
     fn on_response_body(
         &mut self,
-        _body_size: usize,
+        _data_size: usize,
         _end_of_stream: bool,
         _ops: &dyn ResponseBodyOps,
     ) -> Result<FilterDataStatus> {
         Ok(FilterDataStatus::Continue)
     }
 
-    /// Called with response trailers to be encoded
+    /// Called with response trailers to be encoded.
     fn on_response_trailers(
         &mut self,
         _num_trailers: usize,
@@ -485,7 +486,20 @@ pub trait RequestHeadersOps: RequestFlowOps {
 
 /// An interface for manipulating request body.
 pub trait RequestBodyOps: RequestFlowOps {
-    fn request_body(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
+    /// Returns request data received from `Downstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset`   - offset to start reading data from.
+    /// * `max_size` - maximum size of data to return.
+    fn request_data(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate request data received from `Downstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_request_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating request trailers.
@@ -536,9 +550,22 @@ pub trait ResponseHeadersOps: ResponseFlowOps {
     fn remove_response_header(&self, name: &str) -> host::Result<()>;
 }
 
-/// An interface for manipulating response body.
+/// An interface for manipulating response data.
 pub trait ResponseBodyOps: ResponseFlowOps {
-    fn response_body(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
+    /// Returns response data received from `Upstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset`   - offset to start reading data from.
+    /// * `max_size` - maximum size of data to return.
+    fn response_data(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate response data received from `Upstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_response_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating response trailers.
