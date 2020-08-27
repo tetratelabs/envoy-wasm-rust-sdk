@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Error","The error type for host API functions."]],"type":[["Result","A specialized [`Result`] type for host API."]]});
+initSidebarItems({"struct":[["Error","The `Error` type, a wrapper around a dynamic error type."]],"trait":[["ErrorContext","Provides the `context` method for `Result`."]],"type":[["Result","`Result<T, Error>`"]]});

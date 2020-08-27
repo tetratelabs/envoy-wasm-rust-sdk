@@ -159,10 +159,6 @@
 <span id="159">159</span>
 <span id="160">160</span>
 <span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -181,11 +177,9 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::<span class="ident">log</span>;
-
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::<span class="ident">filter</span>::<span class="ident">network</span>;
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">time</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">log</span>, <span class="ident">time</span>};
 
 <span class="kw">use</span> <span class="ident">chrono</span>::<span class="ident">offset</span>::<span class="ident">Local</span>;
 <span class="kw">use</span> <span class="ident">chrono</span>::<span class="ident">DateTime</span>;
@@ -212,7 +206,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">SampleNetworkFilter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates a new instance of sample network filter.</span>
+    <span class="doccomment">/// Creates a new instance of Sample Network Filter.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">config</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">SampleNetworkFilterConfig</span><span class="op">&gt;</span>,
         <span class="ident">stats</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">SampleNetworkFilterStats</span><span class="op">&gt;</span>,
@@ -260,11 +254,9 @@
             <span class="macro">vec</span><span class="macro">!</span>[],
             <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">3</span>),
         )<span class="question-mark">?</span>);
-        <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(
-            <span class="string">&quot;#{} sent outgoing request: @{}&quot;</span>,
-            <span class="self">self</span>.<span class="ident">instance_id</span>,
-            <span class="self">self</span>.<span class="ident">active_request</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()
-        );
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">request</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">active_request</span> {
+            <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;#{} sent outgoing request: @{}&quot;</span>, <span class="self">self</span>.<span class="ident">instance_id</span>, <span class="ident">request</span>);
+        }
 
         <span class="prelude-val">Ok</span>(<span class="ident">network</span>::<span class="ident">FilterStatus</span>::<span class="ident">Pause</span>)
     }

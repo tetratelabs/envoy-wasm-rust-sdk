@@ -221,11 +221,9 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::<span class="ident">log</span>;
-
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::<span class="ident">filter</span>::<span class="ident">http</span>;
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">time</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">log</span>, <span class="ident">time</span>};
 
 <span class="kw">use</span> <span class="ident">chrono</span>::<span class="ident">offset</span>::<span class="ident">Local</span>;
 <span class="kw">use</span> <span class="ident">chrono</span>::<span class="ident">DateTime</span>;
@@ -233,7 +231,7 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">config</span>::<span class="ident">SampleHttpFilterConfig</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">stats</span>::<span class="ident">SampleHttpFilterStats</span>;
 
-<span class="comment">// Sample HTTP filter.</span>
+<span class="comment">// Sample HTTP Filter.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SampleHttpFilter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="comment">// This example shows how multiple filter instances could share</span>
     <span class="comment">// the same configuration.</span>
@@ -252,7 +250,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">SampleHttpFilter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates a new instance of sample HTTP filter.</span>
+    <span class="doccomment">/// Creates a new instance of Sample HTTP Filter.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">config</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">SampleHttpFilterConfig</span><span class="op">&gt;</span>,
         <span class="ident">stats</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">SampleHttpFilterStats</span><span class="op">&gt;</span>,
@@ -321,11 +319,13 @@
                     <span class="macro">vec</span><span class="macro">!</span>[],
                     <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">3</span>),
                 )<span class="question-mark">?</span>);
-                <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(
-                    <span class="string">&quot;#{} sent authorization request: @{}&quot;</span>,
-                    <span class="self">self</span>.<span class="ident">instance_id</span>,
-                    <span class="self">self</span>.<span class="ident">active_request</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()
-                );
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">request</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">active_request</span> {
+                    <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(
+                        <span class="string">&quot;#{} sent authorization request: @{}&quot;</span>,
+                        <span class="self">self</span>.<span class="ident">instance_id</span>,
+                        <span class="ident">request</span>,
+                    );
+                }
                 <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;#{} suspending http exchange processing&quot;</span>, <span class="self">self</span>.<span class="ident">instance_id</span>);
                 <span class="prelude-val">Ok</span>(<span class="ident">http</span>::<span class="ident">FilterHeadersStatus</span>::<span class="ident">Pause</span>)
             }

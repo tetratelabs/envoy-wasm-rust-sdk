@@ -147,6 +147,7 @@
 <span class="comment">// See the License for the specific language governing permissions and</span>
 <span class="comment">// limitations under the License.</span>
 
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">dispatcher</span>::{<span class="ident">ContextSelector</span>, <span class="ident">VoidContextSelector</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::{<span class="ident">Registry</span>, <span class="prelude-ty">Result</span>};
 
 <span class="doccomment">/// Generates the [`_start`] function that will be called by `Envoy` to let</span>
@@ -212,12 +213,10 @@
 <span class="doccomment">/// fn initialize() -&gt; extension::Result&lt;Registry&gt; {</span>
 <span class="doccomment">///   // arbitrary initialization steps</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///   let registry = Registry::new()</span>
-<span class="doccomment">///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())</span>
-<span class="doccomment">///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())</span>
+<span class="doccomment">///   Registry::new()</span>
+<span class="doccomment">///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?</span>
+<span class="doccomment">///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?</span>
 <span class="doccomment">///       .add_access_logger(|_instance_id| MyAccessLogger::default())</span>
-<span class="doccomment">///   ;</span>
-<span class="doccomment">///   Ok(registry)</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
@@ -242,30 +241,31 @@
             <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">extension</span>::{<span class="self">self</span>, <span class="ident">Registry</span>, <span class="prelude-ty">Result</span>};
             <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">host</span>::<span class="ident">log</span>;
 
-            <span class="kw">fn</span> <span class="ident">init</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">init_fn</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
+            <span class="kw">fn</span> <span class="ident">init</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">init_fn</span>: <span class="ident">F</span>)
             <span class="kw">where</span>
                 <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Registry</span><span class="op">&gt;</span>,
             {
-                <span class="comment">// Apparently, `proxy_wasm` piggy backs on `set_log_level`</span>
+                <span class="comment">// Apparently, `proxy_wasm` uses `set_log_level`</span>
                 <span class="comment">// to set a custom panic handler that will log panics using Envoy Log API.</span>
-                <span class="comment">// To be sure that panics will always be logged properly,</span>
-                <span class="comment">// we call `set_log_level` ourselves instead of leaving it up to the user.</span>
+                <span class="comment">// To be sure that panics will always be set,</span>
+                <span class="comment">// we call `set_log_level` ourselves instead of leaving it up to a user.</span>
                 <span class="ident">log</span>::<span class="ident">set_max_level</span>(<span class="ident">log</span>::<span class="ident">LogLevel</span>::<span class="ident">Info</span>);
 
                 <span class="comment">// Call the init callback provided as an argument.</span>
-                <span class="kw">let</span> <span class="ident">registry</span> <span class="op">=</span> <span class="ident">init_fn</span>()<span class="question-mark">?</span>;
-                <span class="ident">extension</span>::<span class="ident">install</span>(<span class="ident">registry</span>)
+                <span class="ident">extension</span>::<span class="ident">install</span>(<span class="ident">init_fn</span>());
             }
 
-            <span class="ident">init</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">init_fn</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;failed to initialize WebAssembly module with Envoy extension(s)&quot;</span>);
+            <span class="ident">init</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">init_fn</span>);
         }
     };
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">install</span>(<span class="ident">registry</span>: <span class="ident">Registry</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">registry</span>.<span class="ident">install</span>()
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">install</span>(<span class="ident">config</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Registry</span><span class="op">&gt;</span>) {
+    <span class="kw">match</span> <span class="ident">config</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">registry</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ContextSelector</span>::<span class="ident">with_default_ops</span>(<span class="ident">registry</span>.<span class="ident">into</span>()).<span class="ident">install</span>(),
+        <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VoidContextSelector</span>::<span class="ident">new</span>(<span class="ident">err</span>).<span class="ident">install</span>(),
+    }
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../";window.currentCrate = "envoy_sdk";</script><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script><script defer src="../../../../search-index.js"></script></body></html>

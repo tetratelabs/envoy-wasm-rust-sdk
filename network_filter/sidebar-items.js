@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["SampleNetworkFilterFactory","Factory for creating sample network filter instances (one filter instance per TCP connection)."]]});
+initSidebarItems({"struct":[["SampleNetworkFilterFactory","Factory for creating Sample Network Filter instances (one filter instance per TCP connection)."]]});

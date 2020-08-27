@@ -117,11 +117,11 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">types</span>::<span class="ident">Bytes</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::<span class="prelude-ty">Result</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::{<span class="ident">ConfigStatus</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident">context</span>::<span class="ident">LoggerContext</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="self">self</span>::<span class="ident">context</span>::<span class="ident">LoggerContext</span>;
 
 <span class="kw">mod</span> <span class="ident">context</span>;
 <span class="kw">mod</span> <span class="ident">ops</span>;
@@ -133,8 +133,8 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_configuration_size</span>: <span class="ident">usize</span>,
         <span class="ident">_logger_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">ConfigureOps</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConfigStatus</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">ConfigStatus</span>::<span class="ident">Accepted</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">on_log</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_logger_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">LogOps</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {

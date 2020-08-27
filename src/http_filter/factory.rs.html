@@ -103,14 +103,6 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -129,17 +121,14 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::<span class="ident">log</span>;
-
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>;
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="self">self</span>, <span class="ident">ConfigStatus</span>, <span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">stats</span>, <span class="ident">time</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">config</span>::<span class="ident">SampleHttpFilterConfig</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">filter</span>::<span class="ident">SampleHttpFilter</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">stats</span>::<span class="ident">SampleHttpFilterStats</span>;
 
-<span class="doccomment">/// Factory for creating sample HTTP filter instances</span>
+<span class="doccomment">/// Factory for creating Sample HTTP Filter instances</span>
 <span class="doccomment">/// (one filter instance per HTTP request).</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SampleHttpFilterFactory</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="comment">// This example shows how multiple filter instances could share</span>
@@ -177,7 +166,7 @@
 
     <span class="doccomment">/// Creates a new factory bound to the actual Envoy ABI.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="ident">SampleHttpFilterFactory</span>::<span class="ident">new</span>(
+        <span class="self">Self</span>::<span class="ident">new</span>(
             <span class="ident">time</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
             <span class="ident">http_client</span>::<span class="ident">Client</span>::<span class="ident">default</span>(),
             <span class="ident">stats</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
@@ -188,32 +177,27 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">extension</span>::<span class="ident">Factory</span> <span class="kw">for</span> <span class="ident">SampleHttpFilterFactory</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Extension</span> <span class="op">=</span> <span class="ident">SampleHttpFilter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
 
-    <span class="doccomment">/// The reference name for sample network filter.</span>
+    <span class="doccomment">/// The reference name for Sample HTTP Filter.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.</span>
+    <span class="doccomment">/// This name appears in `Envoy` configuration as a value of `root_id` field</span>
+    <span class="doccomment">/// (also known as `group_name`).</span>
     <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;examples.http_filter&quot;</span>;
 
-    <span class="doccomment">/// Is called when Envoy creates a new Listener that uses sample HTTP filter.</span>
+    <span class="doccomment">/// Is called when Envoy creates a new Listener that uses Sample HTTP Filter.</span>
     <span class="kw">fn</span> <span class="ident">on_configure</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_configuration_size</span>: <span class="ident">usize</span>,
         <span class="ident">ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">extension</span>::<span class="ident">factory</span>::<span class="ident">ConfigureOps</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConfigStatus</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ops</span>.<span class="ident">get_configuration</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">bytes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">SampleHttpFilterConfig</span>::<span class="ident">try_from</span>(<span class="ident">bytes</span>.<span class="ident">as_ref</span>()) {
-                <span class="prelude-val">Ok</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">value</span>,
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">log</span>::<span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;failed to parse extension configuration: {}&quot;</span>, <span class="ident">err</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
-                }
-            },
+            <span class="prelude-val">Some</span>(<span class="ident">bytes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleHttpFilterConfig</span>::<span class="ident">try_from</span>(<span class="ident">bytes</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>,
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleHttpFilterConfig</span>::<span class="ident">default</span>(),
         };
         <span class="self">self</span>.<span class="ident">config</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">config</span>);
-        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
+        <span class="prelude-val">Ok</span>(<span class="ident">ConfigStatus</span>::<span class="ident">Accepted</span>)
     }
 
-    <span class="doccomment">/// Is called to create a unique instance of sample HTTP filter</span>
+    <span class="doccomment">/// Is called to create a unique instance of Sample HTTP Filter</span>
     <span class="doccomment">/// for each HTTP request.</span>
     <span class="kw">fn</span> <span class="ident">new_extension</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">instance_id</span>: <span class="ident">InstanceId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Extension</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">SampleHttpFilter</span>::<span class="ident">new</span>(

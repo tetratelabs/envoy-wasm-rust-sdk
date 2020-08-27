@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `error` mod in crate `envoy_sdk`."><meta name="keywords" content="rust, rustlang, rust-lang, error"><title>envoy_sdk::error - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../envoy_sdk/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a><p class='location'>Module error</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'><a href='../index.html'>envoy_sdk</a></p><script>window.sidebarCurrent = {name: 'error', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/envoy_sdk/error.rs.html#15-70' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../index.html'>envoy_sdk</a>::<wbr><a class="mod" href=''>error</a></span></h1><div class='docblock'><p>The <code>Error</code> type and helpers.</p>
+<h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">error</span>::{<span class="ident">bail</span>, <span class="prelude-ty">Result</span>};
+
+<span class="kw">fn</span> <span class="ident">on_request</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="comment">// ...</span>
+    <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;unexpected state&quot;</span>);
+}</pre></div>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">error</span>::{<span class="ident">ensure</span>, <span class="prelude-ty">Result</span>};
+
+<span class="kw">fn</span> <span class="ident">on_request</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="macro">ensure</span><span class="macro">!</span>(<span class="ident">body_len</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>, <span class="string">&quot;request body must not be empty&quot;</span>);
+    <span class="comment">// ...</span>
+}</pre></div>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">error</span>::{<span class="ident">format_err</span>, <span class="prelude-ty">Result</span>};
+
+<span class="kw">fn</span> <span class="ident">on_request</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">method</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;DELETE&quot;</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format_err</span><span class="macro">!</span>(<span class="string">&quot;{} method is not allowed&quot;</span>, <span class="ident">method</span>));
+    }
+    <span class="comment">// ...</span>
+}</pre></div>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">error</span>::{<span class="ident">ErrorContext</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::<span class="ident">time</span>;
+
+<span class="kw">fn</span> <span class="ident">on_request</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">time</span>::<span class="ident">Service</span>::<span class="ident">default</span>().<span class="ident">get_current_time</span>()
+        .<span class="ident">with_context</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Failed to get time of the request {}&quot;</span>, <span class="ident">instance_id</span>))<span class="question-mark">?</span>;
+    <span class="comment">// ...</span>
+}</pre></div>
+</div><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table><tr class='module-item'><td><a class="macro" href="macro.bail.html" title='envoy_sdk::error::bail macro'>bail</a></td><td class='docblock-short'><p>Return early with an error.</p>
+</td></tr><tr class='module-item'><td><a class="macro" href="macro.ensure.html" title='envoy_sdk::error::ensure macro'>ensure</a></td><td class='docblock-short'><p>Return early with an error if a condition is not satisfied.</p>
+</td></tr><tr class='module-item'><td><a class="macro" href="macro.format_err.html" title='envoy_sdk::error::format_err macro'>format_err</a></td><td class='docblock-short'><p>Construct an ad-hoc error from a string.</p>
+</td></tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table><tr class='module-item'><td><a class="struct" href="struct.Error.html" title='envoy_sdk::error::Error struct'>Error</a></td><td class='docblock-short'><p>The <code>Error</code> type, a wrapper around a dynamic error type.</p>
+</td></tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table><tr class='module-item'><td><a class="trait" href="trait.ErrorContext.html" title='envoy_sdk::error::ErrorContext trait'>ErrorContext</a></td><td class='docblock-short'><p>Provides the <code>context</code> method for <code>Result</code>.</p>
+</td></tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table><tr class='module-item'><td><a class="type" href="type.Result.html" title='envoy_sdk::error::Result type'>Result</a></td><td class='docblock-short'><p><code>Result&lt;T, Error&gt;</code></p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "envoy_sdk";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

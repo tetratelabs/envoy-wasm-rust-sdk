@@ -182,13 +182,6 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -207,11 +200,9 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::<span class="ident">log</span>;
-
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::<span class="ident">access_logger</span>;
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::<span class="prelude-ty">Result</span>;
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">stats</span>, <span class="ident">time</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">ConfigStatus</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">log</span>, <span class="ident">stats</span>, <span class="ident">time</span>};
 
 <span class="kw">use</span> <span class="ident">chrono</span>::<span class="ident">offset</span>::<span class="ident">Local</span>;
 <span class="kw">use</span> <span class="ident">chrono</span>::<span class="ident">DateTime</span>;
@@ -232,7 +223,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">SampleAccessLogger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates a new instance of sample access logger.</span>
+    <span class="doccomment">/// Creates a new instance of Sample Access Logger.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">time_service</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">time</span>::<span class="ident">Service</span>,
         <span class="ident">http_client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">http_client</span>::<span class="ident">Client</span>,
@@ -253,10 +244,10 @@
         })
     }
 
-    <span class="doccomment">/// Creates a new instance of sample access logger</span>
+    <span class="doccomment">/// Creates a new instance of Sample Access Logger</span>
     <span class="doccomment">/// bound to the actual Envoy ABI.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="ident">SampleAccessLogger</span>::<span class="ident">new</span>(
+        <span class="self">Self</span>::<span class="ident">new</span>(
             <span class="ident">time</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
             <span class="ident">http_client</span>::<span class="ident">Client</span>::<span class="ident">default</span>(),
             <span class="ident">stats</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
@@ -265,30 +256,25 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">access_logger</span>::<span class="ident">Logger</span> <span class="kw">for</span> <span class="ident">SampleAccessLogger</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// The reference name for sample access logger.</span>
+    <span class="doccomment">/// The reference name for Sample Access Logger.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.</span>
+    <span class="doccomment">/// This name appears in `Envoy` configuration as a value of `root_id` field</span>
+    <span class="doccomment">/// (also known as `group_name`).</span>
     <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;examples.access_logger&quot;</span>;
 
-    <span class="doccomment">/// Is called when Envoy creates a new Listener that uses sample access logger.</span>
+    <span class="doccomment">/// Is called when Envoy creates a new Listener that uses Sample Access Logger.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Use logger_ops to get ahold of configuration.</span>
     <span class="kw">fn</span> <span class="ident">on_configure</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_configuration_size</span>: <span class="ident">usize</span>,
         <span class="ident">logger_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">access_logger</span>::<span class="ident">ConfigureOps</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConfigStatus</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">logger_ops</span>.<span class="ident">get_configuration</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">bytes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">SampleAccessLoggerConfig</span>::<span class="ident">try_from</span>(<span class="ident">bytes</span>.<span class="ident">as_ref</span>()) {
-                <span class="prelude-val">Ok</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">value</span>,
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">log</span>::<span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;failed to parse extension configuration: {}&quot;</span>, <span class="ident">err</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>);
-                }
-            },
+            <span class="prelude-val">Some</span>(<span class="ident">bytes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleAccessLoggerConfig</span>::<span class="ident">try_from</span>(<span class="ident">bytes</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>,
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleAccessLoggerConfig</span>::<span class="ident">default</span>(),
         };
-        <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
+        <span class="prelude-val">Ok</span>(<span class="ident">ConfigStatus</span>::<span class="ident">Accepted</span>)
     }
 
     <span class="doccomment">/// Is called to log a complete TCP connection or HTTP request.</span>
@@ -320,8 +306,9 @@
         }
         <span class="kw">let</span> <span class="ident">upstream_address</span> <span class="op">=</span> <span class="ident">logger_ops</span>.<span class="ident">get_property</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;upstream&quot;</span>, <span class="string">&quot;address&quot;</span>])<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">upstream_address</span> <span class="op">=</span> <span class="ident">upstream_address</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">value</span><span class="op">|</span> <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">value</span>).<span class="ident">unwrap</span>())
-            .<span class="ident">unwrap_or_else</span>(<span class="ident">String</span>::<span class="ident">new</span>);
+            .<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from_utf8</span>)
+            .<span class="ident">transpose</span>()<span class="question-mark">?</span>
+            .<span class="ident">unwrap_or_else</span>(<span class="ident">String</span>::<span class="ident">default</span>);
         <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;  upstream info:&quot;</span>);
         <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;    {}: {}&quot;</span>, <span class="string">&quot;upstream.address&quot;</span>, <span class="ident">upstream_address</span>);
 
@@ -337,10 +324,9 @@
             <span class="macro">vec</span><span class="macro">!</span>[],
             <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">3</span>),
         )<span class="question-mark">?</span>);
-        <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(
-            <span class="string">&quot;sent request to a log collector: @{}&quot;</span>,
-            <span class="self">self</span>.<span class="ident">active_request</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()
-        );
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">request</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">active_request</span> {
+            <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;sent request to a log collector: @{}&quot;</span>, <span class="ident">request</span>);
+        }
         <span class="comment">// Update stats</span>
         <span class="self">self</span>.<span class="ident">stats</span>.<span class="ident">reports_active</span>().<span class="ident">inc</span>()<span class="question-mark">?</span>;
 
