@@ -71,7 +71,9 @@ impl<'a> ExtensionFactory for SampleNetworkFilterFactory<'a> {
     ///
     /// This name appears in `Envoy` configuration as a value of `root_id` field
     /// (also known as `group_name`).
-    const NAME: &'static str = "examples.network_filter";
+    fn name() -> &'static str {
+        "examples.network_filter"
+    }
 
     /// Is called when Envoy creates a new Listener that uses Sample Network Filter.
     fn on_configure(

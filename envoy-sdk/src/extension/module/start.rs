@@ -36,7 +36,7 @@ use crate::extension::{Module, Result};
 /// # impl ExtensionFactory for MyHttpFilterFactory {
 /// #     type Extension = MyHttpFilter;
 /// #
-/// #     const NAME: &'static str = "my_http_filter";
+/// #     fn name() -> &'static str { "my_http_filter" }
 /// #
 /// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyHttpFilter)
@@ -53,7 +53,7 @@ use crate::extension::{Module, Result};
 /// # impl ExtensionFactory for MyNetworkFilterFactory {
 /// #     type Extension = MyNetworkFilter;
 /// #
-/// #     const NAME: &'static str = "my_network_filter";
+/// #     fn name() -> &'static str { "my_network_filter" }
 /// #
 /// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyNetworkFilter)
@@ -62,7 +62,7 @@ use crate::extension::{Module, Result};
 /// #
 /// # struct MyAccessLogger;
 /// # impl AccessLogger for MyAccessLogger {
-/// #     const NAME: &'static str = "my_access_logger";
+/// #     fn name() -> &'static str { "my_access_logger" }
 /// # }
 /// # impl MyAccessLogger {
 /// #     fn default() -> extension::Result<Self> { Ok(MyAccessLogger) }
