@@ -226,96 +226,6 @@
 <span id="226">226</span>
 <span id="227">227</span>
 <span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -343,71 +253,25 @@
     <span class="ident">BufferType</span>, <span class="ident">Bytes</span>, <span class="ident">HttpRequestHandle</span>, <span class="ident">MapType</span>, <span class="ident">MetricHandle</span>, <span class="ident">MetricType</span>, <span class="ident">SharedQueueHandle</span>,
     <span class="ident">Status</span>,
 };
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">format_err</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
 
 <span class="comment">// Configuration API</span>
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_configuration</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">get_configuration</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_get_configuration&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">get_configuration</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// Lifecycle API</span>
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">done</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">done</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_done&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">done</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// Headers/Body manipulation API</span>
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_map</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">get_map</span>(<span class="ident">map_type</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_get_header_map_pairs&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_map</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">set_map</span>(<span class="ident">map_type</span>, <span class="ident">headers</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_set_header_map_pairs&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_map_value</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">get_map_value</span>(<span class="ident">map_type</span>, <span class="ident">key</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_get_header_map_value&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_map_value</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">set_map_value</span>(<span class="ident">map_type</span>, <span class="ident">name</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">value</span> {
-        <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_replace_header_map_value&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>(),
-        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_remove_header_map_value&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>(),
-    })
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_map_value</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">add_map_value</span>(<span class="ident">map_type</span>, <span class="ident">name</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_add_header_map_value&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_map_value</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">hostcalls</span>::<span class="ident">add_map_value</span>(<span class="ident">map_type</span>, <span class="ident">key</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_buffer</span>(
@@ -415,21 +279,37 @@
     <span class="ident">start</span>: <span class="ident">usize</span>,
     <span class="ident">max_size</span>: <span class="ident">usize</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">buffer_type</span>, <span class="ident">start</span>, <span class="ident">max_size</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_get_buffer_bytes&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">buffer_type</span>, <span class="ident">start</span>, <span class="ident">max_size</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_map</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="ident">hostcalls</span>::<span class="ident">get_map</span>(<span class="ident">map_type</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_map_value</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="ident">hostcalls</span>::<span class="ident">get_map_value</span>(<span class="ident">map_type</span>, <span class="ident">key</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_map</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">map</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">hostcalls</span>::<span class="ident">set_map</span>(<span class="ident">map_type</span>, <span class="ident">map</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_map_value</span>(<span class="ident">map_type</span>: <span class="ident">MapType</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">hostcalls</span>::<span class="ident">set_map_value</span>(<span class="ident">map_type</span>, <span class="ident">key</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// HTTP Flow API</span>
 
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_http_route_cache</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">hostcalls</span>::<span class="ident">clear_http_route_cache</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
+}
+
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resume_http_request</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">resume_http_request</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_continue_request&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">resume_http_request</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resume_http_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="ident">hostcalls</span>::<span class="ident">resume_http_response</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send_http_response</span>(
@@ -437,75 +317,35 @@
     <span class="ident">headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)<span class="op">&gt;</span>,
     <span class="ident">body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">send_http_response</span>(<span class="ident">status_code</span>, <span class="ident">headers</span>, <span class="ident">body</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_send_local_response&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_http_route_cache</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">clear_http_route_cache</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_clear_route_cache&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resume_http_response</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">resume_http_response</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_continue_response&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">send_http_response</span>(<span class="ident">status_code</span>, <span class="ident">headers</span>, <span class="ident">body</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// Shared Queue</span>
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">register_shared_queue</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SharedQueueHandle</span><span class="op">&gt;</span> {
     <span class="ident">hostcalls</span>::<span class="ident">register_shared_queue</span>(<span class="ident">name</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-            <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_register_shared_queue&quot;</span>)
-                .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-                .<span class="ident">into</span>()
-        })
         .<span class="ident">map</span>(<span class="ident">SharedQueueHandle</span>::<span class="ident">from</span>)
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve_shared_queue</span>(<span class="ident">vm_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SharedQueueHandle</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="ident">hostcalls</span>::<span class="ident">resolve_shared_queue</span>(<span class="ident">vm_id</span>, <span class="ident">name</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-            <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_resolve_shared_queue&quot;</span>)
-                .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-                .<span class="ident">into</span>()
-        })
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">map</span>(<span class="ident">SharedQueueHandle</span>::<span class="ident">from</span>))
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dequeue_shared_queue</span>(<span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">dequeue_shared_queue</span>(<span class="ident">queue_id</span>.<span class="ident">as_id</span>()).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_dequeue_shared_queue&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">dequeue_shared_queue</span>(<span class="ident">queue_id</span>.<span class="ident">as_id</span>()).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enqueue_shared_queue</span>(<span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">enqueue_shared_queue</span>(<span class="ident">queue_id</span>.<span class="ident">as_id</span>(), <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_enqueue_shared_queue&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">enqueue_shared_queue</span>(<span class="ident">queue_id</span>.<span class="ident">as_id</span>(), <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// Time API</span>
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_current_time</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SystemTime</span><span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">get_current_time</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_get_current_time_nanoseconds&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">get_current_time</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// HTTP Client API</span>
@@ -518,48 +358,28 @@
     <span class="ident">timeout</span>: <span class="ident">Duration</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpRequestHandle</span><span class="op">&gt;</span> {
     <span class="ident">hostcalls</span>::<span class="ident">dispatch_http_call</span>(<span class="ident">upstream</span>, <span class="ident">headers</span>, <span class="ident">body</span>, <span class="ident">trailers</span>, <span class="ident">timeout</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-            <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_http_call&quot;</span>)
-                .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-                .<span class="ident">into</span>()
-        })
         .<span class="ident">map</span>(<span class="ident">HttpRequestHandle</span>::<span class="ident">from</span>)
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// Stream Info API</span>
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_property</span>(<span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">get_property</span>(<span class="ident">path</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_get_property&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">get_property</span>(<span class="ident">path</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_property</span>(<span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">set_property</span>(<span class="ident">path</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_set_property&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">set_property</span>(<span class="ident">path</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// Shared data API</span>
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_shared_data</span>(<span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">get_shared_data</span>(<span class="ident">key</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_get_shared_data&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">get_shared_data</span>(<span class="ident">key</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_shared_data</span>(<span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">cas</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">hostcalls</span>::<span class="ident">set_shared_data</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">cas</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">status</span><span class="op">|</span> {
-        <span class="ident">host</span>::<span class="ident">function</span>(<span class="string">&quot;env&quot;</span>, <span class="string">&quot;proxy_set_shared_data&quot;</span>)
-            .<span class="ident">into_call_error</span>(<span class="ident">status</span>)
-            .<span class="ident">into</span>()
-    })
+    <span class="ident">hostcalls</span>::<span class="ident">set_shared_data</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">cas</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="macro">format_err</span><span class="macro">!</span>(<span class="ident">err</span>))
 }
 
 <span class="comment">// Stats API</span>
