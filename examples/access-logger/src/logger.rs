@@ -15,10 +15,10 @@
 use std::convert::TryFrom;
 use std::time::Duration;
 
-use envoy::host::log::{error, info};
+use envoy::host::log::info;
 
 use envoy::extension::access_logger;
-use envoy::extension::Result;
+use envoy::extension::{ConfigStatus, Result};
 use envoy::host::{http::client as http_client, stats, time};
 
 use chrono::offset::Local;
@@ -40,7 +40,7 @@ pub struct SampleAccessLogger<'a> {
 }
 
 impl<'a> SampleAccessLogger<'a> {
-    /// Creates a new instance of sample access logger.
+    /// Creates a new instance of Sample Access Logger.
     pub fn new(
         time_service: &'a dyn time::Service,
         http_client: &'a dyn http_client::Client,
@@ -61,10 +61,10 @@ impl<'a> SampleAccessLogger<'a> {
         })
     }
 
-    /// Creates a new instance of sample access logger
+    /// Creates a new instance of Sample Access Logger
     /// bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        SampleAccessLogger::new(
+        Self::new(
             time::Service::default(),
             http_client::Client::default(),
             stats::Service::default(),
@@ -73,30 +73,25 @@ impl<'a> SampleAccessLogger<'a> {
 }
 
 impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
-    /// The reference name for sample access logger.
+    /// The reference name for Sample Access Logger.
     ///
-    /// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.
+    /// This name appears in `Envoy` configuration as a value of `root_id` field
+    /// (also known as `group_name`).
     const NAME: &'static str = "examples.access_logger";
 
-    /// Is called when Envoy creates a new Listener that uses sample access logger.
+    /// Is called when Envoy creates a new Listener that uses Sample Access Logger.
     ///
     /// Use logger_ops to get ahold of configuration.
     fn on_configure(
         &mut self,
         _configuration_size: usize,
         logger_ops: &dyn access_logger::ConfigureOps,
-    ) -> Result<bool> {
+    ) -> Result<ConfigStatus> {
         self.config = match logger_ops.get_configuration()? {
-            Some(bytes) => match SampleAccessLoggerConfig::try_from(bytes.as_ref()) {
-                Ok(value) => value,
-                Err(err) => {
-                    error!("failed to parse extension configuration: {}", err);
-                    return Ok(false);
-                }
-            },
+            Some(bytes) => SampleAccessLoggerConfig::try_from(bytes.as_slice())?,
             None => SampleAccessLoggerConfig::default(),
         };
-        Ok(true)
+        Ok(ConfigStatus::Accepted)
     }
 
     /// Is called to log a complete TCP connection or HTTP request.
@@ -128,8 +123,9 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         }
         let upstream_address = logger_ops.get_property(vec!["upstream", "address"])?;
         let upstream_address = upstream_address
-            .map(|value| String::from_utf8(value).unwrap())
-            .unwrap_or_else(String::new);
+            .map(String::from_utf8)
+            .transpose()?
+            .unwrap_or_else(String::default);
         info!("  upstream info:");
         info!("    {}: {}", "upstream.address", upstream_address);
 
@@ -145,10 +141,9 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
             vec![],
             Duration::from_secs(3),
         )?);
-        info!(
-            "sent request to a log collector: @{}",
-            self.active_request.as_ref().unwrap()
-        );
+        if let Some(request) = self.active_request {
+            info!("sent request to a log collector: @{}", request,);
+        }
         // Update stats
         self.stats.reports_active().inc()?;
 

@@ -15,17 +15,15 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use envoy::host::log::error;
-
 use envoy::extension;
-use envoy::extension::{InstanceId, Result};
+use envoy::extension::{ConfigStatus, InstanceId, Result};
 use envoy::host::{http::client as http_client, stats, time};
 
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
 use super::stats::SampleHttpFilterStats;
 
-/// Factory for creating sample HTTP filter instances
+/// Factory for creating Sample HTTP Filter instances
 /// (one filter instance per HTTP request).
 pub struct SampleHttpFilterFactory<'a> {
     // This example shows how multiple filter instances could share
@@ -63,7 +61,7 @@ impl<'a> SampleHttpFilterFactory<'a> {
 
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        SampleHttpFilterFactory::new(
+        Self::new(
             time::Service::default(),
             http_client::Client::default(),
             stats::Service::default(),
@@ -74,32 +72,27 @@ impl<'a> SampleHttpFilterFactory<'a> {
 impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
     type Extension = SampleHttpFilter<'a>;
 
-    /// The reference name for sample network filter.
+    /// The reference name for Sample HTTP Filter.
     ///
-    /// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.
+    /// This name appears in `Envoy` configuration as a value of `root_id` field
+    /// (also known as `group_name`).
     const NAME: &'static str = "examples.http_filter";
 
-    /// Is called when Envoy creates a new Listener that uses sample HTTP filter.
+    /// Is called when Envoy creates a new Listener that uses Sample HTTP Filter.
     fn on_configure(
         &mut self,
         _configuration_size: usize,
         ops: &dyn extension::factory::ConfigureOps,
-    ) -> Result<bool> {
+    ) -> Result<ConfigStatus> {
         let config = match ops.get_configuration()? {
-            Some(bytes) => match SampleHttpFilterConfig::try_from(bytes.as_ref()) {
-                Ok(value) => value,
-                Err(err) => {
-                    error!("failed to parse extension configuration: {}", err);
-                    return Ok(false);
-                }
-            },
+            Some(bytes) => SampleHttpFilterConfig::try_from(bytes.as_slice())?,
             None => SampleHttpFilterConfig::default(),
         };
         self.config = Rc::new(config);
-        Ok(true)
+        Ok(ConfigStatus::Accepted)
     }
 
-    /// Is called to create a unique instance of sample HTTP filter
+    /// Is called to create a unique instance of Sample HTTP Filter
     /// for each HTTP request.
     fn new_extension(&mut self, instance_id: InstanceId) -> Result<Self::Extension> {
         Ok(SampleHttpFilter::new(

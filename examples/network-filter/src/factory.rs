@@ -15,17 +15,14 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use envoy::host::log::error;
-
-use envoy::extension;
-use envoy::extension::{InstanceId, Result};
+use envoy::extension::{self, ConfigStatus, InstanceId, Result};
 use envoy::host::{http::client as http_client, stats, time};
 
 use super::config::SampleNetworkFilterConfig;
 use super::filter::SampleNetworkFilter;
 use super::stats::SampleNetworkFilterStats;
 
-/// Factory for creating sample network filter instances
+/// Factory for creating Sample Network Filter instances
 /// (one filter instance per TCP connection).
 pub struct SampleNetworkFilterFactory<'a> {
     // This example shows how multiple filter instances could share
@@ -63,7 +60,7 @@ impl<'a> SampleNetworkFilterFactory<'a> {
 
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        SampleNetworkFilterFactory::new(
+        Self::new(
             time::Service::default(),
             http_client::Client::default(),
             stats::Service::default(),
@@ -74,32 +71,27 @@ impl<'a> SampleNetworkFilterFactory<'a> {
 impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
     type Extension = SampleNetworkFilter<'a>;
 
-    /// The reference name for sample network filter.
+    /// The reference name for Sample Network Filter.
     ///
-    /// This name appears in Envoy configuration as a value of group_name (aka, root_id) field.
+    /// This name appears in `Envoy` configuration as a value of `root_id` field
+    /// (also known as `group_name`).
     const NAME: &'static str = "examples.network_filter";
 
-    /// Is called when Envoy creates a new Listener that uses sample network filter.
+    /// Is called when Envoy creates a new Listener that uses Sample Network Filter.
     fn on_configure(
         &mut self,
         _configuration_size: usize,
         ops: &dyn extension::factory::ConfigureOps,
-    ) -> Result<bool> {
+    ) -> Result<ConfigStatus> {
         let config = match ops.get_configuration()? {
-            Some(bytes) => match SampleNetworkFilterConfig::try_from(bytes.as_ref()) {
-                Ok(value) => value,
-                Err(err) => {
-                    error!("failed to parse extension configuration: {}", err);
-                    return Ok(false);
-                }
-            },
+            Some(bytes) => SampleNetworkFilterConfig::try_from(bytes.as_slice())?,
             None => SampleNetworkFilterConfig::default(),
         };
         self.config = Rc::new(config);
-        Ok(true)
+        Ok(ConfigStatus::Accepted)
     }
 
-    /// Is called to create a unique instance of sample network filter
+    /// Is called to create a unique instance of Sample Network Filter
     /// for each TCP connection.
     fn new_extension(&mut self, instance_id: InstanceId) -> Result<Self::Extension> {
         Ok(SampleNetworkFilter::new(

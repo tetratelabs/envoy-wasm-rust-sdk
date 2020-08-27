@@ -12,8 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+
+use crate::abi::proxy_wasm_ext::traits::RootContext;
+use crate::extension::Result;
+
 pub use self::start::install;
 
+mod dispatcher;
 mod start;
 
 pub mod registry;
+
+type ContextFactory = dyn FnMut(u32) -> Result<Box<dyn RootContext>>;
+type ContextFactoryHashMap = HashMap<String, Box<ContextFactory>>;

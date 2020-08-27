@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use super::dispatcher::{ContextSelector, VoidContextSelector};
 use crate::extension::{Registry, Result};
 
 /// Generates the [`_start`] function that will be called by `Envoy` to let
@@ -77,12 +78,10 @@ use crate::extension::{Registry, Result};
 /// fn initialize() -> extension::Result<Registry> {
 ///   // arbitrary initialization steps
 ///
-///   let registry = Registry::new()
-///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())
-///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())
+///   Registry::new()
+///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?
+///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?
 ///       .add_access_logger(|_instance_id| MyAccessLogger::default())
-///   ;
-///   Ok(registry)
 /// }
 /// ```
 #[macro_export]
@@ -107,28 +106,29 @@ macro_rules! on_module_load {
             use $crate::extension::{self, Registry, Result};
             use $crate::host::log;
 
-            fn init<F>(init_fn: F) -> Result<()>
+            fn init<F>(init_fn: F)
             where
                 F: FnOnce() -> Result<Registry>,
             {
-                // Apparently, `proxy_wasm` piggy backs on `set_log_level`
+                // Apparently, `proxy_wasm` uses `set_log_level`
                 // to set a custom panic handler that will log panics using Envoy Log API.
-                // To be sure that panics will always be logged properly,
-                // we call `set_log_level` ourselves instead of leaving it up to the user.
+                // To be sure that panics will always be set,
+                // we call `set_log_level` ourselves instead of leaving it up to a user.
                 log::set_max_level(log::LogLevel::Info);
 
                 // Call the init callback provided as an argument.
-                let registry = init_fn()?;
-                extension::install(registry)
+                extension::install(init_fn());
             }
 
-            init($init_fn)
-                .expect("failed to initialize WebAssembly module with Envoy extension(s)");
+            init($init_fn);
         }
     };
 }
 
 #[doc(hidden)]
-pub fn install(registry: Registry) -> Result<()> {
-    registry.install()
+pub fn install(config: Result<Registry>) {
+    match config {
+        Ok(registry) => ContextSelector::with_default_ops(registry.into()).install(),
+        Err(err) => VoidContextSelector::new(err).install(),
+    }
 }

@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{Factory, Ops};
+use super::{DrainStatus, Factory, Ops};
 use crate::abi::proxy_wasm_ext::traits::{ChildContext, Context, RootContext};
-use crate::extension::InstanceId;
+use crate::extension::error::ErrorSink;
+use crate::extension::{ConfigStatus, InstanceId};
 
-pub struct FactoryContext<'a, F>
+pub(crate) struct FactoryContext<'a, F>
 where
     F: Factory,
 {
     factory: F,
     factory_ops: &'a dyn Ops,
+    error_sink: &'a dyn ErrorSink,
     child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
 }
 
@@ -30,12 +32,17 @@ where
     F: Factory,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
-        self.factory
-            .on_configure(
-                plugin_configuration_size,
-                self.factory_ops.as_configure_ops(),
-            )
-            .unwrap()
+        match self.factory.on_configure(
+            plugin_configuration_size,
+            self.factory_ops.as_configure_ops(),
+        ) {
+            Ok(status) => status.as_bool(),
+            Err(err) => {
+                self.error_sink
+                    .observe("failed to configure extension", &err);
+                ConfigStatus::Rejected.as_bool()
+            }
+        }
     }
 
     fn on_create_child_context(&mut self, context_id: u32) -> Option<ChildContext> {
@@ -52,7 +59,14 @@ where
     F: Factory,
 {
     fn on_done(&mut self) -> bool {
-        self.factory.on_drain().unwrap()
+        match self.factory.on_drain() {
+            Ok(status) => status.as_bool(),
+            Err(err) => {
+                self.error_sink
+                    .observe("failed to initiate draining of the extension", &err);
+                DrainStatus::Ongoing.as_bool()
+            }
+        }
     }
 }
 
@@ -63,12 +77,14 @@ where
     pub fn new(
         factory: F,
         factory_ops: &'a dyn Ops,
+        error_sink: &'a dyn ErrorSink,
         child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
     ) -> Self {
         FactoryContext {
             factory,
-            child_context_factory,
             factory_ops,
+            error_sink,
+            child_context_factory,
         }
     }
 
@@ -77,6 +93,11 @@ where
         factory: F,
         child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
     ) -> Self {
-        FactoryContext::new(factory, Ops::default(), child_context_factory)
+        Self::new(
+            factory,
+            Ops::default(),
+            ErrorSink::default(),
+            child_context_factory,
+        )
     }
 }

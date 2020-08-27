@@ -61,7 +61,7 @@ mod impls {
     use crate::abi::proxy_wasm_ext::types::{MetricHandle, MetricType};
     use crate::host;
 
-    pub struct Host;
+    pub(super) struct Host;
 
     impl Service for Host {
         fn counter(&self, name: &str) -> host::Result<Box<dyn super::Counter>> {
