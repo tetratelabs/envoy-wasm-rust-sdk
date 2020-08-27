@@ -15,7 +15,8 @@
 //! `Envoy` `Host API`.
 
 pub(crate) use self::error::function;
-pub use self::error::{Error, Result};
+
+pub use self::error::{Error, ErrorContext, Result};
 
 pub mod error;
 pub mod http;

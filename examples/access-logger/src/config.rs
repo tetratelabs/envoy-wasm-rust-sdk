@@ -18,7 +18,7 @@ use serde::Deserialize;
 
 use envoy::extension;
 
-/// Configuration for a sample access logger.
+/// Configuration for a Sample Access Logger.
 #[derive(Deserialize, Debug)]
 pub struct SampleAccessLoggerConfig {
     #[serde(default)]
@@ -29,7 +29,7 @@ impl TryFrom<&[u8]> for SampleAccessLoggerConfig {
     type Error = extension::Error;
 
     fn try_from(value: &[u8]) -> extension::Result<Self> {
-        serde_json::from_slice(value).map_err(extension::Error::new)
+        serde_json::from_slice(value).map_err(extension::Error::from)
     }
 }
 
@@ -37,7 +37,7 @@ impl Default for SampleAccessLoggerConfig {
     /// Creates the default configuration.
     fn default() -> Self {
         SampleAccessLoggerConfig {
-            param: String::new(),
+            param: String::default(),
         }
     }
 }

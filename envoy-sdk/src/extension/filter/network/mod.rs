@@ -19,7 +19,7 @@ use crate::extension::Result;
 use crate::host;
 use crate::host::http::client as http_client;
 
-pub(crate) use context::FilterContext;
+pub(crate) use self::context::{FilterContext, VoidFilterContext};
 
 mod context;
 mod ops;

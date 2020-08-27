@@ -15,11 +15,9 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::host::log;
-
 use envoy::extension::filter::http;
 use envoy::extension::{InstanceId, Result};
-use envoy::host::{http::client as http_client, time};
+use envoy::host::{http::client as http_client, log, time};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -27,7 +25,7 @@ use chrono::DateTime;
 use super::config::SampleHttpFilterConfig;
 use super::stats::SampleHttpFilterStats;
 
-// Sample HTTP filter.
+// Sample HTTP Filter.
 pub struct SampleHttpFilter<'a> {
     // This example shows how multiple filter instances could share
     // the same configuration.
@@ -46,7 +44,7 @@ pub struct SampleHttpFilter<'a> {
 }
 
 impl<'a> SampleHttpFilter<'a> {
-    /// Creates a new instance of sample HTTP filter.
+    /// Creates a new instance of Sample HTTP Filter.
     pub fn new(
         config: Rc<SampleHttpFilterConfig>,
         stats: Rc<SampleHttpFilterStats>,
@@ -115,11 +113,13 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                     vec![],
                     Duration::from_secs(3),
                 )?);
-                log::info!(
-                    "#{} sent authorization request: @{}",
-                    self.instance_id,
-                    self.active_request.as_ref().unwrap()
-                );
+                if let Some(request) = self.active_request {
+                    log::info!(
+                        "#{} sent authorization request: @{}",
+                        self.instance_id,
+                        request,
+                    );
+                }
                 log::info!("#{} suspending http exchange processing", self.instance_id);
                 Ok(http::FilterHeadersStatus::Pause)
             }

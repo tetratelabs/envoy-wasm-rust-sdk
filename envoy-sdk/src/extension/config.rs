@@ -12,8 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub use self::logger::SampleAccessLogger;
+/// Possible responses to the request to (re-)configure the extension.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum ConfigStatus {
+    /// Extension has accepted the new configuration.
+    Accepted,
+    /// Extension has rejected the new configuration.
+    Rejected,
+}
 
-mod config;
-mod logger;
-mod stats;
+impl ConfigStatus {
+    pub(crate) fn as_bool(&self) -> bool {
+        match self {
+            ConfigStatus::Accepted => true,
+            ConfigStatus::Rejected => false,
+        }
+    }
+}

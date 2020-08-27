@@ -14,15 +14,18 @@
 
 use super::{Logger, Ops};
 use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
+use crate::extension::error::ErrorSink;
+use crate::extension::ConfigStatus;
 use crate::host::http::client as http_client;
 
-pub struct LoggerContext<'a, L>
+pub(crate) struct LoggerContext<'a, L>
 where
     L: Logger,
 {
     logger: L,
     logger_ops: &'a dyn Ops,
     http_client_ops: &'a dyn http_client::ResponseOps,
+    error_sink: &'a dyn ErrorSink,
 }
 
 impl<'a, L> RootContext for LoggerContext<'a, L>
@@ -30,16 +33,25 @@ where
     L: Logger,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
-        self.logger
-            .on_configure(
-                plugin_configuration_size,
-                self.logger_ops.as_configure_ops(),
-            )
-            .unwrap()
+        match self.logger.on_configure(
+            plugin_configuration_size,
+            self.logger_ops.as_configure_ops(),
+        ) {
+            Ok(status) => status.as_bool(),
+            Err(err) => {
+                self.error_sink
+                    .observe("failed to configure extension", &err);
+                ConfigStatus::Rejected.as_bool()
+            }
+        }
     }
 
     fn on_log(&mut self) {
-        self.logger.on_log(self.logger_ops.as_log_ops()).unwrap();
+        if let Err(err) = self.logger.on_log(self.logger_ops.as_log_ops()) {
+            self.error_sink.observe("failed to log a request", &err);
+
+            // TODO(yskopets): can we do anything other than crashing Envoy ?
+        }
     }
 }
 
@@ -56,15 +68,20 @@ where
         body_size: usize,
         num_trailers: usize,
     ) {
-        self.logger
-            .on_http_call_response(
-                http_client::RequestHandle::from(token_id),
-                num_headers,
-                body_size,
-                num_trailers,
-                self.http_client_ops,
-            )
-            .unwrap()
+        if let Err(err) = self.logger.on_http_call_response(
+            http_client::RequestHandle::from(token_id),
+            num_headers,
+            body_size,
+            num_trailers,
+            self.http_client_ops,
+        ) {
+            self.error_sink.observe(
+                "failed to process a response to an HTTP request made by the extension",
+                &err,
+            );
+
+            // TODO(yskopets): can we do anything other than crashing Envoy ?
+        }
     }
 }
 
@@ -76,16 +93,23 @@ where
         logger: L,
         logger_ops: &'a dyn Ops,
         http_client_ops: &'a dyn http_client::ResponseOps,
-    ) -> LoggerContext<'a, L> {
+        error_sink: &'a dyn ErrorSink,
+    ) -> Self {
         LoggerContext {
             logger,
             logger_ops,
             http_client_ops,
+            error_sink,
         }
     }
 
     /// Creates a new Access logger context bound to the actual Envoy ABI.
     pub fn with_default_ops(logger: L) -> Self {
-        LoggerContext::new(logger, Ops::default(), http_client::ResponseOps::default())
+        Self::new(
+            logger,
+            Ops::default(),
+            http_client::ResponseOps::default(),
+            ErrorSink::default(),
+        )
     }
 }

@@ -16,13 +16,31 @@
 
 use crate::abi::proxy_wasm_ext::types::Bytes;
 
-use crate::extension::{InstanceId, Result};
+use crate::extension::{ConfigStatus, InstanceId, Result};
 use crate::host;
 
-pub(crate) use context::FactoryContext;
+pub(crate) use self::context::FactoryContext;
 
 mod context;
 mod ops;
+
+/// Possible responses to the the request to drain the extension.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum DrainStatus {
+    /// Extension is being drained and cannot be removed just yet.
+    Ongoing,
+    /// Extension has been drained and can be removed now.
+    Complete,
+}
+
+impl DrainStatus {
+    pub(crate) fn as_bool(&self) -> bool {
+        match self {
+            DrainStatus::Ongoing => false,
+            DrainStatus::Complete => true,
+        }
+    }
+}
 
 pub trait Factory {
     type Extension;
@@ -33,14 +51,14 @@ pub trait Factory {
         &mut self,
         _configuration_size: usize,
         _ops: &dyn ConfigureOps,
-    ) -> Result<bool> {
-        Ok(true)
+    ) -> Result<ConfigStatus> {
+        Ok(ConfigStatus::Accepted)
     }
 
     fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension>;
 
-    fn on_drain(&mut self) -> Result<bool> {
-        Ok(true)
+    fn on_drain(&mut self) -> Result<DrainStatus> {
+        Ok(DrainStatus::Complete)
     }
 }
 

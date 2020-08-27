@@ -15,11 +15,9 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::host::log;
-
 use envoy::extension::filter::network;
 use envoy::extension::{InstanceId, Result};
-use envoy::host::{http::client as http_client, time};
+use envoy::host::{http::client as http_client, log, time};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -46,7 +44,7 @@ pub struct SampleNetworkFilter<'a> {
 }
 
 impl<'a> SampleNetworkFilter<'a> {
-    /// Creates a new instance of sample network filter.
+    /// Creates a new instance of Sample Network Filter.
     pub fn new(
         config: Rc<SampleNetworkFilterConfig>,
         stats: Rc<SampleNetworkFilterStats>,
@@ -94,11 +92,9 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
             vec![],
             Duration::from_secs(3),
         )?);
-        log::info!(
-            "#{} sent outgoing request: @{}",
-            self.instance_id,
-            self.active_request.as_ref().unwrap()
-        );
+        if let Some(request) = self.active_request {
+            log::info!("#{} sent outgoing request: @{}", self.instance_id, request);
+        }
 
         Ok(network::FilterStatus::Pause)
     }

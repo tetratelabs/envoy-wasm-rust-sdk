@@ -14,7 +14,8 @@
 
 #![doc(html_root_url = "https://docs.rs/envoy-sdk/0.0.3-alpha1")]
 
-pub(crate) mod abi;
+mod abi;
 
+pub mod error;
 pub mod extension;
 pub mod host;

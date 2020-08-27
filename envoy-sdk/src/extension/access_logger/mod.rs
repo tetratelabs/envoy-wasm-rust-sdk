@@ -16,11 +16,11 @@
 
 use crate::abi::proxy_wasm_ext::types::Bytes;
 
-use crate::extension::Result;
+use crate::extension::{ConfigStatus, Result};
 use crate::host;
 use crate::host::http::client as http_client;
 
-pub(crate) use context::LoggerContext;
+pub(crate) use self::context::LoggerContext;
 
 mod context;
 mod ops;
@@ -32,8 +32,8 @@ pub trait Logger {
         &mut self,
         _configuration_size: usize,
         _logger_ops: &dyn ConfigureOps,
-    ) -> Result<bool> {
-        Ok(true)
+    ) -> Result<ConfigStatus> {
+        Ok(ConfigStatus::Accepted)
     }
 
     fn on_log(&mut self, _logger_ops: &dyn LogOps) -> Result<()> {
