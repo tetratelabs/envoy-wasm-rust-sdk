@@ -108,6 +108,21 @@
 <span id="108">108</span>
 <span id="109">109</span>
 <span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -125,19 +140,34 @@
 
 <span class="doccomment">//! `Envoy` `Network Filter API`.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">types</span>::{<span class="ident">Action</span>, <span class="ident">Bytes</span>, <span class="ident">PeerType</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::{<span class="ident">Action</span>, <span class="ident">Bytes</span>, <span class="ident">PeerType</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::<span class="prelude-ty">Result</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::<span class="ident">http</span>::<span class="ident">client</span>::{<span class="ident">HttpClientRequestHandle</span>, <span class="ident">HttpClientResponseOps</span>};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="self">self</span>::<span class="ident">context</span>::{<span class="ident">FilterContext</span>, <span class="ident">VoidFilterContext</span>};
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="self">self</span>::<span class="ident">context</span>::{<span class="ident">NetworkFilterContext</span>, <span class="ident">VoidNetworkFilterContext</span>};
 
 <span class="kw">mod</span> <span class="ident">context</span>;
 <span class="kw">mod</span> <span class="ident">ops</span>;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">FilterStatus</span> <span class="op">=</span> <span class="ident">Action</span>;
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">u32</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>, <span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FilterStatus</span> {
+    <span class="ident">Continue</span> <span class="op">=</span> <span class="number">0</span>,
+    <span class="ident">StopIteration</span> <span class="op">=</span> <span class="number">1</span>,
+}
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Filter</span> {
+<span class="kw">impl</span> <span class="ident">FilterStatus</span> {
+    <span class="kw">pub</span>(<span class="self">self</span>) <span class="kw">fn</span> <span class="ident">as_action</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Action</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">FilterStatus</span>::<span class="ident">Continue</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Action</span>::<span class="ident">Continue</span>,
+            <span class="ident">FilterStatus</span>::<span class="ident">StopIteration</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Action</span>::<span class="ident">Pause</span>,
+        }
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">NetworkFilter</span> {
     <span class="kw">fn</span> <span class="ident">on_new_connection</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FilterStatus</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">FilterStatus</span>::<span class="ident">Continue</span>)
     }
@@ -176,23 +206,23 @@
 
     <span class="kw">fn</span> <span class="ident">on_http_call_response</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">_request</span>: <span class="ident">http_client</span>::<span class="ident">RequestHandle</span>,
+        <span class="ident">_request</span>: <span class="ident">HttpClientRequestHandle</span>,
         <span class="ident">_num_headers</span>: <span class="ident">usize</span>,
         <span class="ident">_body_size</span>: <span class="ident">usize</span>,
         <span class="ident">_num_trailers</span>: <span class="ident">usize</span>,
         <span class="ident">_filter_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Ops</span>,
-        <span class="ident">_http_client_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">http_client</span>::<span class="ident">ResponseOps</span>,
+        <span class="ident">_http_client_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">HttpClientResponseOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(())
     }
 }
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">DownstreamDataOps</span> {
-    <span class="kw">fn</span> <span class="ident">get_downstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">downstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">UpstreamDataOps</span> {
-    <span class="kw">fn</span> <span class="ident">get_upstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">upstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Ops</span>: <span class="ident">DownstreamDataOps</span> <span class="op">+</span> <span class="ident">UpstreamDataOps</span> {

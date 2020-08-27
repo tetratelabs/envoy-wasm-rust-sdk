@@ -43,15 +43,15 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">traits</span>::<span class="ident">RootContext</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">traits</span>::<span class="ident">RootContext</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::<span class="prelude-ty">Result</span>;
 
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">config</span>::<span class="ident">Module</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">start</span>::<span class="ident">install</span>;
 
+<span class="kw">mod</span> <span class="ident">config</span>;
 <span class="kw">mod</span> <span class="ident">dispatcher</span>;
 <span class="kw">mod</span> <span class="ident">start</span>;
-
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">registry</span>;
 
 <span class="kw">type</span> <span class="ident">ContextFactory</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RootContext</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 <span class="kw">type</span> <span class="ident">ContextFactoryHashMap</span> <span class="op">=</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">ContextFactory</span><span class="op">&gt;</span><span class="op">&gt;</span>;

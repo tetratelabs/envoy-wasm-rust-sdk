@@ -148,7 +148,7 @@
 <span class="comment">// limitations under the License.</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">dispatcher</span>::{<span class="ident">ContextSelector</span>, <span class="ident">VoidContextSelector</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::{<span class="ident">Registry</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::{<span class="ident">Module</span>, <span class="prelude-ty">Result</span>};
 
 <span class="doccomment">/// Generates the [`_start`] function that will be called by `Envoy` to let</span>
 <span class="doccomment">/// WebAssembly module initialize itself.</span>
@@ -159,68 +159,68 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use envoy_sdk as envoy;</span>
-<span class="doccomment">/// # use envoy::extension::{access_logger, filter::network, filter::http, InstanceId, Result};</span>
+<span class="doccomment">/// # use envoy::extension::{self, AccessLogger, NetworkFilter, HttpFilter, InstanceId, ExtensionFactory};</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # struct MyHttpFilter;</span>
-<span class="doccomment">/// # impl http::Filter for MyHttpFilter {}</span>
+<span class="doccomment">/// # impl HttpFilter for MyHttpFilter {}</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # struct MyHttpFilterFactory;</span>
 <span class="doccomment">/// # impl MyHttpFilterFactory {</span>
-<span class="doccomment">/// #     fn default() -&gt; Result&lt;Self&gt; { Ok(MyHttpFilterFactory) }</span>
+<span class="doccomment">/// #     fn default() -&gt; extension::Result&lt;Self&gt; { Ok(MyHttpFilterFactory) }</span>
 <span class="doccomment">/// # }</span>
-<span class="doccomment">/// # impl envoy::extension::Factory for MyHttpFilterFactory {</span>
+<span class="doccomment">/// # impl ExtensionFactory for MyHttpFilterFactory {</span>
 <span class="doccomment">/// #     type Extension = MyHttpFilter;</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my.http_filter&quot;;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; Result&lt;Self::Extension&gt; {</span>
+<span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; extension::Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">/// #         Ok(MyHttpFilter)</span>
 <span class="doccomment">/// #     }</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # struct MyNetworkFilter;</span>
-<span class="doccomment">/// # impl network::Filter for MyNetworkFilter {}</span>
+<span class="doccomment">/// # impl NetworkFilter for MyNetworkFilter {}</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # struct MyNetworkFilterFactory;</span>
 <span class="doccomment">/// # impl MyNetworkFilterFactory {</span>
-<span class="doccomment">/// #     fn default() -&gt; Result&lt;Self&gt; { Ok(MyNetworkFilterFactory) }</span>
+<span class="doccomment">/// #     fn default() -&gt; extension::Result&lt;Self&gt; { Ok(MyNetworkFilterFactory) }</span>
 <span class="doccomment">/// # }</span>
-<span class="doccomment">/// # impl envoy::extension::Factory for MyNetworkFilterFactory {</span>
+<span class="doccomment">/// # impl ExtensionFactory for MyNetworkFilterFactory {</span>
 <span class="doccomment">/// #     type Extension = MyNetworkFilter;</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my.network_filter&quot;;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; Result&lt;Self::Extension&gt; {</span>
+<span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; extension::Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">/// #         Ok(MyNetworkFilter)</span>
 <span class="doccomment">/// #     }</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # struct MyAccessLogger;</span>
-<span class="doccomment">/// # impl access_logger::Logger for MyAccessLogger {</span>
+<span class="doccomment">/// # impl AccessLogger for MyAccessLogger {</span>
 <span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my.access_logger&quot;;</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// # impl MyAccessLogger {</span>
-<span class="doccomment">/// #     fn default() -&gt; Result&lt;Self&gt; { Ok(MyAccessLogger) }</span>
+<span class="doccomment">/// #     fn default() -&gt; extension::Result&lt;Self&gt; { Ok(MyAccessLogger) }</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// use envoy::{extension, extension::Registry, on_module_load};</span>
+<span class="doccomment">/// use envoy::extension::{entrypoint, Module, Result};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// on_module_load! { initialize } // put initialization logic into a function to make it unit testable</span>
+<span class="doccomment">/// entrypoint! { initialize } // put initialization logic into a function to make it unit testable</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// /// Does one-time initialization.</span>
 <span class="doccomment">/// ///</span>
 <span class="doccomment">/// /// Returns a registry of extensions provided by this module.</span>
-<span class="doccomment">/// fn initialize() -&gt; extension::Result&lt;Registry&gt; {</span>
+<span class="doccomment">/// fn initialize() -&gt; Result&lt;Module&gt; {</span>
 <span class="doccomment">///   // arbitrary initialization steps</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///   Registry::new()</span>
+<span class="doccomment">///   Module::new()</span>
 <span class="doccomment">///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?</span>
 <span class="doccomment">///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?</span>
 <span class="doccomment">///       .add_access_logger(|_instance_id| MyAccessLogger::default())</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">on_module_load</span> {
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">entrypoint</span> {
     <span class="comment">// Apparently, Rust toolchain doesn&#39;t handle well exported name `_start`</span>
     <span class="comment">// when a package is compiled to targets other than `wasm32-unknown-unknown`.</span>
     <span class="comment">// Specifically, linking issues have been observed with targets `wasm32-wasi`</span>
@@ -238,12 +238,12 @@
         )]</span>
         <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
         <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">start</span>() {
-            <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">extension</span>::{<span class="self">self</span>, <span class="ident">Registry</span>, <span class="prelude-ty">Result</span>};
+            <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">extension</span>::{<span class="self">self</span>, <span class="ident">Module</span>, <span class="prelude-ty">Result</span>};
             <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">host</span>::<span class="ident">log</span>;
 
             <span class="kw">fn</span> <span class="ident">init</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">init_fn</span>: <span class="ident">F</span>)
             <span class="kw">where</span>
-                <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Registry</span><span class="op">&gt;</span>,
+                <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>,
             {
                 <span class="comment">// Apparently, `proxy_wasm` uses `set_log_level`</span>
                 <span class="comment">// to set a custom panic handler that will log panics using Envoy Log API.</span>
@@ -261,9 +261,9 @@
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">install</span>(<span class="ident">config</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Registry</span><span class="op">&gt;</span>) {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">install</span>(<span class="ident">config</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>) {
     <span class="kw">match</span> <span class="ident">config</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">registry</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ContextSelector</span>::<span class="ident">with_default_ops</span>(<span class="ident">registry</span>.<span class="ident">into</span>()).<span class="ident">install</span>(),
+        <span class="prelude-val">Ok</span>(<span class="ident">module</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ContextSelector</span>::<span class="ident">with_default_ops</span>(<span class="ident">module</span>.<span class="ident">into</span>()).<span class="ident">install</span>(),
         <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">VoidContextSelector</span>::<span class="ident">new</span>(<span class="ident">err</span>).<span class="ident">install</span>(),
     }
 }

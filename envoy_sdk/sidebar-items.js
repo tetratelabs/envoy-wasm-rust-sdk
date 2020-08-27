@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["on_module_load","Generates the [`_start`] function that will be called by `Envoy` to let WebAssembly module initialize itself."]],"mod":[["error","The `Error` type and helpers."],["extension","`Envoy` `Extension API`."],["host","`Envoy` `Host API`."]]});
+initSidebarItems({"macro":[["entrypoint","Generates the [`_start`] function that will be called by `Envoy` to let WebAssembly module initialize itself."]],"mod":[["error","The `Error` type and helpers."],["extension","`Envoy` `Extension API`."],["host","`Envoy` `Host API`."]]});

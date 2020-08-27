@@ -128,25 +128,25 @@
 <span class="comment">// See the License for the specific language governing permissions and</span>
 <span class="comment">// limitations under the License.</span>
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Logger</span>, <span class="ident">Ops</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">traits</span>::{<span class="ident">Context</span>, <span class="ident">RootContext</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">AccessLogger</span>, <span class="ident">Ops</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">traits</span>::{<span class="ident">Context</span>, <span class="ident">RootContext</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::<span class="ident">error</span>::<span class="ident">ErrorSink</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::<span class="ident">ConfigStatus</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::<span class="ident">http</span>::<span class="ident">client</span>::{<span class="ident">HttpClientRequestHandle</span>, <span class="ident">HttpClientResponseOps</span>};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">LoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">AccessLoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">L</span>: <span class="ident">Logger</span>,
+    <span class="ident">L</span>: <span class="ident">AccessLogger</span>,
 {
     <span class="ident">logger</span>: <span class="ident">L</span>,
     <span class="ident">logger_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Ops</span>,
-    <span class="ident">http_client_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">http_client</span>::<span class="ident">ResponseOps</span>,
+    <span class="ident">http_client_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClientResponseOps</span>,
     <span class="ident">error_sink</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">ErrorSink</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">RootContext</span> <span class="kw">for</span> <span class="ident">LoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">RootContext</span> <span class="kw">for</span> <span class="ident">AccessLoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">L</span>: <span class="ident">Logger</span>,
+    <span class="ident">L</span>: <span class="ident">AccessLogger</span>,
 {
     <span class="kw">fn</span> <span class="ident">on_configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">plugin_configuration_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">logger</span>.<span class="ident">on_configure</span>(
@@ -171,9 +171,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">Context</span> <span class="kw">for</span> <span class="ident">LoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">Context</span> <span class="kw">for</span> <span class="ident">AccessLoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">L</span>: <span class="ident">Logger</span>,
+    <span class="ident">L</span>: <span class="ident">AccessLogger</span>,
 {
     <span class="comment">// Http Client callbacks</span>
 
@@ -185,7 +185,7 @@
         <span class="ident">num_trailers</span>: <span class="ident">usize</span>,
     ) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">logger</span>.<span class="ident">on_http_call_response</span>(
-            <span class="ident">http_client</span>::<span class="ident">RequestHandle</span>::<span class="ident">from</span>(<span class="ident">token_id</span>),
+            <span class="ident">HttpClientRequestHandle</span>::<span class="ident">from</span>(<span class="ident">token_id</span>),
             <span class="ident">num_headers</span>,
             <span class="ident">body_size</span>,
             <span class="ident">num_trailers</span>,
@@ -201,17 +201,17 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">LoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">AccessLoggerContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">L</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">L</span>: <span class="ident">Logger</span>,
+    <span class="ident">L</span>: <span class="ident">AccessLogger</span>,
 {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">logger</span>: <span class="ident">L</span>,
         <span class="ident">logger_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Ops</span>,
-        <span class="ident">http_client_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">http_client</span>::<span class="ident">ResponseOps</span>,
+        <span class="ident">http_client_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClientResponseOps</span>,
         <span class="ident">error_sink</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">ErrorSink</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">LoggerContext</span> {
+        <span class="ident">AccessLoggerContext</span> {
             <span class="ident">logger</span>,
             <span class="ident">logger_ops</span>,
             <span class="ident">http_client_ops</span>,
@@ -224,7 +224,7 @@
         <span class="self">Self</span>::<span class="ident">new</span>(
             <span class="ident">logger</span>,
             <span class="ident">Ops</span>::<span class="ident">default</span>(),
-            <span class="ident">http_client</span>::<span class="ident">ResponseOps</span>::<span class="ident">default</span>(),
+            <span class="ident">HttpClientResponseOps</span>::<span class="ident">default</span>(),
             <span class="ident">ErrorSink</span>::<span class="ident">default</span>(),
         )
     }

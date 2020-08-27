@@ -46,8 +46,8 @@
 <span class="comment">// See the License for the specific language governing permissions and</span>
 <span class="comment">// limitations under the License.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">hostcalls</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">types</span>::{<span class="ident">BufferType</span>, <span class="ident">Bytes</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">hostcalls</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::{<span class="ident">BufferType</span>, <span class="ident">Bytes</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">DownstreamDataOps</span>, <span class="ident">UpstreamDataOps</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
@@ -55,13 +55,13 @@
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">Host</span>;
 
 <span class="kw">impl</span> <span class="ident">DownstreamDataOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">get_downstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">downstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">BufferType</span>::<span class="ident">DownstreamData</span>, <span class="ident">start</span>, <span class="ident">max_size</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">UpstreamDataOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">get_upstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">upstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">BufferType</span>::<span class="ident">UpstreamData</span>, <span class="ident">start</span>, <span class="ident">max_size</span>)
     }
 }

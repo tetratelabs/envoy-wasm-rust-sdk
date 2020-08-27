@@ -116,14 +116,14 @@
 <span class="comment">// See the License for the specific language governing permissions and</span>
 <span class="comment">// limitations under the License.</span>
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">DrainStatus</span>, <span class="ident">Factory</span>, <span class="ident">Ops</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">traits</span>::{<span class="ident">ChildContext</span>, <span class="ident">Context</span>, <span class="ident">RootContext</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">DrainStatus</span>, <span class="ident">ExtensionFactory</span>, <span class="ident">Ops</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">traits</span>::{<span class="ident">ChildContext</span>, <span class="ident">Context</span>, <span class="ident">RootContext</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::<span class="ident">error</span>::<span class="ident">ErrorSink</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::{<span class="ident">ConfigStatus</span>, <span class="ident">InstanceId</span>};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">FactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">ExtensionFactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Factory</span>,
+    <span class="ident">F</span>: <span class="ident">ExtensionFactory</span>,
 {
     <span class="ident">factory</span>: <span class="ident">F</span>,
     <span class="ident">factory_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Ops</span>,
@@ -131,9 +131,9 @@
     <span class="ident">child_context_factory</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>, <span class="ident">InstanceId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ChildContext</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">RootContext</span> <span class="kw">for</span> <span class="ident">FactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">RootContext</span> <span class="kw">for</span> <span class="ident">ExtensionFactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Factory</span>,
+    <span class="ident">F</span>: <span class="ident">ExtensionFactory</span>,
 {
     <span class="kw">fn</span> <span class="ident">on_configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">plugin_configuration_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">factory</span>.<span class="ident">on_configure</span>(
@@ -158,9 +158,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">Context</span> <span class="kw">for</span> <span class="ident">FactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">Context</span> <span class="kw">for</span> <span class="ident">ExtensionFactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Factory</span>,
+    <span class="ident">F</span>: <span class="ident">ExtensionFactory</span>,
 {
     <span class="kw">fn</span> <span class="ident">on_done</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">factory</span>.<span class="ident">on_drain</span>() {
@@ -174,9 +174,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">FactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">ExtensionFactoryContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Factory</span>,
+    <span class="ident">F</span>: <span class="ident">ExtensionFactory</span>,
 {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">factory</span>: <span class="ident">F</span>,
@@ -184,7 +184,7 @@
         <span class="ident">error_sink</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">ErrorSink</span>,
         <span class="ident">child_context_factory</span>: <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>, <span class="ident">InstanceId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ChildContext</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">FactoryContext</span> {
+        <span class="ident">ExtensionFactoryContext</span> {
             <span class="ident">factory</span>,
             <span class="ident">factory_ops</span>,
             <span class="ident">error_sink</span>,

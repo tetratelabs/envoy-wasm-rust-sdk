@@ -188,14 +188,14 @@
     <span class="kw">fn</span> <span class="ident">record</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Service</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Stats</span> {
     <span class="kw">fn</span> <span class="ident">counter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Counter</span><span class="op">&gt;</span><span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="ident">gauge</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Gauge</span><span class="op">&gt;</span><span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="ident">histogram</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Histogram</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
-<span class="kw">impl</span> <span class="kw">dyn</span> <span class="ident">Service</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="kw">dyn</span> <span class="ident">Service</span> {
+<span class="kw">impl</span> <span class="kw">dyn</span> <span class="ident">Stats</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="kw">dyn</span> <span class="ident">Stats</span> {
         <span class="kw-2">&amp;</span><span class="ident">impls</span>::<span class="ident">Host</span>
     }
 }
@@ -203,14 +203,14 @@
 <span class="kw">mod</span> <span class="ident">impls</span> {
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Service</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">hostcalls</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">types</span>::{<span class="ident">MetricHandle</span>, <span class="ident">MetricType</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Stats</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">hostcalls</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::{<span class="ident">MetricHandle</span>, <span class="ident">MetricType</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">Host</span>;
 
-    <span class="kw">impl</span> <span class="ident">Service</span> <span class="kw">for</span> <span class="ident">Host</span> {
+    <span class="kw">impl</span> <span class="ident">Stats</span> <span class="kw">for</span> <span class="ident">Host</span> {
         <span class="kw">fn</span> <span class="ident">counter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="kw">super</span>::<span class="ident">Counter</span><span class="op">&gt;</span><span class="op">&gt;</span> {
             <span class="ident">hostcalls</span>::<span class="ident">define_metric</span>(<span class="ident">MetricType</span>::<span class="ident">Counter</span>, <span class="ident">name</span>)
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">handle</span><span class="op">|</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Counter</span>(<span class="ident">handle</span>)) <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="kw">super</span>::<span class="ident">Counter</span><span class="op">&gt;</span>)

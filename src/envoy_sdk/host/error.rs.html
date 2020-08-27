@@ -127,24 +127,24 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm_ext</span>::<span class="ident">types</span>::<span class="ident">Status</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">Status</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::{<span class="ident">Error</span>, <span class="ident">ErrorContext</span>, <span class="prelude-ty">Result</span>};
 
 <span class="doccomment">/// An error returned from the call to Envoy ABI.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">CallError</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">HostCallError</span> {
     <span class="ident">function</span>: <span class="ident">Function</span>,
     <span class="ident">status</span>: <span class="ident">Status</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">CallError</span> {
+<span class="kw">impl</span> <span class="ident">HostCallError</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">function</span>: <span class="ident">Function</span>, <span class="ident">status</span>: <span class="ident">Status</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">CallError</span> { <span class="ident">function</span>, <span class="ident">status</span> }
+        <span class="ident">HostCallError</span> { <span class="ident">function</span>, <span class="ident">status</span> }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">CallError</span> {
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">HostCallError</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="macro">write</span><span class="macro">!</span>(
             <span class="ident">f</span>,
@@ -154,7 +154,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">for</span> <span class="ident">CallError</span> {
+<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">for</span> <span class="ident">HostCallError</span> {
     <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
@@ -162,18 +162,18 @@
 
 <span class="doccomment">/// An error at parsing a return value from a call to Envoy ABI.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">ParseError</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">HostResponseError</span> {
     <span class="ident">function</span>: <span class="ident">Function</span>,
     <span class="ident">err</span>: <span class="ident">Error</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">ParseError</span> {
+<span class="kw">impl</span> <span class="ident">HostResponseError</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">function</span>: <span class="ident">Function</span>, <span class="ident">err</span>: <span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">ParseError</span> { <span class="ident">function</span>, <span class="ident">err</span> }
+        <span class="ident">HostResponseError</span> { <span class="ident">function</span>, <span class="ident">err</span> }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ParseError</span> {
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">HostResponseError</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="macro">write</span><span class="macro">!</span>(
             <span class="ident">f</span>,
@@ -183,7 +183,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">for</span> <span class="ident">ParseError</span> {
+<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">for</span> <span class="ident">HostResponseError</span> {
     <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span> {
         <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">err</span>)
     }
@@ -207,12 +207,12 @@
         <span class="ident">Function</span> { <span class="ident">module</span>, <span class="ident">function</span> }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_call_error</span>(<span class="self">self</span>, <span class="ident">status</span>: <span class="ident">Status</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CallError</span> {
-        <span class="ident">CallError</span>::<span class="ident">new</span>(<span class="self">self</span>, <span class="ident">status</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_call_error</span>(<span class="self">self</span>, <span class="ident">status</span>: <span class="ident">Status</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HostCallError</span> {
+        <span class="ident">HostCallError</span>::<span class="ident">new</span>(<span class="self">self</span>, <span class="ident">status</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_parse_error</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ParseError</span> {
-        <span class="ident">ParseError</span>::<span class="ident">new</span>(<span class="self">self</span>, <span class="ident">err</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_parse_error</span>(<span class="self">self</span>, <span class="ident">err</span>: <span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HostResponseError</span> {
+        <span class="ident">HostResponseError</span>::<span class="ident">new</span>(<span class="self">self</span>, <span class="ident">err</span>)
     }
 }
 

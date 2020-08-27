@@ -126,11 +126,11 @@
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! # use envoy_sdk as envoy;</span>
 <span class="doccomment">//! use envoy::error::{ErrorContext, Result};</span>
-<span class="doccomment">//! use envoy::host::time;</span>
+<span class="doccomment">//! use envoy::host::Clock;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn on_request() -&gt; Result&lt;()&gt; {</span>
 <span class="doccomment">//! #   let instance_id = 123;</span>
-<span class="doccomment">//!     let now = time::Service::default().get_current_time()</span>
+<span class="doccomment">//!     let now = Clock::default().now()</span>
 <span class="doccomment">//!         .with_context(|| format!(&quot;Failed to get time of the request {}&quot;, instance_id))?;</span>
 <span class="doccomment">//!     // ...</span>
 <span class="doccomment">//! #   Ok(())</span>

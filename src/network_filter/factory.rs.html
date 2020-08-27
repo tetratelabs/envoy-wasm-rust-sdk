@@ -99,10 +99,6 @@
 <span id="99"> 99</span>
 <span id="100">100</span>
 <span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -121,8 +117,8 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="self">self</span>, <span class="ident">ConfigStatus</span>, <span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">http</span>::<span class="ident">client</span> <span class="kw">as</span> <span class="ident">http_client</span>, <span class="ident">stats</span>, <span class="ident">time</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">factory</span>, <span class="ident">ConfigStatus</span>, <span class="ident">ExtensionFactory</span>, <span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">Clock</span>, <span class="ident">HttpClient</span>, <span class="ident">Stats</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">config</span>::<span class="ident">SampleNetworkFilterConfig</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">filter</span>::<span class="ident">SampleNetworkFilter</span>;
@@ -139,42 +135,38 @@
     <span class="ident">stats</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">SampleNetworkFilterStats</span><span class="op">&gt;</span>,
     <span class="comment">// This example shows how to use Time API, HTTP Client API and</span>
     <span class="comment">// Metrics API provided by Envoy host.</span>
-    <span class="ident">time_service</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">time</span>::<span class="ident">Service</span>,
-    <span class="ident">http_client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">http_client</span>::<span class="ident">Client</span>,
+    <span class="ident">clock</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Clock</span>,
+    <span class="ident">http_client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClient</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">SampleNetworkFilterFactory</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new factory.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">time_service</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">time</span>::<span class="ident">Service</span>,
-        <span class="ident">http_client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">http_client</span>::<span class="ident">Client</span>,
-        <span class="ident">metrics_service</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">stats</span>::<span class="ident">Service</span>,
+        <span class="ident">clock</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Clock</span>,
+        <span class="ident">http_client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClient</span>,
+        <span class="ident">stats</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Stats</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">stats</span> <span class="op">=</span> <span class="ident">SampleNetworkFilterStats</span>::<span class="ident">new</span>(
-            <span class="ident">metrics_service</span>.<span class="ident">counter</span>(<span class="string">&quot;examples.network_filter.requests_total&quot;</span>)<span class="question-mark">?</span>,
-            <span class="ident">metrics_service</span>.<span class="ident">gauge</span>(<span class="string">&quot;examples.network_filter.requests_active&quot;</span>)<span class="question-mark">?</span>,
-            <span class="ident">metrics_service</span>.<span class="ident">histogram</span>(<span class="string">&quot;examples.network_filter.response_body_size_bytes&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">stats</span>.<span class="ident">counter</span>(<span class="string">&quot;examples.network_filter.requests_total&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">stats</span>.<span class="ident">gauge</span>(<span class="string">&quot;examples.network_filter.requests_active&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">stats</span>.<span class="ident">histogram</span>(<span class="string">&quot;examples.network_filter.response_body_size_bytes&quot;</span>)<span class="question-mark">?</span>,
         );
         <span class="comment">// Inject dependencies on Envoy host APIs</span>
         <span class="prelude-val">Ok</span>(<span class="ident">SampleNetworkFilterFactory</span> {
             <span class="ident">config</span>: <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">SampleNetworkFilterConfig</span>::<span class="ident">default</span>()),
             <span class="ident">stats</span>: <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">stats</span>),
-            <span class="ident">time_service</span>,
+            <span class="ident">clock</span>,
             <span class="ident">http_client</span>,
         })
     }
 
     <span class="doccomment">/// Creates a new factory bound to the actual Envoy ABI.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">new</span>(
-            <span class="ident">time</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
-            <span class="ident">http_client</span>::<span class="ident">Client</span>::<span class="ident">default</span>(),
-            <span class="ident">stats</span>::<span class="ident">Service</span>::<span class="ident">default</span>(),
-        )
+        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">Clock</span>::<span class="ident">default</span>(), <span class="ident">HttpClient</span>::<span class="ident">default</span>(), <span class="ident">Stats</span>::<span class="ident">default</span>())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">extension</span>::<span class="ident">Factory</span> <span class="kw">for</span> <span class="ident">SampleNetworkFilterFactory</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ExtensionFactory</span> <span class="kw">for</span> <span class="ident">SampleNetworkFilterFactory</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Extension</span> <span class="op">=</span> <span class="ident">SampleNetworkFilter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// The reference name for Sample Network Filter.</span>
@@ -187,9 +179,9 @@
     <span class="kw">fn</span> <span class="ident">on_configure</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_configuration_size</span>: <span class="ident">usize</span>,
-        <span class="ident">ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">extension</span>::<span class="ident">factory</span>::<span class="ident">ConfigureOps</span>,
+        <span class="ident">ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">factory</span>::<span class="ident">ConfigureOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConfigStatus</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ops</span>.<span class="ident">get_configuration</span>()<span class="question-mark">?</span> {
+        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ops</span>.<span class="ident">configuration</span>()<span class="question-mark">?</span> {
             <span class="prelude-val">Some</span>(<span class="ident">bytes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleNetworkFilterConfig</span>::<span class="ident">try_from</span>(<span class="ident">bytes</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>,
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleNetworkFilterConfig</span>::<span class="ident">default</span>(),
         };
@@ -204,7 +196,7 @@
             <span class="ident">Rc</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>),
             <span class="ident">Rc</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">stats</span>),
             <span class="ident">instance_id</span>,
-            <span class="self">self</span>.<span class="ident">time_service</span>,
+            <span class="self">self</span>.<span class="ident">clock</span>,
             <span class="self">self</span>.<span class="ident">http_client</span>,
         ))
     }

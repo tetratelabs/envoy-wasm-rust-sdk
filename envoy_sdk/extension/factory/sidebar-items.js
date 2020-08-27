@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["DrainStatus","Possible responses to the the request to drain the extension."]],"trait":[["ConfigureOps",""],["DrainOps",""],["Factory",""],["Ops",""]]});
+initSidebarItems({"enum":[["ConfigStatus","Possible responses to the request to (re-)configure the extension."],["DrainStatus","Possible responses to the the request to drain the extension."]],"trait":[["ConfigureOps",""],["DrainOps",""],["ExtensionFactory",""],["Ops",""]]});

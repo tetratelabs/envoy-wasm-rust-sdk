@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["Counter",""],["Gauge",""],["Histogram",""],["Service",""]]});
+initSidebarItems({"trait":[["Counter",""],["Gauge",""],["Histogram",""],["Stats",""]]});

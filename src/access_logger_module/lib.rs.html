@@ -51,19 +51,19 @@
 <span class="comment">// See the License for the specific language governing permissions and</span>
 <span class="comment">// limitations under the License.</span>
 
-<span class="kw">use</span> <span class="ident">envoy</span>::{<span class="ident">extension</span>, <span class="ident">extension</span>::<span class="ident">Registry</span>, <span class="ident">on_module_load</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">entrypoint</span>, <span class="ident">Module</span>, <span class="prelude-ty">Result</span>};
 
 <span class="kw">use</span> <span class="ident">access_logger</span>::<span class="ident">SampleAccessLogger</span>;
 
 <span class="comment">// Generate the `_start` function that will be called by `Envoy` to let</span>
 <span class="comment">// WebAssembly module initialize itself.</span>
-<span class="macro">on_module_load</span><span class="macro">!</span> { <span class="ident">initialize</span> }
+<span class="macro">entrypoint</span><span class="macro">!</span> { <span class="ident">initialize</span> }
 
 <span class="doccomment">/// Does one-time initialization.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns a registry of extensions provided by this module.</span>
-<span class="kw">fn</span> <span class="ident">initialize</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">extension</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Registry</span><span class="op">&gt;</span> {
-    <span class="ident">Registry</span>::<span class="ident">new</span>().<span class="ident">add_access_logger</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">SampleAccessLogger</span>::<span class="ident">default</span>())
+<span class="kw">fn</span> <span class="ident">initialize</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span> {
+    <span class="ident">Module</span>::<span class="ident">new</span>().<span class="ident">add_access_logger</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">SampleAccessLogger</span>::<span class="ident">default</span>())
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>

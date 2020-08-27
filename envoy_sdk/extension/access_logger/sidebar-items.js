@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["ConfigureOps",""],["LogOps",""],["Logger",""],["Ops",""]]});
+initSidebarItems({"trait":[["AccessLogger",""],["ConfigureOps",""],["LogOps",""],["Ops",""]]});

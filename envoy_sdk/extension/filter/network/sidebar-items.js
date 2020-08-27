@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["DownstreamDataOps",""],["Filter",""],["Ops",""],["UpstreamDataOps",""]],"type":[["FilterStatus",""]]});
+initSidebarItems({"enum":[["FilterStatus",""]],"trait":[["DownstreamDataOps",""],["NetworkFilter",""],["Ops",""],["UpstreamDataOps",""]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["Service",""]]});
+initSidebarItems({"trait":[["StreamInfo",""]]});
