@@ -14,35 +14,35 @@
 
 //! `Envoy` `Shared Data API`.
 
-use crate::abi::proxy_wasm_ext::types::Bytes;
+use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
-pub trait Service {
-    fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)>;
+pub trait SharedData {
+    fn get(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)>;
 
-    fn set_data(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()>;
+    fn set(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()>;
 }
 
-impl dyn Service {
-    pub fn default() -> &'static dyn Service {
+impl dyn SharedData {
+    pub fn default() -> &'static dyn SharedData {
         &impls::Host
     }
 }
 
 mod impls {
-    use super::Service;
-    use crate::abi::proxy_wasm_ext::hostcalls;
-    use crate::abi::proxy_wasm_ext::types::Bytes;
+    use super::SharedData;
+    use crate::abi::proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm::types::Bytes;
     use crate::host;
 
     pub(super) struct Host;
 
-    impl Service for Host {
-        fn get_data(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
+    impl SharedData for Host {
+        fn get(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
             hostcalls::get_shared_data(key)
         }
 
-        fn set_data(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()> {
+        fn set(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()> {
             hostcalls::set_shared_data(key, value, cas)
         }
     }

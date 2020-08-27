@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy::{extension, extension::Registry, on_module_load};
+use envoy::extension::{entrypoint, Module, Result};
 
 use network_filter::SampleNetworkFilterFactory;
 
 // Generate the `_start` function that will be called by `Envoy` to let
 // WebAssembly module initialize itself.
-on_module_load! { initialize }
+entrypoint! { initialize }
 
 /// Does one-time initialization.
 ///
 /// Returns a registry of extensions provided by this module.
-fn initialize() -> extension::Result<Registry> {
-    Registry::new().add_network_filter(|_instance_id| SampleNetworkFilterFactory::default())
+fn initialize() -> Result<Module> {
+    Module::new().add_network_filter(|_instance_id| SampleNetworkFilterFactory::default())
 }
 
 #[cfg(test)]

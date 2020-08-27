@@ -13,14 +13,14 @@
 // limitations under the License.
 
 use super::{ConfigureOps, DrainOps};
-use crate::abi::proxy_wasm_ext::hostcalls;
-use crate::abi::proxy_wasm_ext::types::Bytes;
+use crate::abi::proxy_wasm::hostcalls;
+use crate::abi::proxy_wasm::types::Bytes;
 use crate::host;
 
 pub(super) struct Host;
 
 impl ConfigureOps for Host {
-    fn get_configuration(&self) -> host::Result<Option<Bytes>> {
+    fn configuration(&self) -> host::Result<Option<Bytes>> {
         hostcalls::get_configuration()
     }
 }

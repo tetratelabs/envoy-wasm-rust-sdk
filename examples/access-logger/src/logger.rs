@@ -15,9 +15,8 @@
 use std::convert::TryFrom;
 use std::time::Duration;
 
-use envoy::extension::access_logger;
-use envoy::extension::{ConfigStatus, Result};
-use envoy::host::{http::client as http_client, log, stats, time};
+use envoy::extension::{access_logger, AccessLogger, ConfigStatus, Result};
+use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -31,29 +30,29 @@ pub struct SampleAccessLogger<'a> {
     stats: SampleAccessLoggerStats,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
-    http_client: &'a dyn http_client::Client,
+    clock: &'a dyn Clock,
+    http_client: &'a dyn HttpClient,
 
-    active_request: Option<http_client::RequestHandle>,
+    active_request: Option<HttpClientRequestHandle>,
 }
 
 impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of Sample Access Logger.
     pub fn new(
-        time_service: &'a dyn time::Service,
-        http_client: &'a dyn http_client::Client,
-        metrics_service: &'a dyn stats::Service,
+        clock: &'a dyn Clock,
+        http_client: &'a dyn HttpClient,
+        stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleAccessLoggerStats::new(
-            metrics_service.counter("examples.access_logger.requests_total")?,
-            metrics_service.gauge("examples.access_logger.reports_active")?,
-            metrics_service.counter("examples.access_logger.reports_total")?,
+            stats.counter("examples.access_logger.requests_total")?,
+            stats.gauge("examples.access_logger.reports_active")?,
+            stats.counter("examples.access_logger.reports_total")?,
         );
         // Inject dependencies on Envoy host APIs
         Ok(SampleAccessLogger {
             config: SampleAccessLoggerConfig::default(),
             stats,
-            time_service,
+            clock,
             http_client,
             active_request: None,
         })
@@ -62,15 +61,11 @@ impl<'a> SampleAccessLogger<'a> {
     /// Creates a new instance of Sample Access Logger
     /// bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        Self::new(
-            time::Service::default(),
-            http_client::Client::default(),
-            stats::Service::default(),
-        )
+        Self::new(Clock::default(), HttpClient::default(), Stats::default())
     }
 }
 
-impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
+impl<'a> AccessLogger for SampleAccessLogger<'a> {
     /// The reference name for Sample Access Logger.
     ///
     /// This name appears in `Envoy` configuration as a value of `root_id` field
@@ -85,7 +80,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         _configuration_size: usize,
         logger_ops: &dyn access_logger::ConfigureOps,
     ) -> Result<ConfigStatus> {
-        self.config = match logger_ops.get_configuration()? {
+        self.config = match logger_ops.configuration()? {
             Some(bytes) => SampleAccessLoggerConfig::try_from(bytes.as_slice())?,
             None => SampleAccessLoggerConfig::default(),
         };
@@ -100,26 +95,25 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         // Update stats
         self.stats.requests_total().inc()?;
 
-        let current_time = self.time_service.get_current_time()?;
-        let datetime: DateTime<Local> = current_time.into();
+        let now: DateTime<Local> = self.clock.now()?.into();
 
         log::info!(
             "logging at {} with config: {:?}",
-            datetime.format("%+"),
+            now.format("%+"),
             self.config,
         );
 
         log::info!("  request headers:");
-        let request_headers = logger_ops.get_request_headers()?;
+        let request_headers = logger_ops.request_headers()?;
         for (name, value) in &request_headers {
             log::info!("    {}: {}", name, value);
         }
         log::info!("  response headers:");
-        let response_headers = logger_ops.get_response_headers()?;
+        let response_headers = logger_ops.response_headers()?;
         for (name, value) in &response_headers {
             log::info!("    {}: {}", name, value);
         }
-        let upstream_address = logger_ops.get_property(vec!["upstream", "address"])?;
+        let upstream_address = logger_ops.stream_property(vec!["upstream", "address"])?;
         let upstream_address = upstream_address
             .map(String::from_utf8)
             .transpose()?
@@ -156,11 +150,11 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
     /// Use http_client_ops to get ahold of response headers, body, etc.
     fn on_http_call_response(
         &mut self,
-        request: http_client::RequestHandle,
+        request: HttpClientRequestHandle,
         num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
-        http_client_ops: &dyn http_client::ResponseOps,
+        http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         log::info!(
             "received response from a log collector on request: @{}",
@@ -174,7 +168,7 @@ impl<'a> access_logger::Logger for SampleAccessLogger<'a> {
         self.stats.reports_total().inc()?;
 
         log::info!("  headers[count={}]:", num_headers);
-        let response_headers = http_client_ops.get_http_call_response_headers()?;
+        let response_headers = http_client_ops.http_call_response_headers()?;
         for (name, value) in &response_headers {
             log::info!("    {}: {}", name, value);
         }

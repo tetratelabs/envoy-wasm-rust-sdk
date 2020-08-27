@@ -15,8 +15,8 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use envoy::extension::{self, ConfigStatus, InstanceId, Result};
-use envoy::host::{http::client as http_client, stats, time};
+use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};
+use envoy::host::{Clock, HttpClient, Stats};
 
 use super::config::SampleNetworkFilterConfig;
 use super::filter::SampleNetworkFilter;
@@ -33,42 +33,38 @@ pub struct SampleNetworkFilterFactory<'a> {
     stats: Rc<SampleNetworkFilterStats>,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
-    http_client: &'a dyn http_client::Client,
+    clock: &'a dyn Clock,
+    http_client: &'a dyn HttpClient,
 }
 
 impl<'a> SampleNetworkFilterFactory<'a> {
     /// Creates a new factory.
     pub fn new(
-        time_service: &'a dyn time::Service,
-        http_client: &'a dyn http_client::Client,
-        metrics_service: &'a dyn stats::Service,
+        clock: &'a dyn Clock,
+        http_client: &'a dyn HttpClient,
+        stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleNetworkFilterStats::new(
-            metrics_service.counter("examples.network_filter.requests_total")?,
-            metrics_service.gauge("examples.network_filter.requests_active")?,
-            metrics_service.histogram("examples.network_filter.response_body_size_bytes")?,
+            stats.counter("examples.network_filter.requests_total")?,
+            stats.gauge("examples.network_filter.requests_active")?,
+            stats.histogram("examples.network_filter.response_body_size_bytes")?,
         );
         // Inject dependencies on Envoy host APIs
         Ok(SampleNetworkFilterFactory {
             config: Rc::new(SampleNetworkFilterConfig::default()),
             stats: Rc::new(stats),
-            time_service,
+            clock,
             http_client,
         })
     }
 
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        Self::new(
-            time::Service::default(),
-            http_client::Client::default(),
-            stats::Service::default(),
-        )
+        Self::new(Clock::default(), HttpClient::default(), Stats::default())
     }
 }
 
-impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
+impl<'a> ExtensionFactory for SampleNetworkFilterFactory<'a> {
     type Extension = SampleNetworkFilter<'a>;
 
     /// The reference name for Sample Network Filter.
@@ -81,9 +77,9 @@ impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
     fn on_configure(
         &mut self,
         _configuration_size: usize,
-        ops: &dyn extension::factory::ConfigureOps,
+        ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
-        let config = match ops.get_configuration()? {
+        let config = match ops.configuration()? {
             Some(bytes) => SampleNetworkFilterConfig::try_from(bytes.as_slice())?,
             None => SampleNetworkFilterConfig::default(),
         };
@@ -98,7 +94,7 @@ impl<'a> extension::Factory for SampleNetworkFilterFactory<'a> {
             Rc::clone(&self.config),
             Rc::clone(&self.stats),
             instance_id,
-            self.time_service,
+            self.clock,
             self.http_client,
         ))
     }

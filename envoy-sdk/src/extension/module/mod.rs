@@ -14,15 +14,15 @@
 
 use std::collections::HashMap;
 
-use crate::abi::proxy_wasm_ext::traits::RootContext;
+use crate::abi::proxy_wasm::traits::RootContext;
 use crate::extension::Result;
 
+pub use self::config::Module;
 pub use self::start::install;
 
+mod config;
 mod dispatcher;
 mod start;
-
-pub mod registry;
 
 type ContextFactory = dyn FnMut(u32) -> Result<Box<dyn RootContext>>;
 type ContextFactoryHashMap = HashMap<String, Box<ContextFactory>>;

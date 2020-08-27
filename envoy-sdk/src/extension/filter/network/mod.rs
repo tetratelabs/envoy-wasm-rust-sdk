@@ -14,19 +14,34 @@
 
 //! `Envoy` `Network Filter API`.
 
-use crate::abi::proxy_wasm_ext::types::{Action, Bytes, PeerType};
+use crate::abi::proxy_wasm::types::{Action, Bytes, PeerType};
 use crate::extension::Result;
 use crate::host;
-use crate::host::http::client as http_client;
+use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) use self::context::{FilterContext, VoidFilterContext};
+pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
 
 mod context;
 mod ops;
 
-pub type FilterStatus = Action;
+#[repr(u32)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[non_exhaustive]
+pub enum FilterStatus {
+    Continue = 0,
+    StopIteration = 1,
+}
 
-pub trait Filter {
+impl FilterStatus {
+    pub(self) fn as_action(&self) -> Action {
+        match self {
+            FilterStatus::Continue => Action::Continue,
+            FilterStatus::StopIteration => Action::Pause,
+        }
+    }
+}
+
+pub trait NetworkFilter {
     fn on_new_connection(&mut self) -> Result<FilterStatus> {
         Ok(FilterStatus::Continue)
     }
@@ -65,23 +80,23 @@ pub trait Filter {
 
     fn on_http_call_response(
         &mut self,
-        _request: http_client::RequestHandle,
+        _request: HttpClientRequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
         _filter_ops: &dyn Ops,
-        _http_client_ops: &dyn http_client::ResponseOps,
+        _http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         Ok(())
     }
 }
 
 pub trait DownstreamDataOps {
-    fn get_downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
 pub trait UpstreamDataOps {
-    fn get_upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
 }
 
 pub trait Ops: DownstreamDataOps + UpstreamDataOps {

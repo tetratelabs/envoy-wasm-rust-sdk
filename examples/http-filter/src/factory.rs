@@ -15,8 +15,8 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 
-use envoy::extension::{self, ConfigStatus, InstanceId, Result};
-use envoy::host::{http::client as http_client, stats, time};
+use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};
+use envoy::host::{Clock, HttpClient, Stats};
 
 use super::config::SampleHttpFilterConfig;
 use super::filter::SampleHttpFilter;
@@ -33,42 +33,38 @@ pub struct SampleHttpFilterFactory<'a> {
     stats: Rc<SampleHttpFilterStats>,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
-    http_client: &'a dyn http_client::Client,
+    clock: &'a dyn Clock,
+    http_client: &'a dyn HttpClient,
 }
 
 impl<'a> SampleHttpFilterFactory<'a> {
     /// Creates a new factory.
     pub fn new(
-        time_service: &'a dyn time::Service,
-        http_client: &'a dyn http_client::Client,
-        metrics_service: &'a dyn stats::Service,
+        clock: &'a dyn Clock,
+        http_client: &'a dyn HttpClient,
+        stats: &'a dyn Stats,
     ) -> Result<Self> {
         let stats = SampleHttpFilterStats::new(
-            metrics_service.counter("examples.http_filter.requests_total")?,
-            metrics_service.gauge("examples.http_filter.requests_active")?,
-            metrics_service.histogram("examples.http_filter.response_body_size_bytes")?,
+            stats.counter("examples.http_filter.requests_total")?,
+            stats.gauge("examples.http_filter.requests_active")?,
+            stats.histogram("examples.http_filter.response_body_size_bytes")?,
         );
         // Inject dependencies on Envoy host APIs
         Ok(SampleHttpFilterFactory {
             config: Rc::new(SampleHttpFilterConfig::default()),
             stats: Rc::new(stats),
-            time_service,
+            clock,
             http_client,
         })
     }
 
     /// Creates a new factory bound to the actual Envoy ABI.
     pub fn default() -> Result<Self> {
-        Self::new(
-            time::Service::default(),
-            http_client::Client::default(),
-            stats::Service::default(),
-        )
+        Self::new(Clock::default(), HttpClient::default(), Stats::default())
     }
 }
 
-impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
+impl<'a> ExtensionFactory for SampleHttpFilterFactory<'a> {
     type Extension = SampleHttpFilter<'a>;
 
     /// The reference name for Sample HTTP Filter.
@@ -81,9 +77,9 @@ impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
     fn on_configure(
         &mut self,
         _configuration_size: usize,
-        ops: &dyn extension::factory::ConfigureOps,
+        ops: &dyn factory::ConfigureOps,
     ) -> Result<ConfigStatus> {
-        let config = match ops.get_configuration()? {
+        let config = match ops.configuration()? {
             Some(bytes) => SampleHttpFilterConfig::try_from(bytes.as_slice())?,
             None => SampleHttpFilterConfig::default(),
         };
@@ -98,7 +94,7 @@ impl<'a> extension::Factory for SampleHttpFilterFactory<'a> {
             Rc::clone(&self.config),
             Rc::clone(&self.stats),
             instance_id,
-            self.time_service,
+            self.clock,
             self.http_client,
         ))
     }

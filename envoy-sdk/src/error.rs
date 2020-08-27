@@ -55,11 +55,11 @@
 //! ```
 //! # use envoy_sdk as envoy;
 //! use envoy::error::{ErrorContext, Result};
-//! use envoy::host::time;
+//! use envoy::host::Clock;
 //!
 //! fn on_request() -> Result<()> {
 //! #   let instance_id = 123;
-//!     let now = time::Service::default().get_current_time()
+//!     let now = Clock::default().now()
 //!         .with_context(|| format!("Failed to get time of the request {}", instance_id))?;
 //!     // ...
 //! #   Ok(())

@@ -14,39 +14,39 @@
 
 //! `Envoy` `Shared Queue API`.
 
-use crate::abi::proxy_wasm_ext::types::{Bytes, SharedQueueHandle};
+use crate::abi::proxy_wasm::types::{Bytes, SharedQueueHandle};
 use crate::host;
 
-pub trait Service {
-    fn register_queue(&self, name: &str) -> host::Result<SharedQueueHandle>;
+pub trait SharedQueue {
+    fn register(&self, name: &str) -> host::Result<SharedQueueHandle>;
 
-    fn lookup_queue(&self, vm_id: &str, name: &str) -> host::Result<Option<SharedQueueHandle>>;
+    fn lookup(&self, vm_id: &str, name: &str) -> host::Result<Option<SharedQueueHandle>>;
 
     fn dequeue(&self, queue_id: SharedQueueHandle) -> host::Result<Option<Bytes>>;
 
     fn enqueue(&self, queue_id: SharedQueueHandle, value: Option<&[u8]>) -> host::Result<()>;
 }
 
-impl dyn Service {
-    pub fn default() -> &'static dyn Service {
+impl dyn SharedQueue {
+    pub fn default() -> &'static dyn SharedQueue {
         &impls::Host
     }
 }
 
 mod impls {
-    use super::Service;
-    use crate::abi::proxy_wasm_ext::hostcalls;
-    use crate::abi::proxy_wasm_ext::types::{Bytes, SharedQueueHandle};
+    use super::SharedQueue;
+    use crate::abi::proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm::types::{Bytes, SharedQueueHandle};
     use crate::host;
 
     pub(super) struct Host;
 
-    impl Service for Host {
-        fn register_queue(&self, name: &str) -> host::Result<SharedQueueHandle> {
+    impl SharedQueue for Host {
+        fn register(&self, name: &str) -> host::Result<SharedQueueHandle> {
             hostcalls::register_shared_queue(name)
         }
 
-        fn lookup_queue(&self, vm_id: &str, name: &str) -> host::Result<Option<SharedQueueHandle>> {
+        fn lookup(&self, vm_id: &str, name: &str) -> host::Result<Option<SharedQueueHandle>> {
             hostcalls::resolve_shared_queue(vm_id, name)
         }
 

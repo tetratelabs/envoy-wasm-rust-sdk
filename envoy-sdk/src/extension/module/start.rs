@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use super::dispatcher::{ContextSelector, VoidContextSelector};
-use crate::extension::{Registry, Result};
+use crate::extension::{Module, Result};
 
 /// Generates the [`_start`] function that will be called by `Envoy` to let
 /// WebAssembly module initialize itself.
@@ -24,68 +24,68 @@ use crate::extension::{Registry, Result};
 ///
 /// ```
 /// # use envoy_sdk as envoy;
-/// # use envoy::extension::{access_logger, filter::network, filter::http, InstanceId, Result};
+/// # use envoy::extension::{self, AccessLogger, NetworkFilter, HttpFilter, InstanceId, ExtensionFactory};
 /// #
 /// # struct MyHttpFilter;
-/// # impl http::Filter for MyHttpFilter {}
+/// # impl HttpFilter for MyHttpFilter {}
 /// #
 /// # struct MyHttpFilterFactory;
 /// # impl MyHttpFilterFactory {
-/// #     fn default() -> Result<Self> { Ok(MyHttpFilterFactory) }
+/// #     fn default() -> extension::Result<Self> { Ok(MyHttpFilterFactory) }
 /// # }
-/// # impl envoy::extension::Factory for MyHttpFilterFactory {
+/// # impl ExtensionFactory for MyHttpFilterFactory {
 /// #     type Extension = MyHttpFilter;
 /// #
 /// #     const NAME: &'static str = "my.http_filter";
 /// #
-/// #     fn new_extension(&mut self, instance_id: InstanceId) -> Result<Self::Extension> {
+/// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyHttpFilter)
 /// #     }
 /// # }
 /// #
 /// # struct MyNetworkFilter;
-/// # impl network::Filter for MyNetworkFilter {}
+/// # impl NetworkFilter for MyNetworkFilter {}
 /// #
 /// # struct MyNetworkFilterFactory;
 /// # impl MyNetworkFilterFactory {
-/// #     fn default() -> Result<Self> { Ok(MyNetworkFilterFactory) }
+/// #     fn default() -> extension::Result<Self> { Ok(MyNetworkFilterFactory) }
 /// # }
-/// # impl envoy::extension::Factory for MyNetworkFilterFactory {
+/// # impl ExtensionFactory for MyNetworkFilterFactory {
 /// #     type Extension = MyNetworkFilter;
 /// #
 /// #     const NAME: &'static str = "my.network_filter";
 /// #
-/// #     fn new_extension(&mut self, instance_id: InstanceId) -> Result<Self::Extension> {
+/// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyNetworkFilter)
 /// #     }
 /// # }
 /// #
 /// # struct MyAccessLogger;
-/// # impl access_logger::Logger for MyAccessLogger {
+/// # impl AccessLogger for MyAccessLogger {
 /// #     const NAME: &'static str = "my.access_logger";
 /// # }
 /// # impl MyAccessLogger {
-/// #     fn default() -> Result<Self> { Ok(MyAccessLogger) }
+/// #     fn default() -> extension::Result<Self> { Ok(MyAccessLogger) }
 /// # }
 /// #
-/// use envoy::{extension, extension::Registry, on_module_load};
+/// use envoy::extension::{entrypoint, Module, Result};
 ///
-/// on_module_load! { initialize } // put initialization logic into a function to make it unit testable
+/// entrypoint! { initialize } // put initialization logic into a function to make it unit testable
 ///
 /// /// Does one-time initialization.
 /// ///
 /// /// Returns a registry of extensions provided by this module.
-/// fn initialize() -> extension::Result<Registry> {
+/// fn initialize() -> Result<Module> {
 ///   // arbitrary initialization steps
 ///
-///   Registry::new()
+///   Module::new()
 ///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?
 ///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?
 ///       .add_access_logger(|_instance_id| MyAccessLogger::default())
 /// }
 /// ```
 #[macro_export]
-macro_rules! on_module_load {
+macro_rules! entrypoint {
     // Apparently, Rust toolchain doesn't handle well exported name `_start`
     // when a package is compiled to targets other than `wasm32-unknown-unknown`.
     // Specifically, linking issues have been observed with targets `wasm32-wasi`
@@ -103,12 +103,12 @@ macro_rules! on_module_load {
         )]
         #[no_mangle]
         extern "C" fn start() {
-            use $crate::extension::{self, Registry, Result};
+            use $crate::extension::{self, Module, Result};
             use $crate::host::log;
 
             fn init<F>(init_fn: F)
             where
-                F: FnOnce() -> Result<Registry>,
+                F: FnOnce() -> Result<Module>,
             {
                 // Apparently, `proxy_wasm` uses `set_log_level`
                 // to set a custom panic handler that will log panics using Envoy Log API.
@@ -126,9 +126,9 @@ macro_rules! on_module_load {
 }
 
 #[doc(hidden)]
-pub fn install(config: Result<Registry>) {
+pub fn install(config: Result<Module>) {
     match config {
-        Ok(registry) => ContextSelector::with_default_ops(registry.into()).install(),
+        Ok(module) => ContextSelector::with_default_ops(module.into()).install(),
         Err(err) => VoidContextSelector::new(err).install(),
     }
 }

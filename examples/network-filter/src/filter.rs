@@ -15,9 +15,8 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use envoy::extension::filter::network;
-use envoy::extension::{InstanceId, Result};
-use envoy::host::{http::client as http_client, log, time};
+use envoy::extension::{filter::network, InstanceId, NetworkFilter, Result};
+use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -36,10 +35,10 @@ pub struct SampleNetworkFilter<'a> {
     instance_id: InstanceId,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
-    http_client: &'a dyn http_client::Client,
+    clock: &'a dyn Clock,
+    http_client: &'a dyn HttpClient,
 
-    active_request: Option<http_client::RequestHandle>,
+    active_request: Option<HttpClientRequestHandle>,
     response_body_size: u64,
 }
 
@@ -49,15 +48,15 @@ impl<'a> SampleNetworkFilter<'a> {
         config: Rc<SampleNetworkFilterConfig>,
         stats: Rc<SampleNetworkFilterStats>,
         instance_id: InstanceId,
-        time_service: &'a dyn time::Service,
-        http_client: &'a dyn http_client::Client,
+        clock: &'a dyn Clock,
+        http_client: &'a dyn HttpClient,
     ) -> Self {
         // Inject dependencies on Envoy host APIs
         SampleNetworkFilter {
             config,
             stats,
             instance_id,
-            time_service,
+            clock,
             http_client,
             active_request: None,
             response_body_size: 0,
@@ -65,19 +64,18 @@ impl<'a> SampleNetworkFilter<'a> {
     }
 }
 
-impl<'a> network::Filter for SampleNetworkFilter<'a> {
+impl<'a> NetworkFilter for SampleNetworkFilter<'a> {
     /// Is called when a new TCP connection is opened.
     fn on_new_connection(&mut self) -> Result<network::FilterStatus> {
         // Update stats
         self.stats.requests_active().inc()?;
 
-        let current_time = self.time_service.get_current_time()?;
-        let datetime: DateTime<Local> = current_time.into();
+        let now: DateTime<Local> = self.clock.now()?.into();
 
         log::info!(
             "#{} new TCP connection starts at {} with config: {:?}",
             self.instance_id,
-            datetime.format("%+"),
+            now.format("%+"),
             self.config,
         );
 
@@ -96,7 +94,7 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
             log::info!("#{} sent outgoing request: @{}", self.instance_id, request);
         }
 
-        Ok(network::FilterStatus::Pause)
+        Ok(network::FilterStatus::StopIteration)
     }
 
     /// Is called on response body part.
@@ -134,12 +132,12 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
     /// Use filter_ops to amend and resume TCP flow.
     fn on_http_call_response(
         &mut self,
-        request: http_client::RequestHandle,
+        request: HttpClientRequestHandle,
         num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
         _filter_ops: &dyn network::Ops,
-        http_client_ops: &dyn http_client::ResponseOps,
+        http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         log::info!(
             "#{} received response on outgoing request: @{}",
@@ -150,7 +148,7 @@ impl<'a> network::Filter for SampleNetworkFilter<'a> {
         self.active_request = None;
 
         log::info!("     headers[count={}]:", num_headers);
-        let response_headers = http_client_ops.get_http_call_response_headers()?;
+        let response_headers = http_client_ops.http_call_response_headers()?;
         for (name, value) in &response_headers {
             log::info!("       {}: {}", name, value);
         }

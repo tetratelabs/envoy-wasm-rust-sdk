@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{DrainStatus, Factory, Ops};
-use crate::abi::proxy_wasm_ext::traits::{ChildContext, Context, RootContext};
+use super::{DrainStatus, ExtensionFactory, Ops};
+use crate::abi::proxy_wasm::traits::{ChildContext, Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::{ConfigStatus, InstanceId};
 
-pub(crate) struct FactoryContext<'a, F>
+pub(crate) struct ExtensionFactoryContext<'a, F>
 where
-    F: Factory,
+    F: ExtensionFactory,
 {
     factory: F,
     factory_ops: &'a dyn Ops,
@@ -27,9 +27,9 @@ where
     child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
 }
 
-impl<'a, F> RootContext for FactoryContext<'a, F>
+impl<'a, F> RootContext for ExtensionFactoryContext<'a, F>
 where
-    F: Factory,
+    F: ExtensionFactory,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
         match self.factory.on_configure(
@@ -54,9 +54,9 @@ where
     }
 }
 
-impl<'a, F> Context for FactoryContext<'a, F>
+impl<'a, F> Context for ExtensionFactoryContext<'a, F>
 where
-    F: Factory,
+    F: ExtensionFactory,
 {
     fn on_done(&mut self) -> bool {
         match self.factory.on_drain() {
@@ -70,9 +70,9 @@ where
     }
 }
 
-impl<'a, F> FactoryContext<'a, F>
+impl<'a, F> ExtensionFactoryContext<'a, F>
 where
-    F: Factory,
+    F: ExtensionFactory,
 {
     pub fn new(
         factory: F,
@@ -80,7 +80,7 @@ where
         error_sink: &'a dyn ErrorSink,
         child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
     ) -> Self {
-        FactoryContext {
+        ExtensionFactoryContext {
             factory,
             factory_ops,
             error_sink,

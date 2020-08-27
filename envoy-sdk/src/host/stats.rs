@@ -41,14 +41,14 @@ pub trait Histogram {
     fn record(&self, value: u64) -> host::Result<()>;
 }
 
-pub trait Service {
+pub trait Stats {
     fn counter(&self, name: &str) -> host::Result<Box<dyn Counter>>;
     fn gauge(&self, name: &str) -> host::Result<Box<dyn Gauge>>;
     fn histogram(&self, name: &str) -> host::Result<Box<dyn Histogram>>;
 }
 
-impl dyn Service {
-    pub fn default() -> &'static dyn Service {
+impl dyn Stats {
+    pub fn default() -> &'static dyn Stats {
         &impls::Host
     }
 }
@@ -56,14 +56,14 @@ impl dyn Service {
 mod impls {
     use std::cmp;
 
-    use super::Service;
-    use crate::abi::proxy_wasm_ext::hostcalls;
-    use crate::abi::proxy_wasm_ext::types::{MetricHandle, MetricType};
+    use super::Stats;
+    use crate::abi::proxy_wasm::hostcalls;
+    use crate::abi::proxy_wasm::types::{MetricHandle, MetricType};
     use crate::host;
 
     pub(super) struct Host;
 
-    impl Service for Host {
+    impl Stats for Host {
         fn counter(&self, name: &str) -> host::Result<Box<dyn super::Counter>> {
             hostcalls::define_metric(MetricType::Counter, name)
                 .map(|handle| Box::new(Counter(handle)) as Box<dyn super::Counter>)

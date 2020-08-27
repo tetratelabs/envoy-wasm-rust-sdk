@@ -18,12 +18,12 @@ use std::time::SystemTime;
 
 use crate::host;
 
-pub trait Service {
-    fn get_current_time(&self) -> host::Result<SystemTime>;
+pub trait Clock {
+    fn now(&self) -> host::Result<SystemTime>;
 }
 
-impl dyn Service {
-    pub fn default() -> &'static dyn Service {
+impl dyn Clock {
+    pub fn default() -> &'static dyn Clock {
         &impls::Host
     }
 }
@@ -31,15 +31,14 @@ impl dyn Service {
 mod impls {
     use std::time::SystemTime;
 
-    use crate::abi::proxy_wasm_ext::hostcalls;
-
-    use super::Service;
+    use super::Clock;
+    use crate::abi::proxy_wasm::hostcalls;
     use crate::host;
 
     pub(super) struct Host;
 
-    impl Service for Host {
-        fn get_current_time(&self) -> host::Result<SystemTime> {
+    impl Clock for Host {
+        fn now(&self) -> host::Result<SystemTime> {
             hostcalls::get_current_time()
         }
     }

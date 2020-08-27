@@ -16,8 +16,8 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use envoy::extension::filter::http;
-use envoy::extension::{InstanceId, Result};
-use envoy::host::{http::client as http_client, log, time};
+use envoy::extension::{HttpFilter, InstanceId, Result};
+use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -36,10 +36,10 @@ pub struct SampleHttpFilter<'a> {
     instance_id: InstanceId,
     // This example shows how to use Time API, HTTP Client API and
     // Metrics API provided by Envoy host.
-    time_service: &'a dyn time::Service,
-    http_client: &'a dyn http_client::Client,
+    clock: &'a dyn Clock,
+    http_client: &'a dyn HttpClient,
 
-    active_request: Option<http_client::RequestHandle>,
+    active_request: Option<HttpClientRequestHandle>,
     response_body_size: u64,
 }
 
@@ -49,15 +49,15 @@ impl<'a> SampleHttpFilter<'a> {
         config: Rc<SampleHttpFilterConfig>,
         stats: Rc<SampleHttpFilterStats>,
         instance_id: InstanceId,
-        time_service: &'a dyn time::Service,
-        http_client: &'a dyn http_client::Client,
+        clock: &'a dyn Clock,
+        http_client: &'a dyn HttpClient,
     ) -> Self {
         // Inject dependencies on Envoy host APIs
         SampleHttpFilter {
             config,
             stats,
             instance_id,
-            time_service,
+            clock,
             http_client,
             active_request: None,
             response_body_size: 0,
@@ -65,7 +65,7 @@ impl<'a> SampleHttpFilter<'a> {
     }
 }
 
-impl<'a> http::Filter for SampleHttpFilter<'a> {
+impl<'a> HttpFilter for SampleHttpFilter<'a> {
     /// Is called when HTTP request headers have been received.
     ///
     /// Use filter_ops to access and mutate request headers.
@@ -77,29 +77,28 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         // Update stats
         self.stats.requests_active().inc()?;
 
-        let current_time = self.time_service.get_current_time()?;
-        let datetime: DateTime<Local> = current_time.into();
+        let now: DateTime<Local> = self.clock.now()?.into();
 
         log::info!(
             "#{} new http exchange starts at {} with config: {:?}",
             self.instance_id,
-            datetime.format("%+"),
+            now.format("%+"),
             self.config,
         );
 
         log::info!("#{} observing request headers", self.instance_id);
-        for (name, value) in &filter_ops.get_request_headers()? {
+        for (name, value) in &filter_ops.request_headers()? {
             log::info!("#{} -> {}: {}", self.instance_id, name, value);
         }
 
-        match filter_ops.get_request_header(":path")? {
+        match filter_ops.request_header(":path")? {
             Some(path) if path == "/ping" => {
                 filter_ops.send_response(
                     200,
                     vec![("x-sample-response", "pong")],
                     Some(b"Pong!\n"),
                 )?;
-                Ok(http::FilterHeadersStatus::Pause)
+                Ok(http::FilterHeadersStatus::StopIteration)
             }
             Some(path) if path == "/secret" => {
                 self.active_request = Some(self.http_client.send_request(
@@ -121,7 +120,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
                     );
                 }
                 log::info!("#{} suspending http exchange processing", self.instance_id);
-                Ok(http::FilterHeadersStatus::Pause)
+                Ok(http::FilterHeadersStatus::StopIteration)
             }
             _ => Ok(http::FilterHeadersStatus::Continue),
         }
@@ -136,7 +135,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         filter_ops: &dyn http::ResponseHeadersOps,
     ) -> Result<http::FilterHeadersStatus> {
         log::info!("#{} observing response headers", self.instance_id);
-        for (name, value) in &filter_ops.get_response_headers()? {
+        for (name, value) in &filter_ops.response_headers()? {
             log::info!("#{} <- {}: {}", self.instance_id, name, value);
         }
         Ok(http::FilterHeadersStatus::Continue)
@@ -177,12 +176,12 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
     /// Use filter_ops to amend and resume HTTP exchange.
     fn on_http_call_response(
         &mut self,
-        request: http_client::RequestHandle,
+        request: HttpClientRequestHandle,
         num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
         filter_ops: &dyn http::Ops,
-        http_client_ops: &dyn http_client::ResponseOps,
+        http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         log::info!(
             "#{} received response on authorization request: @{}",
@@ -193,7 +192,7 @@ impl<'a> http::Filter for SampleHttpFilter<'a> {
         self.active_request = None;
 
         log::info!("     headers[count={}]:", num_headers);
-        let response_headers = http_client_ops.get_http_call_response_headers()?;
+        let response_headers = http_client_ops.http_call_response_headers()?;
         for (name, value) in &response_headers {
             log::info!("       {}: {}", name, value);
         }

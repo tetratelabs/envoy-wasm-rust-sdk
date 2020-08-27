@@ -14,18 +14,18 @@
 
 //! `Envoy` `Access Logger API`.
 
-use crate::abi::proxy_wasm_ext::types::Bytes;
+use crate::abi::proxy_wasm::types::Bytes;
 
 use crate::extension::{ConfigStatus, Result};
 use crate::host;
-use crate::host::http::client as http_client;
+use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) use self::context::LoggerContext;
+pub(crate) use self::context::AccessLoggerContext;
 
 mod context;
 mod ops;
 
-pub trait Logger {
+pub trait AccessLogger {
     const NAME: &'static str;
 
     fn on_configure(
@@ -44,34 +44,34 @@ pub trait Logger {
 
     fn on_http_call_response(
         &mut self,
-        _request: http_client::RequestHandle,
+        _request: HttpClientRequestHandle,
         _num_headers: usize,
         _body_size: usize,
         _num_trailers: usize,
-        _http_client_ops: &dyn http_client::ResponseOps,
+        _http_client_ops: &dyn HttpClientResponseOps,
     ) -> Result<()> {
         Ok(())
     }
 }
 
 pub trait ConfigureOps {
-    fn get_configuration(&self) -> host::Result<Option<Bytes>>;
+    fn configuration(&self) -> host::Result<Option<Bytes>>;
 }
 
 pub trait LogOps {
-    fn get_request_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn request_headers(&self) -> host::Result<Vec<(String, String)>>;
 
-    fn get_request_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn request_header(&self, name: &str) -> host::Result<Option<String>>;
 
-    fn get_response_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_headers(&self) -> host::Result<Vec<(String, String)>>;
 
-    fn get_response_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_header(&self, name: &str) -> host::Result<Option<String>>;
 
-    fn get_response_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_trailers(&self) -> host::Result<Vec<(String, String)>>;
 
-    fn get_response_trailer(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_trailer(&self, name: &str) -> host::Result<Option<String>>;
 
-    fn get_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
+    fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
 }
 
 pub trait Ops: ConfigureOps + LogOps {

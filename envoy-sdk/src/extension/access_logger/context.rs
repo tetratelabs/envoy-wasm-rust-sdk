@@ -12,25 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{Logger, Ops};
-use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
+use super::{AccessLogger, Ops};
+use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::ConfigStatus;
-use crate::host::http::client as http_client;
+use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 
-pub(crate) struct LoggerContext<'a, L>
+pub(crate) struct AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     logger: L,
     logger_ops: &'a dyn Ops,
-    http_client_ops: &'a dyn http_client::ResponseOps,
+    http_client_ops: &'a dyn HttpClientResponseOps,
     error_sink: &'a dyn ErrorSink,
 }
 
-impl<'a, L> RootContext for LoggerContext<'a, L>
+impl<'a, L> RootContext for AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
         match self.logger.on_configure(
@@ -55,9 +55,9 @@ where
     }
 }
 
-impl<'a, L> Context for LoggerContext<'a, L>
+impl<'a, L> Context for AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     // Http Client callbacks
 
@@ -69,7 +69,7 @@ where
         num_trailers: usize,
     ) {
         if let Err(err) = self.logger.on_http_call_response(
-            http_client::RequestHandle::from(token_id),
+            HttpClientRequestHandle::from(token_id),
             num_headers,
             body_size,
             num_trailers,
@@ -85,17 +85,17 @@ where
     }
 }
 
-impl<'a, L> LoggerContext<'a, L>
+impl<'a, L> AccessLoggerContext<'a, L>
 where
-    L: Logger,
+    L: AccessLogger,
 {
     pub fn new(
         logger: L,
         logger_ops: &'a dyn Ops,
-        http_client_ops: &'a dyn http_client::ResponseOps,
+        http_client_ops: &'a dyn HttpClientResponseOps,
         error_sink: &'a dyn ErrorSink,
     ) -> Self {
-        LoggerContext {
+        AccessLoggerContext {
             logger,
             logger_ops,
             http_client_ops,
@@ -108,7 +108,7 @@ where
         Self::new(
             logger,
             Ops::default(),
-            http_client::ResponseOps::default(),
+            HttpClientResponseOps::default(),
             ErrorSink::default(),
         )
     }

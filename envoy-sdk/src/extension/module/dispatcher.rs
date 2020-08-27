@@ -16,22 +16,22 @@ use std::rc::Rc;
 
 use super::ContextFactoryHashMap;
 
-use crate::abi::proxy_wasm_ext;
-use crate::abi::proxy_wasm_ext::traits::{Context, RootContext};
+use crate::abi::proxy_wasm;
+use crate::abi::proxy_wasm::traits::{Context, RootContext};
 use crate::error::format_err;
 use crate::extension::error::ConfigurationError;
 use crate::extension::error::ErrorSink;
 use crate::extension::{Error, Result};
 use crate::host::error::function;
-use crate::host::stream_info::Service;
+use crate::host::StreamInfo;
 
 pub(crate) struct ContextSelector<'a> {
     factories: ContextFactoryHashMap,
-    stream_info: &'a dyn Service,
+    stream_info: &'a dyn StreamInfo,
 }
 
 impl<'a> ContextSelector<'a> {
-    pub fn new(factories: ContextFactoryHashMap, stream_info: &'a dyn Service) -> Self {
+    pub fn new(factories: ContextFactoryHashMap, stream_info: &'a dyn StreamInfo) -> Self {
         ContextSelector {
             factories,
             stream_info,
@@ -39,11 +39,11 @@ impl<'a> ContextSelector<'a> {
     }
 
     pub fn with_default_ops(factories: ContextFactoryHashMap) -> Self {
-        Self::new(factories, Service::default())
+        Self::new(factories, StreamInfo::default())
     }
 
     fn new_root_context(&mut self, context_id: u32) -> Result<Box<dyn RootContext>> {
-        let name = match self.stream_info.get_property(vec!["plugin_root_id"])? {
+        let name = match self.stream_info.stream_property(vec!["plugin_root_id"])? {
             Some(bytes) => String::from_utf8(bytes).map_err(|e| {
                 function("env", "proxy_get_property").into_parse_error(format_err!(
                     "value of property \"{}\" is not a valid UTF-8 string: {:?}",
@@ -71,7 +71,7 @@ impl<'a> ContextSelector<'a> {
 
 impl ContextSelector<'static> {
     pub fn install(mut self) {
-        proxy_wasm_ext::set_root_context(move |context_id| {
+        proxy_wasm::set_root_context(move |context_id| {
             // At the moment, `wasm32-unknown-unknown` and `wasm32-wasi` targets
             // do not support stack unwinding.
             // Consequently, in the case of a panic, memory on heap will not be released.
@@ -139,7 +139,7 @@ impl VoidContextSelector {
 
     pub fn install(self) {
         let err = Rc::new(self.err);
-        proxy_wasm_ext::set_root_context(move |_| {
+        proxy_wasm::set_root_context(move |_| {
             // At the moment, `wasm32-unknown-unknown` and `wasm32-wasi` targets
             // do not support stack unwinding.
             // Consequently, in the case of a panic, memory on heap will not be released.

@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use envoy::{extension, extension::Registry, on_module_load};
+use envoy::extension::{entrypoint, Module, Result};
 
 use http_filter::SampleHttpFilterFactory;
 
 // Generate the `_start` function that will be called by `Envoy` to let
 // WebAssembly module initialize itself.
-on_module_load! { initialize }
+entrypoint! { initialize }
 
 /// Does one-time initialization.
 ///
 /// Returns a registry of extensions provided by this module.
-fn initialize() -> extension::Result<Registry> {
-    Registry::new().add_http_filter(|_instance_id| SampleHttpFilterFactory::default())
+fn initialize() -> Result<Module> {
+    Module::new().add_http_filter(|_instance_id| SampleHttpFilterFactory::default())
 }
 
 #[cfg(test)]
