@@ -81,6 +81,10 @@ pub(crate) trait ErrorSink {
 }
 
 impl dyn ErrorSink {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn ErrorSink {
         &impls::DefaultErrorSink
     }
@@ -88,6 +92,7 @@ impl dyn ErrorSink {
 
 mod impls {
     use super::{Error, ErrorSink};
+    use crate::host::log;
 
     pub(super) struct DefaultErrorSink;
 

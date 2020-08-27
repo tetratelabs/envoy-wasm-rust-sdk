@@ -18,11 +18,59 @@ use std::time::SystemTime;
 
 use crate::host;
 
+/// An interface of the `Envoy` `Time Service`.
+///
+/// # Examples
+///
+/// #### Basic usage of [`Clock`]:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// # use envoy::host::Result;
+/// # fn action() -> Result<()> {
+/// use envoy::host::Clock;
+///
+/// let clock = Clock::default();
+///
+/// let system_time = clock.now()?;
+/// # Ok(())
+/// # }
+/// ```
+///
+/// #### Injecting [`Clock`] into a HTTP Filter as a dependency:
+///
+/// ```
+/// # use envoy_sdk as envoy;
+/// use envoy::host::Clock;
+///
+/// struct MyHttpFilter<'a> {
+///     clock: &'a dyn Clock,
+/// }
+///
+/// impl<'a> MyHttpFilter<'a> {
+///     /// Creates a new instance parameterized with a given [`Clock`] implementation.
+///     pub fn new(clock: &'a dyn Clock) -> Self {
+///         MyHttpFilter { clock }
+///     }
+///
+///     /// Creates a new instance parameterized with the default [`Clock`] implementation.
+///     pub fn default() -> Self {
+///         Self::new(Clock::default())
+///     }
+/// }
+/// ```
+///
+/// [`Clock`]: trait.Clock.html
 pub trait Clock {
+    /// Returns current system time.
     fn now(&self) -> host::Result<SystemTime>;
 }
 
 impl dyn Clock {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
     pub fn default() -> &'static dyn Clock {
         &impls::Host
     }

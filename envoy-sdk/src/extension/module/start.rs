@@ -36,7 +36,7 @@ use crate::extension::{Module, Result};
 /// # impl ExtensionFactory for MyHttpFilterFactory {
 /// #     type Extension = MyHttpFilter;
 /// #
-/// #     const NAME: &'static str = "my.http_filter";
+/// #     const NAME: &'static str = "my_http_filter";
 /// #
 /// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyHttpFilter)
@@ -53,7 +53,7 @@ use crate::extension::{Module, Result};
 /// # impl ExtensionFactory for MyNetworkFilterFactory {
 /// #     type Extension = MyNetworkFilter;
 /// #
-/// #     const NAME: &'static str = "my.network_filter";
+/// #     const NAME: &'static str = "my_network_filter";
 /// #
 /// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
 /// #         Ok(MyNetworkFilter)
@@ -62,7 +62,7 @@ use crate::extension::{Module, Result};
 /// #
 /// # struct MyAccessLogger;
 /// # impl AccessLogger for MyAccessLogger {
-/// #     const NAME: &'static str = "my.access_logger";
+/// #     const NAME: &'static str = "my_access_logger";
 /// # }
 /// # impl MyAccessLogger {
 /// #     fn default() -> extension::Result<Self> { Ok(MyAccessLogger) }
@@ -76,12 +76,12 @@ use crate::extension::{Module, Result};
 /// ///
 /// /// Returns a registry of extensions provided by this module.
 /// fn initialize() -> Result<Module> {
-///   // arbitrary initialization steps
+///     // arbitrary initialization steps
 ///
-///   Module::new()
-///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?
-///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?
-///       .add_access_logger(|_instance_id| MyAccessLogger::default())
+///     Module::new()
+///         .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?
+///         .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?
+///         .add_access_logger(|_instance_id| MyAccessLogger::default())
 /// }
 /// ```
 #[macro_export]

@@ -60,7 +60,7 @@ where
                 self.error_sink
                     .observe("failed to handle HTTP request body", &err);
                 self.handle_error(err);
-                FilterDataStatus::StopIteration.as_action()
+                FilterDataStatus::StopIterationAndBuffer.as_action()
             }
         }
     }
@@ -106,7 +106,7 @@ where
                 self.error_sink
                     .observe("failed to handle HTTP response body", &err);
                 self.handle_error(err);
-                FilterDataStatus::StopIteration.as_action()
+                FilterDataStatus::StopIterationAndBuffer.as_action()
             }
         }
     }
@@ -125,20 +125,24 @@ where
             }
         }
     }
-
-    fn on_log(&mut self) {
-        if let Err(err) = self.filter.on_exchange_complete() {
-            self.error_sink
-                .observe("failed to handle completion of an HTTP stream", &err);
-            // HTTP stream is already being terminated, so there is no need to do it explicitly
-        }
-    }
 }
 
 impl<'a, F> Context for HttpFilterContext<'a, F>
 where
     F: HttpFilter,
 {
+    fn on_done(&mut self) -> bool {
+        if let Err(err) = self
+            .filter
+            .on_exchange_complete(self.filter_ops.as_exchange_complete_ops())
+        {
+            self.error_sink
+                .observe("failed to handle completion of an HTTP stream", &err);
+            // HTTP stream is already being terminated, so there is no need to do it explicitly
+        }
+        true
+    }
+
     // Http Client callbacks
 
     fn on_http_call_response(

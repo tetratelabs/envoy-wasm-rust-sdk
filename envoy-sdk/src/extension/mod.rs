@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `Envoy` `Extension API`.
+//! `Envoy` `Extension APIs` to be implemented by extensions.
 
 use std::fmt;
 
