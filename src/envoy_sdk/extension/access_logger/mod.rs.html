@@ -256,6 +256,8 @@
 <span id="256">256</span>
 <span id="257">257</span>
 <span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -290,7 +292,7 @@
 <span class="doccomment">//! struct MyAccessLogger;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! impl AccessLogger for MyAccessLogger {</span>
-<span class="doccomment">//!     const NAME: &amp;&#39;static str = &quot;my_access_logger&quot;;</span>
+<span class="doccomment">//!     fn name() -&gt; &amp;&#39;static str { &quot;my_access_logger&quot; }</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -304,7 +306,7 @@
 <span class="doccomment">//! # struct MyAccessLogger;</span>
 <span class="doccomment">//! #</span>
 <span class="doccomment">//! # impl AccessLogger for MyAccessLogger {</span>
-<span class="doccomment">//! #     const NAME: &amp;&#39;static str = &quot;my_access_logger&quot;;</span>
+<span class="doccomment">//! #     fn name() -&gt; &amp;&#39;static str { &quot;my_access_logger&quot; }</span>
 <span class="doccomment">//! # }</span>
 <span class="doccomment">//! #</span>
 <span class="doccomment">//! use envoy::extension::{entrypoint, Module, Result};</span>
@@ -351,7 +353,7 @@
 <span class="doccomment">/// struct MyAccessLogger;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// impl AccessLogger for MyAccessLogger {</span>
-<span class="doccomment">///     const NAME: &amp;&#39;static str = &quot;my_access_logger&quot;;</span>
+<span class="doccomment">///     fn name() -&gt; &amp;&#39;static str { &quot;my_access_logger&quot; }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">///     fn on_log(&amp;mut self, ops: &amp;dyn LogOps) -&gt; Result&lt;()&gt; {</span>
 <span class="doccomment">///         let upstream_address = ops.stream_property(vec![&quot;upstream&quot;, &quot;address&quot;])?</span>
@@ -378,8 +380,10 @@
 <span class="doccomment">/// [`NetworkFilter`]: ../filter/network/trait.NetworkFilter.html</span>
 <span class="doccomment">/// [`Result::Err(x)`]: https://doc.rust-lang.org/core/result/enum.Result.html#variant.Err</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AccessLogger</span> {
-    <span class="doccomment">/// Name the extension should be referred to in `Envoy` configuration.</span>
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>;
+    <span class="doccomment">/// Returns a name the extension should be referred to in `Envoy` configuration.</span>
+    <span class="kw">fn</span> <span class="ident">name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>
+    <span class="kw">where</span>
+        <span class="self">Self</span>: <span class="ident">Sized</span>;
 
     <span class="doccomment">/// Called when `Access Logger` is being (re-)configured.</span>
     <span class="doccomment">///</span>

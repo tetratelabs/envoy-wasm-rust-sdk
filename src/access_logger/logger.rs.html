@@ -176,6 +176,8 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -249,7 +251,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This name appears in `Envoy` configuration as a value of `root_id` field</span>
     <span class="doccomment">/// (also known as `group_name`).</span>
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;examples.access_logger&quot;</span>;
+    <span class="kw">fn</span> <span class="ident">name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+        <span class="string">&quot;examples.access_logger&quot;</span>
+    }
 
     <span class="doccomment">/// Is called when Envoy creates a new Listener that uses Sample Access Logger.</span>
     <span class="doccomment">///</span>

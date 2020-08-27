@@ -171,7 +171,7 @@
 <span class="doccomment">/// # impl ExtensionFactory for MyHttpFilterFactory {</span>
 <span class="doccomment">/// #     type Extension = MyHttpFilter;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my_http_filter&quot;;</span>
+<span class="doccomment">/// #     fn name() -&gt; &amp;&#39;static str { &quot;my_http_filter&quot; }</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; extension::Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">/// #         Ok(MyHttpFilter)</span>
@@ -188,7 +188,7 @@
 <span class="doccomment">/// # impl ExtensionFactory for MyNetworkFilterFactory {</span>
 <span class="doccomment">/// #     type Extension = MyNetworkFilter;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my_network_filter&quot;;</span>
+<span class="doccomment">/// #     fn name() -&gt; &amp;&#39;static str { &quot;my_network_filter&quot; }</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; extension::Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">/// #         Ok(MyNetworkFilter)</span>
@@ -197,7 +197,7 @@
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # struct MyAccessLogger;</span>
 <span class="doccomment">/// # impl AccessLogger for MyAccessLogger {</span>
-<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my_access_logger&quot;;</span>
+<span class="doccomment">/// #     fn name() -&gt; &amp;&#39;static str { &quot;my_access_logger&quot; }</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// # impl MyAccessLogger {</span>
 <span class="doccomment">/// #     fn default() -&gt; extension::Result&lt;Self&gt; { Ok(MyAccessLogger) }</span>

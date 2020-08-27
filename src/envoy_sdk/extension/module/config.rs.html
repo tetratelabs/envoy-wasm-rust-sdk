@@ -196,7 +196,7 @@
             <span class="comment">// Bridge between Access Logger abstraction and Proxy Wasm ABI</span>
             <span class="prelude-val">Ok</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">AccessLoggerContext</span>::<span class="ident">with_default_ops</span>(<span class="ident">logger</span>)))
         });
-        <span class="self">self</span>.<span class="ident">add_extension</span>(<span class="ident">T</span>::<span class="ident">NAME</span>, <span class="ident">factory</span>)
+        <span class="self">self</span>.<span class="ident">add_extension</span>(<span class="ident">T</span>::<span class="ident">name</span>(), <span class="ident">factory</span>)
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_network_filter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">new</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
@@ -227,7 +227,7 @@
                 },
             )))
         });
-        <span class="self">self</span>.<span class="ident">add_extension</span>(<span class="ident">T</span>::<span class="ident">NAME</span>, <span class="ident">factory</span>)
+        <span class="self">self</span>.<span class="ident">add_extension</span>(<span class="ident">T</span>::<span class="ident">name</span>(), <span class="ident">factory</span>)
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_http_filter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">new</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
@@ -258,7 +258,7 @@
                 },
             )))
         });
-        <span class="self">self</span>.<span class="ident">add_extension</span>(<span class="ident">T</span>::<span class="ident">NAME</span>, <span class="ident">factory</span>)
+        <span class="self">self</span>.<span class="ident">add_extension</span>(<span class="ident">T</span>::<span class="ident">name</span>(), <span class="ident">factory</span>)
     }
 }
 

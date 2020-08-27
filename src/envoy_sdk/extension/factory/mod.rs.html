@@ -344,6 +344,8 @@
 <span id="344">344</span>
 <span id="345">345</span>
 <span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -384,7 +386,7 @@
 <span class="doccomment">//! impl ExtensionFactory for MyHttpFilterFactory {</span>
 <span class="doccomment">//!     type Extension = MyHttpFilter;</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//!     const NAME: &amp;&#39;static str = &quot;my_http_filter&quot;;</span>
+<span class="doccomment">//!     fn name() -&gt; &amp;&#39;static str { &quot;my_http_filter&quot; }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     fn new_extension(&amp;mut self, _instance_id: InstanceId) -&gt; Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">//!         Ok(MyHttpFilter)</span>
@@ -473,7 +475,7 @@
 <span class="doccomment">/// impl ExtensionFactory for MyHttpFilterFactory {</span>
 <span class="doccomment">///     type Extension = MyHttpFilter;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///     const NAME: &amp;&#39;static str = &quot;my_http_filter&quot;;</span>
+<span class="doccomment">///     fn name() -&gt; &amp;&#39;static str { &quot;my_http_filter&quot; }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">///     fn new_extension(&amp;mut self, _instance_id: InstanceId) -&gt; Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">///         Ok(MyHttpFilter)</span>
@@ -511,7 +513,7 @@
 <span class="doccomment">/// impl ExtensionFactory for MyHttpFilterFactory {</span>
 <span class="doccomment">///     type Extension = MyHttpFilter;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///     const NAME: &amp;&#39;static str = &quot;my_http_filter&quot;;</span>
+<span class="doccomment">///     fn name() -&gt; &amp;&#39;static str { &quot;my_http_filter&quot; }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">///     /// Called when extension is being (re-)configured on `Envoy Listener` update.</span>
 <span class="doccomment">///     fn on_configure(&amp;mut self, _configuration_size: usize, ops: &amp;dyn factory::ConfigureOps) -&gt; Result&lt;ConfigStatus&gt; {</span>
@@ -564,7 +566,7 @@
 <span class="doccomment">/// impl ExtensionFactory for MyHttpFilterFactory {</span>
 <span class="doccomment">///     type Extension = MyHttpFilter;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///     const NAME: &amp;&#39;static str = &quot;my_http_filter&quot;;</span>
+<span class="doccomment">///     fn name() -&gt; &amp;&#39;static str { &quot;my_http_filter&quot; }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">///     fn new_extension(&amp;mut self, _instance_id: InstanceId) -&gt; Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">///         Ok(MyHttpFilter::new(Rc::clone(&amp;self.stats)))</span>
@@ -596,8 +598,10 @@
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ExtensionFactory</span> {
     <span class="kw">type</span> <span class="ident">Extension</span>;
 
-    <span class="doccomment">/// Name the extension should be referred to in `Envoy` configuration.</span>
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>;
+    <span class="doccomment">/// Returns a name the extension should be referred to in `Envoy` configuration.</span>
+    <span class="kw">fn</span> <span class="ident">name</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>
+    <span class="kw">where</span>
+        <span class="self">Self</span>: <span class="ident">Sized</span>;
 
     <span class="doccomment">/// Called when extension is being (re-)configured on `Envoy Listener` update.</span>
     <span class="doccomment">///</span>
