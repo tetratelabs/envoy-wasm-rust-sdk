@@ -14,11 +14,11 @@ WebAssembly module initialize itself.</p>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns a registry of extensions provided by this module.</span>
 <span class="kw">fn</span> <span class="ident">initialize</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span> {
-  <span class="comment">// arbitrary initialization steps</span>
+    <span class="comment">// arbitrary initialization steps</span>
 
-  <span class="ident">Module</span>::<span class="ident">new</span>()
-      .<span class="ident">add_http_filter</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">MyHttpFilterFactory</span>::<span class="ident">default</span>())<span class="question-mark">?</span>
-      .<span class="ident">add_network_filter</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">MyNetworkFilterFactory</span>::<span class="ident">default</span>())<span class="question-mark">?</span>
-      .<span class="ident">add_access_logger</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">MyAccessLogger</span>::<span class="ident">default</span>())
+    <span class="ident">Module</span>::<span class="ident">new</span>()
+        .<span class="ident">add_http_filter</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">MyHttpFilterFactory</span>::<span class="ident">default</span>())<span class="question-mark">?</span>
+        .<span class="ident">add_network_filter</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">MyNetworkFilterFactory</span>::<span class="ident">default</span>())<span class="question-mark">?</span>
+        .<span class="ident">add_access_logger</span>(<span class="op">|</span><span class="ident">_instance_id</span><span class="op">|</span> <span class="ident">MyAccessLogger</span>::<span class="ident">default</span>())
 }</pre></div>
 </div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "envoy_sdk";</script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

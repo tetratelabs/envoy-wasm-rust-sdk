@@ -215,6 +215,16 @@
 <span id="215">215</span>
 <span id="216">216</span>
 <span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -242,7 +252,7 @@
     <span class="ident">F</span>: <span class="ident">NetworkFilter</span>,
 {
     <span class="ident">filter</span>: <span class="ident">F</span>,
-    <span class="ident">logger_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Ops</span>,
+    <span class="ident">filter_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Ops</span>,
     <span class="ident">http_client_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClientResponseOps</span>,
     <span class="ident">error_sink</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">ErrorSink</span>,
 }
@@ -267,7 +277,7 @@
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">on_downstream_data</span>(
             <span class="ident">data_size</span>,
             <span class="ident">end_of_stream</span>,
-            <span class="self">self</span>.<span class="ident">logger_ops</span>.<span class="ident">as_downstream_data_ops</span>(),
+            <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_downstream_data_ops</span>(),
         ) {
             <span class="prelude-val">Ok</span>(<span class="ident">status</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">status</span>.<span class="ident">as_action</span>(),
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -280,7 +290,10 @@
     }
 
     <span class="kw">fn</span> <span class="ident">on_downstream_close</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">peer_type</span>: <span class="ident">PeerType</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">on_downstream_close</span>(<span class="ident">peer_type</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">filter</span>
+            .<span class="ident">on_downstream_close</span>(<span class="ident">peer_type</span>, <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_downstream_close_ops</span>())
+        {
             <span class="self">self</span>.<span class="ident">error_sink</span>
                 .<span class="ident">observe</span>(<span class="string">&quot;failed to handle connection close by the downstream&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">err</span>);
             <span class="comment">// TODO(yskopets): do we still need to do anything to terminate the connection?</span>
@@ -292,7 +305,7 @@
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">on_upstream_data</span>(
             <span class="ident">data_size</span>,
             <span class="ident">end_of_stream</span>,
-            <span class="self">self</span>.<span class="ident">logger_ops</span>.<span class="ident">as_upstream_data_ops</span>(),
+            <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_upstream_data_ops</span>(),
         ) {
             <span class="prelude-val">Ok</span>(<span class="ident">status</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">status</span>.<span class="ident">as_action</span>(),
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -305,19 +318,14 @@
     }
 
     <span class="kw">fn</span> <span class="ident">on_upstream_close</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">peer_type</span>: <span class="ident">PeerType</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">on_upstream_close</span>(<span class="ident">peer_type</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">filter</span>
+            .<span class="ident">on_upstream_close</span>(<span class="ident">peer_type</span>, <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_upstream_close_ops</span>())
+        {
             <span class="self">self</span>.<span class="ident">error_sink</span>
                 .<span class="ident">observe</span>(<span class="string">&quot;failed to handle connection close by the upstream&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">err</span>);
             <span class="comment">// TODO(yskopets): do we still need to do anything to terminate the connection?</span>
             <span class="self">self</span>.<span class="ident">handle_error</span>(<span class="ident">err</span>);
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">on_log</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">on_connection_complete</span>() {
-            <span class="self">self</span>.<span class="ident">error_sink</span>
-                .<span class="ident">observe</span>(<span class="string">&quot;failed to handle completion of a connection&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">err</span>);
-            <span class="comment">// connection is already being terminated, so there is no need to do it explicitly</span>
         }
     }
 }
@@ -326,6 +334,18 @@
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">NetworkFilter</span>,
 {
+    <span class="kw">fn</span> <span class="ident">on_done</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">filter</span>
+            .<span class="ident">on_connection_complete</span>(<span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_connection_complete_ops</span>())
+        {
+            <span class="self">self</span>.<span class="ident">error_sink</span>
+                .<span class="ident">observe</span>(<span class="string">&quot;failed to handle completion of a connection&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">err</span>);
+            <span class="comment">// connection is already being terminated, so there is no need to do it explicitly</span>
+        }
+        <span class="bool-val">true</span>
+    }
+
     <span class="comment">// Http Client callbacks</span>
 
     <span class="kw">fn</span> <span class="ident">on_http_call_response</span>(
@@ -340,7 +360,7 @@
             <span class="ident">num_headers</span>,
             <span class="ident">body_size</span>,
             <span class="ident">num_trailers</span>,
-            <span class="self">self</span>.<span class="ident">logger_ops</span>,
+            <span class="self">self</span>.<span class="ident">filter_ops</span>,
             <span class="self">self</span>.<span class="ident">http_client_ops</span>,
         ) {
             <span class="self">self</span>.<span class="ident">error_sink</span>.<span class="ident">observe</span>(
@@ -358,13 +378,13 @@
 {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">filter</span>: <span class="ident">F</span>,
-        <span class="ident">logger_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Ops</span>,
+        <span class="ident">filter_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Ops</span>,
         <span class="ident">http_client_ops</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClientResponseOps</span>,
         <span class="ident">error_sink</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">ErrorSink</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">NetworkFilterContext</span> {
             <span class="ident">filter</span>,
-            <span class="ident">logger_ops</span>,
+            <span class="ident">filter_ops</span>,
             <span class="ident">http_client_ops</span>,
             <span class="ident">error_sink</span>,
         }
@@ -391,7 +411,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// E.g., if an error occurres inside [`proxy_on_context_create`] callback</span>
 <span class="doccomment">/// where a new Network Filter instance is supposed to be created,</span>
-<span class="doccomment">/// we cannot terminate the L4 connection right away - `Envoy` doesn&#39;t expect it</span>
+<span class="doccomment">/// we cannot terminate the TCP connection right away - `Envoy` doesn&#39;t expect it</span>
 <span class="doccomment">/// at this point.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Instead, we have to memorize the error and wait until [`proxy_on_new_connection`]</span>

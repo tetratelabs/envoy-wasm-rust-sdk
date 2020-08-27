@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["http","`Envoy` `HTTP Filter API`."],["network","`Envoy` `Network Filter API`."]]});
+initSidebarItems({"mod":[["http","`Envoy` `HTTP Filter` extension."],["network","`Envoy` `Network Filter` extension."]]});

@@ -359,7 +359,7 @@
     }
 
     <span class="doccomment">/// Is called when HTTP exchange is complete.</span>
-    <span class="kw">fn</span> <span class="ident">on_exchange_complete</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">on_exchange_complete</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">http</span>::<span class="ident">ExchangeCompleteOps</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// Update stats</span>
         <span class="self">self</span>.<span class="ident">stats</span>.<span class="ident">requests_active</span>().<span class="ident">dec</span>()<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">stats</span>.<span class="ident">requests_total</span>().<span class="ident">inc</span>()<span class="question-mark">?</span>;

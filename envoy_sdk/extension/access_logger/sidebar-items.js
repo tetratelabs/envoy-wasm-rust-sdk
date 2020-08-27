@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["AccessLogger",""],["ConfigureOps",""],["LogOps",""],["Ops",""]]});
+initSidebarItems({"trait":[["AccessLogger","An interface of the `Envoy` `Access Logger` extension."],["ConfigureOps","An interface for accessing extension config."],["DrainOps","An interface for acknowledging `Envoy` that `AccessLogger` has been drained."],["LogOps","An interface for accessing data of the HTTP stream or TCP connection that is being logged."]]});

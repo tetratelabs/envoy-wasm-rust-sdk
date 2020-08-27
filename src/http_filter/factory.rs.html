@@ -160,7 +160,7 @@
         })
     }
 
-    <span class="doccomment">/// Creates a new factory bound to the actual Envoy ABI.</span>
+    <span class="doccomment">/// Creates a new factory bound to the actual `Envoy` ABI.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">Clock</span>::<span class="ident">default</span>(), <span class="ident">HttpClient</span>::<span class="ident">default</span>(), <span class="ident">Stats</span>::<span class="ident">default</span>())
     }

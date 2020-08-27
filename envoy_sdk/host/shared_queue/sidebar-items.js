@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["SharedQueue",""]]});
+initSidebarItems({"struct":[["SharedQueueHandle","Opaque identifier of a queue accessible via `Shared Queue API`."]],"trait":[["SharedQueue","An interface of the `Envoy` `Shared Queue API`."]]});

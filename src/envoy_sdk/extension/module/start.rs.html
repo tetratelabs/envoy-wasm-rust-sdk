@@ -171,7 +171,7 @@
 <span class="doccomment">/// # impl ExtensionFactory for MyHttpFilterFactory {</span>
 <span class="doccomment">/// #     type Extension = MyHttpFilter;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my.http_filter&quot;;</span>
+<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my_http_filter&quot;;</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; extension::Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">/// #         Ok(MyHttpFilter)</span>
@@ -188,7 +188,7 @@
 <span class="doccomment">/// # impl ExtensionFactory for MyNetworkFilterFactory {</span>
 <span class="doccomment">/// #     type Extension = MyNetworkFilter;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my.network_filter&quot;;</span>
+<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my_network_filter&quot;;</span>
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// #     fn new_extension(&amp;mut self, instance_id: InstanceId) -&gt; extension::Result&lt;Self::Extension&gt; {</span>
 <span class="doccomment">/// #         Ok(MyNetworkFilter)</span>
@@ -197,7 +197,7 @@
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # struct MyAccessLogger;</span>
 <span class="doccomment">/// # impl AccessLogger for MyAccessLogger {</span>
-<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my.access_logger&quot;;</span>
+<span class="doccomment">/// #     const NAME: &amp;&#39;static str = &quot;my_access_logger&quot;;</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// # impl MyAccessLogger {</span>
 <span class="doccomment">/// #     fn default() -&gt; extension::Result&lt;Self&gt; { Ok(MyAccessLogger) }</span>
@@ -211,12 +211,12 @@
 <span class="doccomment">/// ///</span>
 <span class="doccomment">/// /// Returns a registry of extensions provided by this module.</span>
 <span class="doccomment">/// fn initialize() -&gt; Result&lt;Module&gt; {</span>
-<span class="doccomment">///   // arbitrary initialization steps</span>
+<span class="doccomment">///     // arbitrary initialization steps</span>
 <span class="doccomment">///</span>
-<span class="doccomment">///   Module::new()</span>
-<span class="doccomment">///       .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?</span>
-<span class="doccomment">///       .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?</span>
-<span class="doccomment">///       .add_access_logger(|_instance_id| MyAccessLogger::default())</span>
+<span class="doccomment">///     Module::new()</span>
+<span class="doccomment">///         .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?</span>
+<span class="doccomment">///         .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?</span>
+<span class="doccomment">///         .add_access_logger(|_instance_id| MyAccessLogger::default())</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
