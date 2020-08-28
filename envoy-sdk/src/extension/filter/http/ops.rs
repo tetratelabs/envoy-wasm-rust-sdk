@@ -45,7 +45,7 @@ impl RequestHeadersOps for Host {
 }
 
 impl RequestBodyOps for Host {
-    fn request_body(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
+    fn request_data(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::HttpRequestBody, start, max_size)
     }
 }
@@ -95,7 +95,7 @@ impl ResponseHeadersOps for Host {
 }
 
 impl ResponseBodyOps for Host {
-    fn response_body(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
+    fn response_data(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::HttpResponseBody, start, max_size)
     }
 }
