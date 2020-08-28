@@ -102,6 +102,15 @@
 <span id="102">102</span>
 <span id="103">103</span>
 <span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -121,7 +130,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">factory</span>, <span class="ident">ConfigStatus</span>, <span class="ident">ExtensionFactory</span>, <span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">ByteString</span>, <span class="ident">Clock</span>, <span class="ident">HttpClient</span>, <span class="ident">Stats</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">ByteString</span>, <span class="ident">Clock</span>, <span class="ident">HttpClient</span>, <span class="ident">Stats</span>, <span class="ident">StreamInfo</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">config</span>::<span class="ident">SampleHttpFilterConfig</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">filter</span>::<span class="ident">SampleHttpFilter</span>;
@@ -140,6 +149,7 @@
     <span class="comment">// Metrics API provided by Envoy host.</span>
     <span class="ident">clock</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Clock</span>,
     <span class="ident">http_client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClient</span>,
+    <span class="ident">stream_info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">StreamInfo</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">SampleHttpFilterFactory</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -147,6 +157,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">clock</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Clock</span>,
         <span class="ident">http_client</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">HttpClient</span>,
+        <span class="ident">stream_info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">StreamInfo</span>,
         <span class="ident">stats</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Stats</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">stats</span> <span class="op">=</span> <span class="ident">SampleHttpFilterStats</span>::<span class="ident">new</span>(
@@ -160,12 +171,18 @@
             <span class="ident">stats</span>: <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">stats</span>),
             <span class="ident">clock</span>,
             <span class="ident">http_client</span>,
+            <span class="ident">stream_info</span>,
         })
     }
 
     <span class="doccomment">/// Creates a new factory bound to the actual `Envoy` ABI.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">Clock</span>::<span class="ident">default</span>(), <span class="ident">HttpClient</span>::<span class="ident">default</span>(), <span class="ident">Stats</span>::<span class="ident">default</span>())
+        <span class="self">Self</span>::<span class="ident">new</span>(
+            <span class="ident">Clock</span>::<span class="ident">default</span>(),
+            <span class="ident">HttpClient</span>::<span class="ident">default</span>(),
+            <span class="ident">StreamInfo</span>::<span class="ident">default</span>(),
+            <span class="ident">Stats</span>::<span class="ident">default</span>(),
+        )
     }
 }
 
@@ -204,6 +221,7 @@
             <span class="ident">instance_id</span>,
             <span class="self">self</span>.<span class="ident">clock</span>,
             <span class="self">self</span>.<span class="ident">http_client</span>,
+            <span class="self">self</span>.<span class="ident">stream_info</span>,
         ))
     }
 }
