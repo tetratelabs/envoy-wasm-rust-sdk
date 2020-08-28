@@ -300,7 +300,7 @@
             <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="kw">if</span> <span class="ident">path</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;/ping&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">filter_ops</span>.<span class="ident">send_response</span>(
                     <span class="number">200</span>,
-                    <span class="macro">vec</span><span class="macro">!</span>[(<span class="string">&quot;x-sample-response&quot;</span>, <span class="string">&quot;pong&quot;</span>)],
+                    <span class="kw-2">&amp;</span>[(<span class="string">&quot;x-sample-response&quot;</span>, <span class="string">&quot;pong&quot;</span>)],
                     <span class="prelude-val">Some</span>(<span class="string">b&quot;Pong!\n&quot;</span>),
                 )<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">http</span>::<span class="ident">FilterHeadersStatus</span>::<span class="ident">StopIteration</span>)
@@ -308,13 +308,13 @@
             <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="kw">if</span> <span class="ident">path</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;/secret&quot;</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">active_request</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">http_client</span>.<span class="ident">send_request</span>(
                     <span class="string">&quot;mock_service&quot;</span>,
-                    <span class="macro">vec</span><span class="macro">!</span>[
+                    <span class="kw-2">&amp;</span>[
                         (<span class="string">&quot;:method&quot;</span>, <span class="string">&quot;GET&quot;</span>),
                         (<span class="string">&quot;:path&quot;</span>, <span class="string">&quot;/authz&quot;</span>),
                         (<span class="string">&quot;:authority&quot;</span>, <span class="string">&quot;mock.local&quot;</span>),
                     ],
                     <span class="prelude-val">None</span>,
-                    <span class="macro">vec</span><span class="macro">!</span>[],
+                    <span class="prelude-val">None</span>,
                     <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">3</span>),
                 )<span class="question-mark">?</span>);
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">request</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">active_request</span> {

@@ -101,6 +101,7 @@
 <span id="101">101</span>
 <span id="102">102</span>
 <span id="103">103</span>
+<span id="104">104</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -120,7 +121,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 
 <span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">extension</span>::{<span class="ident">factory</span>, <span class="ident">ConfigStatus</span>, <span class="ident">ExtensionFactory</span>, <span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">Clock</span>, <span class="ident">HttpClient</span>, <span class="ident">Stats</span>};
+<span class="kw">use</span> <span class="ident">envoy</span>::<span class="ident">host</span>::{<span class="ident">ByteString</span>, <span class="ident">Clock</span>, <span class="ident">HttpClient</span>, <span class="ident">Stats</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">config</span>::<span class="ident">SampleNetworkFilterConfig</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">filter</span>::<span class="ident">SampleNetworkFilter</span>;
@@ -182,12 +183,13 @@
     <span class="doccomment">/// Is called when Envoy creates a new Listener that uses Sample Network Filter.</span>
     <span class="kw">fn</span> <span class="ident">on_configure</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">_configuration_size</span>: <span class="ident">usize</span>,
-        <span class="ident">ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">factory</span>::<span class="ident">ConfigureOps</span>,
+        <span class="ident">config</span>: <span class="ident">ByteString</span>,
+        <span class="ident">_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">factory</span>::<span class="ident">ConfigureOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConfigStatus</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ops</span>.<span class="ident">configuration</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">bytes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleNetworkFilterConfig</span>::<span class="ident">try_from</span>(<span class="ident">bytes</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SampleNetworkFilterConfig</span>::<span class="ident">default</span>(),
+        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">config</span>.<span class="ident">is_empty</span>() {
+            <span class="ident">SampleNetworkFilterConfig</span>::<span class="ident">default</span>()
+        } <span class="kw">else</span> {
+            <span class="ident">SampleNetworkFilterConfig</span>::<span class="ident">try_from</span>(<span class="ident">config</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>
         };
         <span class="self">self</span>.<span class="ident">config</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">config</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">ConfigStatus</span>::<span class="ident">Accepted</span>)

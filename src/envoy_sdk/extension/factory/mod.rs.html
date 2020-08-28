@@ -346,6 +346,19 @@
 <span id="346">346</span>
 <span id="347">347</span>
 <span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -396,10 +409,8 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! [`ExtensionFactory`]: trait.ExtensionFactory.html</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">Bytes</span>;
-
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::{<span class="ident">factory</span>, <span class="ident">InstanceId</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::{<span class="self">self</span>, <span class="ident">ByteString</span>};
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="self">self</span>::<span class="ident">context</span>::<span class="ident">ExtensionFactoryContext</span>;
 
@@ -502,6 +513,7 @@
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// use std::rc::Rc;</span>
 <span class="doccomment">/// use envoy::extension::{factory, ConfigStatus, ExtensionFactory, InstanceId, Result};</span>
+<span class="doccomment">/// use envoy::host::ByteString;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// /// `ExtensionFactory` for `MyHttpFilter`.</span>
 <span class="doccomment">/// struct MyHttpFilterFactory {</span>
@@ -516,10 +528,9 @@
 <span class="doccomment">///     fn name() -&gt; &amp;&#39;static str { &quot;my_http_filter&quot; }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">///     /// Called when extension is being (re-)configured on `Envoy Listener` update.</span>
-<span class="doccomment">///     fn on_configure(&amp;mut self, _configuration_size: usize, ops: &amp;dyn factory::ConfigureOps) -&gt; Result&lt;ConfigStatus&gt; {</span>
-<span class="doccomment">///         let config = match ops.configuration()? {</span>
-<span class="doccomment">///             Some(bytes) =&gt; String::from_utf8(bytes)?,</span>
-<span class="doccomment">///             None =&gt; String::default(),</span>
+<span class="doccomment">///     fn on_configure(&amp;mut self, config: ByteString, ops: &amp;dyn factory::ConfigureOps) -&gt; Result&lt;ConfigStatus&gt; {</span>
+<span class="doccomment">///         let config = if config.is_empty() { String::default() } else {</span>
+<span class="doccomment">///             String::from_utf8(config.into_bytes())?</span>
 <span class="doccomment">///         };</span>
 <span class="doccomment">///         self.config = Rc::new(config);</span>
 <span class="doccomment">///         Ok(ConfigStatus::Accepted)</span>
@@ -607,9 +618,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Arguments</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `_configuration_size` - size of configuration data.</span>
-    <span class="doccomment">/// * `_ops`                - a [`trait object`][`ConfigureOps`] through which `ExtensionFactory`</span>
-    <span class="doccomment">///                           can access extension configuration.</span>
+    <span class="doccomment">/// * `_config` - configuration.</span>
+    <span class="doccomment">/// * `_ops`    - a [`trait object`][`ConfigureOps`] with operations available in this context.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Return value</span>
     <span class="doccomment">///</span>
@@ -619,7 +629,7 @@
     <span class="doccomment">/// [`ConfigureOps`]: trait.ConfigureOps.html</span>
     <span class="kw">fn</span> <span class="ident">on_configure</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">_configuration_size</span>: <span class="ident">usize</span>,
+        <span class="ident">_config</span>: <span class="ident">ByteString</span>,
         <span class="ident">_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">factory</span>::<span class="ident">ConfigureOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConfigStatus</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">ConfigStatus</span>::<span class="ident">Accepted</span>)
@@ -653,10 +663,26 @@
 }
 
 <span class="doccomment">/// An interface for accessing extension config.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConfigureOps</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ContextOps</span> {
     <span class="doccomment">/// Returns extension config.</span>
-    <span class="kw">fn</span> <span class="ident">configuration</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">configuration</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span>;
 }
+
+<span class="kw">impl</span> <span class="kw">dyn</span> <span class="ident">ContextOps</span> {
+    <span class="doccomment">/// Returns the default implementation that interacts with `Envoy`</span>
+    <span class="doccomment">/// through its [`ABI`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`ABI`]: https://github.com/proxy-wasm/spec</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="kw">dyn</span> <span class="ident">ContextOps</span> {
+        <span class="kw-2">&amp;</span><span class="ident">ops</span>::<span class="ident">Host</span>
+    }
+}
+
+<span class="doccomment">/// An interface for operations available in the context of [`on_configure`]</span>
+<span class="doccomment">/// invocation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`on_configure`]: trait.ExtensionFactory.html#method.on_configure</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConfigureOps</span> {}
 
 <span class="doccomment">/// An interface for acknowledging `Envoy` that [`ExtensionFactory`] has been drained.</span>
 <span class="doccomment">///</span>

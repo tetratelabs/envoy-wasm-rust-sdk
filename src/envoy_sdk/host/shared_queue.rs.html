@@ -107,7 +107,6 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
-<span id="110">110</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -125,8 +124,7 @@
 
 <span class="doccomment">//! `Envoy` `Shared Queue API`.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">Bytes</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::{<span class="self">self</span>, <span class="ident">ByteString</span>};
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">SharedQueueHandle</span>;
 
@@ -144,7 +142,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// let queue_handle = shared_queue.register(&quot;shared_queue&quot;)?;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// shared_queue.enqueue(queue_handle, Some(b&quot;some value&quot;))?;</span>
+<span class="doccomment">/// shared_queue.enqueue(queue_handle, b&quot;some value&quot;)?;</span>
 <span class="doccomment">/// # Ok(())</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
@@ -178,9 +176,9 @@
 
     <span class="kw">fn</span> <span class="ident">lookup</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">vm_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SharedQueueHandle</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">dequeue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">dequeue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">enqueue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">enqueue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="kw">dyn</span> <span class="ident">SharedQueue</span> {
@@ -196,8 +194,8 @@
 <span class="kw">mod</span> <span class="ident">impls</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">SharedQueue</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">hostcalls</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::{<span class="ident">Bytes</span>, <span class="ident">SharedQueueHandle</span>};
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">SharedQueueHandle</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::{<span class="self">self</span>, <span class="ident">ByteString</span>};
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">Host</span>;
 
@@ -210,11 +208,11 @@
             <span class="ident">hostcalls</span>::<span class="ident">resolve_shared_queue</span>(<span class="ident">vm_id</span>, <span class="ident">name</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">dequeue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">dequeue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span> {
             <span class="ident">hostcalls</span>::<span class="ident">dequeue_shared_queue</span>(<span class="ident">queue_id</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">enqueue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">enqueue</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">queue_id</span>: <span class="ident">SharedQueueHandle</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
             <span class="ident">hostcalls</span>::<span class="ident">enqueue_shared_queue</span>(<span class="ident">queue_id</span>, <span class="ident">value</span>)
         }
     }

@@ -258,6 +258,18 @@
 <span id="258">258</span>
 <span id="259">259</span>
 <span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -322,11 +334,9 @@
 <span class="doccomment">//! [`AccessLogger`]: trait.AccessLogger.html</span>
 <span class="doccomment">//! [`Register`]: ../../macro.entrypoint.html</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">Bytes</span>;
-
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::{<span class="ident">ConfigStatus</span>, <span class="ident">DrainStatus</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::<span class="ident">http</span>::<span class="ident">client</span>::{<span class="ident">HttpClientRequestHandle</span>, <span class="ident">HttpClientResponseOps</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::{<span class="self">self</span>, <span class="ident">ByteString</span>, <span class="ident">HeaderMap</span>};
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="self">self</span>::<span class="ident">context</span>::<span class="ident">AccessLoggerContext</span>;
 
@@ -347,7 +357,7 @@
 <span class="doccomment">/// # use envoy_sdk as envoy;</span>
 <span class="doccomment">/// use envoy::extension::{AccessLogger, Result};</span>
 <span class="doccomment">/// use envoy::extension::access_logger::LogOps;</span>
-<span class="doccomment">/// use envoy::host::log;</span>
+<span class="doccomment">/// use envoy::host::{ByteString, log};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// /// My very own `AccessLogger`.</span>
 <span class="doccomment">/// struct MyAccessLogger;</span>
@@ -356,10 +366,8 @@
 <span class="doccomment">///     fn name() -&gt; &amp;&#39;static str { &quot;my_access_logger&quot; }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">///     fn on_log(&amp;mut self, ops: &amp;dyn LogOps) -&gt; Result&lt;()&gt; {</span>
-<span class="doccomment">///         let upstream_address = ops.stream_property(vec![&quot;upstream&quot;, &quot;address&quot;])?</span>
-<span class="doccomment">///             .map(String::from_utf8)</span>
-<span class="doccomment">///             .transpose()?</span>
-<span class="doccomment">///             .unwrap_or(&quot;&lt;unknown&gt;&quot;.to_string());</span>
+<span class="doccomment">///         let upstream_address = ops.stream_property(&amp;[&quot;upstream&quot;, &quot;address&quot;])?</span>
+<span class="doccomment">///             .unwrap_or_else(|| &quot;&lt;unknown&gt;&quot;.into());</span>
 <span class="doccomment">///         log::info!(&quot;upstream.address : {}&quot;, upstream_address);</span>
 <span class="doccomment">///         Ok(())</span>
 <span class="doccomment">///     }    </span>
@@ -389,9 +397,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Arguments</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// * `_configuration_size` - size of configuration data.</span>
-    <span class="doccomment">/// * `_ops`                - a [`trait object`][`ConfigureOps`] through which `Access Logger` can access</span>
-    <span class="doccomment">///                           its configuration.</span>
+    <span class="doccomment">/// * `_config` - configuration.</span>
+    <span class="doccomment">/// * `_ops`    - a [`trait object`][`ConfigureOps`] through which `Access Logger` can access</span>
+    <span class="doccomment">///               its configuration.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Return value</span>
     <span class="doccomment">///</span>
@@ -401,7 +409,7 @@
     <span class="doccomment">/// [`ConfigureOps`]: trait.ConfigureOps.html</span>
     <span class="kw">fn</span> <span class="ident">on_configure</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">_configuration_size</span>: <span class="ident">usize</span>,
+        <span class="ident">_config</span>: <span class="ident">ByteString</span>,
         <span class="ident">_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">ConfigureOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConfigStatus</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">ConfigStatus</span>::<span class="ident">Accepted</span>)
@@ -460,10 +468,26 @@
 }
 
 <span class="doccomment">/// An interface for accessing extension config.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConfigureOps</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ContextOps</span> {
     <span class="doccomment">/// Returns extension config.</span>
-    <span class="kw">fn</span> <span class="ident">configuration</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">configuration</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span>;
 }
+
+<span class="kw">impl</span> <span class="kw">dyn</span> <span class="ident">ContextOps</span> {
+    <span class="doccomment">/// Returns the default implementation that interacts with `Envoy`</span>
+    <span class="doccomment">/// through its [`ABI`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`ABI`]: https://github.com/proxy-wasm/spec</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="kw">dyn</span> <span class="ident">ContextOps</span> {
+        <span class="kw-2">&amp;</span><span class="ident">ops</span>::<span class="ident">Host</span>
+    }
+}
+
+<span class="doccomment">/// An interface for operations available in the context of [`on_configure`]</span>
+<span class="doccomment">/// invocation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`on_configure`]: trait.AccessLogger.html#method.on_configure</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConfigureOps</span> {}
 
 <span class="doccomment">/// An interface for acknowledging `Envoy` that `AccessLogger` has been drained.</span>
 <span class="doccomment">///</span>
@@ -475,19 +499,19 @@
 
 <span class="doccomment">/// An interface for accessing data of the HTTP stream or TCP connection that is being logged.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">LogOps</span> {
-    <span class="kw">fn</span> <span class="ident">request_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">request_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HeaderMap</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">request_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">request_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">response_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">response_headers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HeaderMap</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">response_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">response_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">response_trailers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">response_trailers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HeaderMap</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">response_trailer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">response_trailer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>

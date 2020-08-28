@@ -92,9 +92,6 @@
 <span id="92">92</span>
 <span id="93">93</span>
 <span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -112,9 +109,7 @@
 
 <span class="doccomment">//! `Envoy` `Stream Info API`.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">Bytes</span>;
-
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::{<span class="self">self</span>, <span class="ident">ByteString</span>};
 
 <span class="doccomment">/// An interface of the `Envoy` `Stream Info API`.</span>
 <span class="doccomment">///</span>
@@ -128,9 +123,9 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// let stream_info = StreamInfo::default();</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// let plugin_name = stream_info.stream_property(vec![&quot;plugin_name&quot;])?;</span>
+<span class="doccomment">/// let plugin_name = stream_info.stream_property(&amp;[&quot;plugin_name&quot;])?;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// stream_info.set_stream_property(vec![&quot;my_extension&quot;, &quot;output&quot;], Some(b&quot;property value&quot;))?;</span>
+<span class="doccomment">/// stream_info.set_stream_property(&amp;[&quot;my_extension&quot;, &quot;output&quot;], b&quot;property value&quot;)?;</span>
 <span class="doccomment">/// # Ok(())</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
@@ -151,7 +146,7 @@
     <span class="doccomment">/// [`HttpFilter`]: ../../extension/filter/http/trait.HttpFilter.html</span>
     <span class="doccomment">/// [`NetworkFilter`]: ../../extension/filter/network/trait.NetworkFilter.html</span>
     <span class="doccomment">/// [`AccessLogger`]: ../../extension/access_logger/trait.AccessLogger.html</span>
-    <span class="kw">fn</span> <span class="ident">stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Saves a value in the enclosing context.</span>
     <span class="doccomment">///</span>
@@ -161,7 +156,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// * `path`  - property path as an array of path segments</span>
     <span class="doccomment">/// * `value` - an opaque blob of bytes</span>
-    <span class="kw">fn</span> <span class="ident">set_stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">set_stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>], <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="kw">dyn</span> <span class="ident">StreamInfo</span> {
@@ -176,19 +171,18 @@
 
 <span class="kw">mod</span> <span class="ident">impls</span> {
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">hostcalls</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">abi</span>::<span class="ident">proxy_wasm</span>::<span class="ident">types</span>::<span class="ident">Bytes</span>;
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">StreamInfo</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::{<span class="self">self</span>, <span class="ident">ByteString</span>};
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">Host</span>;
 
     <span class="kw">impl</span> <span class="ident">StreamInfo</span> <span class="kw">for</span> <span class="ident">Host</span> {
-        <span class="kw">fn</span> <span class="ident">stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span><span class="op">&gt;</span> {
             <span class="ident">hostcalls</span>::<span class="ident">get_property</span>(<span class="ident">path</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">set_stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">set_stream_property</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>], <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
             <span class="ident">hostcalls</span>::<span class="ident">set_property</span>(<span class="ident">path</span>, <span class="ident">value</span>)
         }
     }
