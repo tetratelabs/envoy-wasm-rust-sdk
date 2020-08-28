@@ -409,6 +409,7 @@
 <span id="409">409</span>
 <span id="410">410</span>
 <span id="411">411</span>
+<span id="412">412</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -722,9 +723,9 @@
     }
 }
 
-<span class="doccomment">/// An interface for manipulating data in the read buffer (data read from the downstream connection).</span>
+<span class="doccomment">/// An interface for manipulating data in the read buffer from `Downstream`.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">DownstreamDataOps</span> {
-    <span class="doccomment">/// Returns data from the read buffer.</span>
+    <span class="doccomment">/// Returns data in the read buffer from `Downstream`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Arguments</span>
     <span class="doccomment">///</span>
@@ -733,9 +734,10 @@
     <span class="kw">fn</span> <span class="ident">downstream_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span>;
 }
 
-<span class="doccomment">/// An interface for manipulating data in the write buffer (data to be written to the downstream connection).</span>
+<span class="doccomment">/// An interface for manipulating data received from `Upstream`</span>
+<span class="doccomment">/// before they reach the write buffer for `Downstream`.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">UpstreamDataOps</span> {
-    <span class="doccomment">/// Returns data from the write buffer.</span>
+    <span class="doccomment">/// Returns data received from `Upstream`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Arguments</span>
     <span class="doccomment">///</span>

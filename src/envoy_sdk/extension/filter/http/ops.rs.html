@@ -196,7 +196,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">RequestBodyOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">request_body</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">request_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">BufferType</span>::<span class="ident">HttpRequestBody</span>, <span class="ident">start</span>, <span class="ident">max_size</span>)
     }
 }
@@ -246,7 +246,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">ResponseBodyOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">response_body</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">response_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span> {
         <span class="ident">hostcalls</span>::<span class="ident">get_buffer</span>(<span class="ident">BufferType</span>::<span class="ident">HttpResponseBody</span>, <span class="ident">start</span>, <span class="ident">max_size</span>)
     }
 }
