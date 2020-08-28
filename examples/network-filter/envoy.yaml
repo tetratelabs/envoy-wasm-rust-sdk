@@ -33,8 +33,10 @@ static_resources:
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.wasm.v3.Wasm
           config:
-            configuration: |
-              {"param":"value"}
+            configuration:
+              "@type": type.googleapis.com/google.protobuf.StringValue
+              value: |
+                {"param":"value"}
             name: examples.network_filter
             root_id: examples.network_filter
             vm_config:
@@ -43,6 +45,7 @@ static_resources:
               code:
                 local:
                   filename: /etc/envoy/network_filter_module.wasm
+
       - name: envoy.tcp_proxy
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
