@@ -63,6 +63,9 @@ pub use shared_queue::SharedQueue;
 pub use stats::Stats;
 pub use stream_info::StreamInfo;
 pub use time::Clock;
+pub use types::{ByteString, HeaderMap};
+
+mod types;
 
 pub mod error;
 pub mod http;

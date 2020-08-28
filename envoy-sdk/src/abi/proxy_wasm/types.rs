@@ -88,3 +88,6 @@ impl From<u32> for MetricHandle {
         MetricHandle(metric_id)
     }
 }
+
+/// Optimistic lock version.
+pub type OptimisticLockVersion = u32;

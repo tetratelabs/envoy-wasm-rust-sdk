@@ -16,7 +16,9 @@ use std::convert::TryFrom;
 use std::time::Duration;
 
 use envoy::extension::{access_logger, AccessLogger, ConfigStatus, Result};
-use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats};
+use envoy::host::{
+    log, ByteString, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, Stats,
+};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -79,12 +81,13 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
     /// Use logger_ops to get ahold of configuration.
     fn on_configure(
         &mut self,
-        _configuration_size: usize,
-        logger_ops: &dyn access_logger::ConfigureOps,
+        config: ByteString,
+        _ops: &dyn access_logger::ConfigureOps,
     ) -> Result<ConfigStatus> {
-        self.config = match logger_ops.configuration()? {
-            Some(bytes) => SampleAccessLoggerConfig::try_from(bytes.as_slice())?,
-            None => SampleAccessLoggerConfig::default(),
+        self.config = if config.is_empty() {
+            SampleAccessLoggerConfig::default()
+        } else {
+            SampleAccessLoggerConfig::try_from(config.as_bytes())?
         };
         Ok(ConfigStatus::Accepted)
     }
@@ -115,24 +118,22 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         for (name, value) in &response_headers {
             log::info!("    {}: {}", name, value);
         }
-        let upstream_address = logger_ops.stream_property(vec!["upstream", "address"])?;
-        let upstream_address = upstream_address
-            .map(String::from_utf8)
-            .transpose()?
-            .unwrap_or_else(String::default);
+        let upstream_address = logger_ops
+            .stream_property(&["upstream", "address"])?
+            .unwrap_or_else(ByteString::default);
         log::info!("  upstream info:");
         log::info!("    {}: {}", "upstream.address", upstream_address);
 
         // simulate sending a log entry off
         self.active_request = Some(self.http_client.send_request(
             "mock_service",
-            vec![
+            &[
                 (":method", "GET"),
                 (":path", "/mock"),
                 (":authority", "mock.local"),
             ],
             None,
-            vec![],
+            None,
             Duration::from_secs(3),
         )?);
         if let Some(request) = self.active_request {

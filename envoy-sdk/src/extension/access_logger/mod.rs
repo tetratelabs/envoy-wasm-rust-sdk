@@ -61,11 +61,9 @@
 //! [`AccessLogger`]: trait.AccessLogger.html
 //! [`Register`]: ../../macro.entrypoint.html
 
-use crate::abi::proxy_wasm::types::Bytes;
-
 use crate::extension::{ConfigStatus, DrainStatus, Result};
-use crate::host;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
+use crate::host::{self, ByteString, HeaderMap};
 
 pub(crate) use self::context::AccessLoggerContext;
 
@@ -86,7 +84,7 @@ mod ops;
 /// # use envoy_sdk as envoy;
 /// use envoy::extension::{AccessLogger, Result};
 /// use envoy::extension::access_logger::LogOps;
-/// use envoy::host::log;
+/// use envoy::host::{ByteString, log};
 ///
 /// /// My very own `AccessLogger`.
 /// struct MyAccessLogger;
@@ -95,10 +93,8 @@ mod ops;
 ///     fn name() -> &'static str { "my_access_logger" }
 ///
 ///     fn on_log(&mut self, ops: &dyn LogOps) -> Result<()> {
-///         let upstream_address = ops.stream_property(vec!["upstream", "address"])?
-///             .map(String::from_utf8)
-///             .transpose()?
-///             .unwrap_or("<unknown>".to_string());
+///         let upstream_address = ops.stream_property(&["upstream", "address"])?
+///             .unwrap_or_else(|| "<unknown>".into());
 ///         log::info!("upstream.address : {}", upstream_address);
 ///         Ok(())
 ///     }    
@@ -128,9 +124,9 @@ pub trait AccessLogger {
     ///
     /// # Arguments
     ///
-    /// * `_configuration_size` - size of configuration data.
-    /// * `_ops`                - a [`trait object`][`ConfigureOps`] through which `Access Logger` can access
-    ///                           its configuration.
+    /// * `_config` - configuration.
+    /// * `_ops`    - a [`trait object`][`ConfigureOps`] through which `Access Logger` can access
+    ///               its configuration.
     ///
     /// # Return value
     ///
@@ -140,7 +136,7 @@ pub trait AccessLogger {
     /// [`ConfigureOps`]: trait.ConfigureOps.html
     fn on_configure(
         &mut self,
-        _configuration_size: usize,
+        _config: ByteString,
         _ops: &dyn ConfigureOps,
     ) -> Result<ConfigStatus> {
         Ok(ConfigStatus::Accepted)
@@ -199,10 +195,26 @@ pub trait AccessLogger {
 }
 
 /// An interface for accessing extension config.
-pub trait ConfigureOps {
+pub trait ContextOps {
     /// Returns extension config.
-    fn configuration(&self) -> host::Result<Option<Bytes>>;
+    fn configuration(&self) -> host::Result<ByteString>;
 }
+
+impl dyn ContextOps {
+    /// Returns the default implementation that interacts with `Envoy`
+    /// through its [`ABI`].
+    ///
+    /// [`ABI`]: https://github.com/proxy-wasm/spec
+    pub fn default() -> &'static dyn ContextOps {
+        &ops::Host
+    }
+}
+
+/// An interface for operations available in the context of [`on_configure`]
+/// invocation.
+///
+/// [`on_configure`]: trait.AccessLogger.html#method.on_configure
+pub trait ConfigureOps {}
 
 /// An interface for acknowledging `Envoy` that `AccessLogger` has been drained.
 ///
@@ -214,19 +226,19 @@ pub trait DrainOps {
 
 /// An interface for accessing data of the HTTP stream or TCP connection that is being logged.
 pub trait LogOps {
-    fn request_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn request_headers(&self) -> host::Result<HeaderMap>;
 
-    fn request_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn response_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_headers(&self) -> host::Result<HeaderMap>;
 
-    fn response_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn response_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_trailers(&self) -> host::Result<HeaderMap>;
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<String>>;
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn stream_property(&self, path: Vec<&str>) -> host::Result<Option<Bytes>>;
+    fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>>;
 }
 
 #[doc(hidden)]

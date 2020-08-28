@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use super::{DrainStatus, ExtensionFactory, Ops};
+use super::{ContextOps, DrainStatus, ExtensionFactory, Ops};
 use crate::abi::proxy_wasm::traits::{ChildContext, Context, RootContext};
 use crate::extension::error::ErrorSink;
 use crate::extension::{ConfigStatus, InstanceId};
+use crate::host::ByteString;
 
 pub(crate) struct ExtensionFactoryContext<'a, F>
 where
     F: ExtensionFactory,
 {
     factory: F,
+    context_ops: &'a dyn ContextOps,
     factory_ops: &'a dyn Ops,
     error_sink: &'a dyn ErrorSink,
     child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
@@ -31,11 +33,16 @@ impl<'a, F> RootContext for ExtensionFactoryContext<'a, F>
 where
     F: ExtensionFactory,
 {
-    fn on_configure(&mut self, plugin_configuration_size: usize) -> bool {
-        match self.factory.on_configure(
-            plugin_configuration_size,
-            self.factory_ops.as_configure_ops(),
-        ) {
+    fn on_configure(&mut self, configuration_size: usize) -> bool {
+        let config = if configuration_size == 0 {
+            Ok(ByteString::default())
+        } else {
+            self.context_ops.configuration()
+        };
+        match config.and_then(|config| {
+            self.factory
+                .on_configure(config, self.factory_ops.as_configure_ops())
+        }) {
             Ok(status) => status.as_bool(),
             Err(err) => {
                 self.error_sink
@@ -76,12 +83,14 @@ where
 {
     pub fn new(
         factory: F,
+        context_ops: &'a dyn ContextOps,
         factory_ops: &'a dyn Ops,
         error_sink: &'a dyn ErrorSink,
         child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
     ) -> Self {
         ExtensionFactoryContext {
             factory,
+            context_ops,
             factory_ops,
             error_sink,
             child_context_factory,
@@ -95,6 +104,7 @@ where
     ) -> Self {
         Self::new(
             factory,
+            ContextOps::default(),
             Ops::default(),
             ErrorSink::default(),
             child_context_factory,

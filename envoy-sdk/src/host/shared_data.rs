@@ -14,8 +14,9 @@
 
 //! `Envoy` `Shared Data API`.
 
-use crate::abi::proxy_wasm::types::Bytes;
-use crate::host;
+use crate::host::{self, ByteString};
+
+pub use crate::abi::proxy_wasm::types::OptimisticLockVersion;
 
 /// An interface of the `Envoy` `Shared Data API`.
 ///
@@ -31,7 +32,7 @@ use crate::host;
 ///
 /// let value = shared_data.get("shared_key")?;
 ///
-/// shared_data.set("shared_key", Some(b"shared value"), None)?;
+/// shared_data.set("shared_key", b"shared value", None)?;
 /// # Ok(())
 /// # }
 /// ```
@@ -69,17 +70,23 @@ pub trait SharedData {
     ///
     /// # Return value
     ///
-    /// * `value` - an opaque blob of bytes.
-    /// * `cas`   - CAS options.
-    fn get(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)>;
+    /// * `value`   - an opaque blob of bytes.
+    /// * `version` - optimistic lock version.
+    fn get(&self, key: &str) -> host::Result<(Option<ByteString>, Option<OptimisticLockVersion>)>;
 
     /// Shares data under a given key.
     ///
     /// # Arguments
     ///
-    /// * `key`   - key.
-    /// * `value` - an opaque blob of bytes.
-    fn set(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()>;
+    /// * `key`     - key.
+    /// * `value`   - an opaque blob of bytes.
+    /// * `version` - optimistic lock version.
+    fn set(
+        &self,
+        key: &str,
+        value: &[u8],
+        version: Option<OptimisticLockVersion>,
+    ) -> host::Result<()>;
 }
 
 impl dyn SharedData {
@@ -95,18 +102,26 @@ impl dyn SharedData {
 mod impls {
     use super::SharedData;
     use crate::abi::proxy_wasm::hostcalls;
-    use crate::abi::proxy_wasm::types::Bytes;
-    use crate::host;
+    use crate::abi::proxy_wasm::types::OptimisticLockVersion;
+    use crate::host::{self, ByteString};
 
     pub(super) struct Host;
 
     impl SharedData for Host {
-        fn get(&self, key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
+        fn get(
+            &self,
+            key: &str,
+        ) -> host::Result<(Option<ByteString>, Option<OptimisticLockVersion>)> {
             hostcalls::get_shared_data(key)
         }
 
-        fn set(&self, key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()> {
-            hostcalls::set_shared_data(key, value, cas)
+        fn set(
+            &self,
+            key: &str,
+            value: &[u8],
+            version: Option<OptimisticLockVersion>,
+        ) -> host::Result<()> {
+            hostcalls::set_shared_data(key, value, version)
         }
     }
 }

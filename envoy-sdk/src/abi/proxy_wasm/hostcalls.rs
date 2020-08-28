@@ -21,16 +21,18 @@ use std::time::{Duration, SystemTime};
 use proxy_wasm::hostcalls;
 
 use super::types::{
-    BufferType, Bytes, HttpRequestHandle, MapType, MetricHandle, MetricType, SharedQueueHandle,
-    Status,
+    BufferType, HttpRequestHandle, MapType, MetricHandle, MetricType, OptimisticLockVersion,
+    SharedQueueHandle, Status,
 };
 use crate::error::format_err;
-use crate::host;
+use crate::host::{self, ByteString, HeaderMap};
 
 // Configuration API
 
-pub fn get_configuration() -> host::Result<Option<Bytes>> {
-    hostcalls::get_configuration().map_err(|err| format_err!(err))
+pub fn get_configuration() -> host::Result<ByteString> {
+    hostcalls::get_configuration()
+        .map(Option::unwrap_or_default)
+        .map_err(|err| format_err!(err))
 }
 
 // Lifecycle API
@@ -41,32 +43,39 @@ pub fn done() -> host::Result<()> {
 
 // Headers/Body manipulation API
 
-pub fn add_map_value(map_type: MapType, key: &str, value: &str) -> host::Result<()> {
-    hostcalls::add_map_value(map_type, key, value).map_err(|err| format_err!(err))
-}
-
 pub fn get_buffer(
     buffer_type: BufferType,
     start: usize,
     max_size: usize,
-) -> host::Result<Option<Bytes>> {
-    hostcalls::get_buffer(buffer_type, start, max_size).map_err(|err| format_err!(err))
+) -> host::Result<ByteString> {
+    hostcalls::get_buffer(buffer_type, start, max_size)
+        .map(Option::unwrap_or_default)
+        .map_err(|err| format_err!(err))
 }
 
-pub fn get_map(map_type: MapType) -> host::Result<Vec<(String, String)>> {
-    hostcalls::get_map(map_type).map_err(|err| format_err!(err))
+pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
+    hostcalls::get_map(map_type)
+        .map(HeaderMap::from)
+        .map_err(|err| format_err!(err))
 }
 
-pub fn get_map_value(map_type: MapType, key: &str) -> host::Result<Option<String>> {
-    hostcalls::get_map_value(map_type, key).map_err(|err| format_err!(err))
+pub fn set_map(map_type: MapType, map: &HeaderMap) -> host::Result<()> {
+    hostcalls::set_map(map_type, map.as_slice()).map_err(|err| format_err!(err))
 }
 
-pub fn set_map(map_type: MapType, map: Vec<(&str, &str)>) -> host::Result<()> {
-    hostcalls::set_map(map_type, map).map_err(|err| format_err!(err))
+pub fn get_map_value<K>(map_type: MapType, name: K) -> host::Result<Option<ByteString>>
+where
+    K: AsRef<[u8]>,
+{
+    hostcalls::get_map_value(map_type, name).map_err(|err| format_err!(err))
 }
 
-pub fn set_map_value(map_type: MapType, key: &str, value: Option<&str>) -> host::Result<()> {
-    hostcalls::set_map_value(map_type, key, value).map_err(|err| format_err!(err))
+pub fn set_map_value<K, V>(map_type: MapType, name: K, value: Option<V>) -> host::Result<()>
+where
+    K: AsRef<[u8]>,
+    V: AsRef<[u8]>,
+{
+    hostcalls::set_map_value(map_type, name, value).map_err(|err| format_err!(err))
 }
 
 // HTTP Flow API
@@ -85,7 +94,7 @@ pub fn resume_http_response() -> host::Result<()> {
 
 pub fn send_http_response(
     status_code: u32,
-    headers: Vec<(&str, &str)>,
+    headers: &[(&str, &str)],
     body: Option<&[u8]>,
 ) -> host::Result<()> {
     hostcalls::send_http_response(status_code, headers, body).map_err(|err| format_err!(err))
@@ -105,12 +114,15 @@ pub fn resolve_shared_queue(vm_id: &str, name: &str) -> host::Result<Option<Shar
         .map_err(|err| format_err!(err))
 }
 
-pub fn dequeue_shared_queue(queue_id: SharedQueueHandle) -> host::Result<Option<Bytes>> {
+pub fn dequeue_shared_queue(queue_id: SharedQueueHandle) -> host::Result<Option<ByteString>> {
     hostcalls::dequeue_shared_queue(queue_id.as_id()).map_err(|err| format_err!(err))
 }
 
-pub fn enqueue_shared_queue(queue_id: SharedQueueHandle, value: Option<&[u8]>) -> host::Result<()> {
-    hostcalls::enqueue_shared_queue(queue_id.as_id(), value).map_err(|err| format_err!(err))
+pub fn enqueue_shared_queue<V>(queue_id: SharedQueueHandle, value: V) -> host::Result<()>
+where
+    V: AsRef<[u8]>,
+{
+    hostcalls::enqueue_shared_queue(queue_id.as_id(), Some(value)).map_err(|err| format_err!(err))
 }
 
 // Time API
@@ -121,13 +133,20 @@ pub fn get_current_time() -> host::Result<SystemTime> {
 
 // HTTP Client API
 
-pub fn dispatch_http_call(
+pub fn dispatch_http_call<K1, V1, K2, V2, B>(
     upstream: &str,
-    headers: Vec<(&str, &str)>,
-    body: Option<&[u8]>,
-    trailers: Vec<(&str, &str)>,
+    headers: &[(K1, V1)],
+    body: Option<B>,
+    trailers: &[(K2, V2)],
     timeout: Duration,
-) -> host::Result<HttpRequestHandle> {
+) -> host::Result<HttpRequestHandle>
+where
+    K1: AsRef<[u8]>,
+    V1: AsRef<[u8]>,
+    K2: AsRef<[u8]>,
+    V2: AsRef<[u8]>,
+    B: AsRef<[u8]>,
+{
     hostcalls::dispatch_http_call(upstream, headers, body, trailers, timeout)
         .map(HttpRequestHandle::from)
         .map_err(|err| format_err!(err))
@@ -135,22 +154,40 @@ pub fn dispatch_http_call(
 
 // Stream Info API
 
-pub fn get_property(path: Vec<&str>) -> host::Result<Option<Bytes>> {
+pub fn get_property<P>(path: &[P]) -> host::Result<Option<ByteString>>
+where
+    P: AsRef<str>,
+{
     hostcalls::get_property(path).map_err(|err| format_err!(err))
 }
 
-pub fn set_property(path: Vec<&str>, value: Option<&[u8]>) -> host::Result<()> {
-    hostcalls::set_property(path, value).map_err(|err| format_err!(err))
+pub fn set_property<P, V>(path: &[P], value: V) -> host::Result<()>
+where
+    P: AsRef<str>,
+    V: AsRef<[u8]>,
+{
+    hostcalls::set_property(path, Some(value)).map_err(|err| format_err!(err))
 }
 
 // Shared data API
 
-pub fn get_shared_data(key: &str) -> host::Result<(Option<Bytes>, Option<u32>)> {
+pub fn get_shared_data(
+    key: &str,
+) -> host::Result<(Option<ByteString>, Option<OptimisticLockVersion>)> {
     hostcalls::get_shared_data(key).map_err(|err| format_err!(err))
 }
 
-pub fn set_shared_data(key: &str, value: Option<&[u8]>, cas: Option<u32>) -> host::Result<()> {
-    hostcalls::set_shared_data(key, value, cas).map_err(|err| format_err!(err))
+pub fn set_shared_data(
+    key: &str,
+    value: &[u8],
+    version: Option<OptimisticLockVersion>,
+) -> host::Result<()> {
+    hostcalls::set_shared_data(
+        key,
+        if value.is_empty() { None } else { Some(value) },
+        version,
+    )
+    .map_err(|err| format_err!(err))
 }
 
 // Stats API

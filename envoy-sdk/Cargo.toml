@@ -21,7 +21,7 @@ crate-type = ["rlib"]
 default = ["log"]
 
 [dependencies]
-proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.5" }
+proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.6" }
 anyhow = "1.0"
 
 # List of optional dependencies that get enabled by `features`.

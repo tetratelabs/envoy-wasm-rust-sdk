@@ -99,10 +99,10 @@
 //! [`ExtensionFactory`]: ../../factory/trait.ExtensionFactory.html
 //! [`Register`]: ../../../macro.entrypoint.html
 
-use crate::abi::proxy_wasm::types::{Action, Bytes};
+use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
-use crate::host;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
+use crate::host::{self, ByteString, HeaderMap};
 
 pub(crate) use self::context::{HttpFilterContext, VoidHttpFilterContext};
 
@@ -245,7 +245,7 @@ impl FilterTrailersStatus {
 ///
 /// impl HttpFilter for MyHttpFilter {
 ///     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
-///         let user_agent = ops.request_header("user-agent")?.unwrap_or("<unknown>".to_string());
+///         let user_agent = ops.request_header("user-agent")?.unwrap_or_else(|| "<unknown>".into());
 ///         log::info!("user-agent: {}", user_agent);
 ///         Ok(FilterHeadersStatus::Continue)
 ///     }
@@ -296,7 +296,7 @@ pub trait HttpFilter {
     /// #
     /// # impl HttpFilter for MyHttpFilter {
     ///   fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
-    ///       let user_agent = ops.request_header("user-agent")?.unwrap_or("<unknown>".to_string());
+    ///       let user_agent = ops.request_header("user-agent")?.unwrap_or_else(|| "<unknown>".into());
     ///       log::info!("user-agent: {}", user_agent);
     ///       Ok(FilterHeadersStatus::Continue)
     ///   }
@@ -341,7 +341,7 @@ pub trait HttpFilter {
     /// #
     /// # impl HttpFilter for MyHttpFilter {
     ///   fn on_request_body(&mut self, _body_size: usize, _end_of_stream: bool, ops: &dyn RequestBodyOps) -> Result<FilterDataStatus> {
-    ///       let chunk_prefix = ops.request_body(0, 10)?.unwrap_or(vec![]);
+    ///       let chunk_prefix = ops.request_body(0, 10)?;
     ///       log::info!("body chunk starts with: {:?}", chunk_prefix);
     ///       Ok(FilterDataStatus::Continue)
     ///   }
@@ -387,7 +387,7 @@ pub trait HttpFilter {
     /// #
     /// # impl HttpFilter for MyHttpFilter {
     ///   fn on_request_trailers(&mut self, _num_headers: usize, ops: &dyn RequestTrailersOps) -> Result<FilterTrailersStatus> {
-    ///       let grpc_message = ops.request_trailer("grpc-message")?.unwrap_or("<unknown>".to_string());
+    ///       let grpc_message = ops.request_trailer("grpc-message")?.unwrap_or_else(|| "<unknown>".into());
     ///       log::info!("grpc-message: {}", grpc_message);
     ///       Ok(FilterTrailersStatus::Continue)
     ///   }
@@ -468,33 +468,41 @@ pub trait HttpFilter {
 
 /// An interface for manipulating request headers.
 pub trait RequestHeadersOps: RequestFlowOps {
-    fn request_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn request_headers(&self) -> host::Result<HeaderMap>;
 
-    fn set_request_headers(&self, headers: Vec<(&str, &str)>) -> host::Result<()>;
+    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn request_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn set_request_headers(&self, headers: &HeaderMap) -> host::Result<()>;
 
-    fn set_request_header(&self, name: &str, value: Option<&str>) -> host::Result<()>;
+    fn set_request_header(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_request_header_bytes(name, value.as_bytes())
+    }
 
-    fn add_request_header(&self, name: &str, value: &str) -> host::Result<()>;
+    fn set_request_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_request_header(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for manipulating request body.
 pub trait RequestBodyOps: RequestFlowOps {
-    fn request_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn request_body(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
 }
 
 /// An interface for manipulating request trailers.
 pub trait RequestTrailersOps: RequestFlowOps {
-    fn request_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn request_trailers(&self) -> host::Result<HeaderMap>;
 
-    fn set_request_trailers(&self, trailers: Vec<(&str, &str)>) -> host::Result<()>;
+    fn request_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn request_trailer(&self, name: &str) -> host::Result<Option<String>>;
+    fn set_request_trailers(&self, trailers: &HeaderMap) -> host::Result<()>;
 
-    fn set_request_trailer(&self, name: &str, value: Option<&str>) -> host::Result<()>;
+    fn set_request_trailer(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_request_trailer_bytes(name, value.as_bytes())
+    }
 
-    fn add_request_trailer(&self, name: &str, value: &str) -> host::Result<()>;
+    fn set_request_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_request_trailer(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for changing request flow.
@@ -506,40 +514,48 @@ pub trait RequestFlowOps {
     fn send_response(
         &self,
         status_code: u32,
-        headers: Vec<(&str, &str)>,
+        headers: &[(&str, &str)],
         body: Option<&[u8]>,
     ) -> host::Result<()>;
 }
 
 /// An interface for manipulating response headers.
 pub trait ResponseHeadersOps: ResponseFlowOps {
-    fn response_headers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_headers(&self) -> host::Result<HeaderMap>;
 
-    fn set_response_headers(&self, headers: Vec<(&str, &str)>) -> host::Result<()>;
+    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn response_header(&self, name: &str) -> host::Result<Option<String>>;
+    fn set_response_headers(&self, headers: &HeaderMap) -> host::Result<()>;
 
-    fn set_response_header(&self, name: &str, value: Option<&str>) -> host::Result<()>;
+    fn set_response_header(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_response_header_bytes(name, value.as_bytes())
+    }
 
-    fn add_response_header(&self, name: &str, value: &str) -> host::Result<()>;
+    fn set_response_header_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_response_header(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for manipulating response body.
 pub trait ResponseBodyOps: ResponseFlowOps {
-    fn response_body(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>>;
+    fn response_body(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
 }
 
 /// An interface for manipulating response trailers.
 pub trait ResponseTrailersOps: ResponseFlowOps {
-    fn response_trailers(&self) -> host::Result<Vec<(String, String)>>;
+    fn response_trailers(&self) -> host::Result<HeaderMap>;
 
-    fn set_response_trailers(&self, headers: Vec<(&str, &str)>) -> host::Result<()>;
+    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn response_trailer(&self, name: &str) -> host::Result<Option<String>>;
+    fn set_response_trailers(&self, headers: &HeaderMap) -> host::Result<()>;
 
-    fn set_response_trailer(&self, name: &str, value: Option<&str>) -> host::Result<()>;
+    fn set_response_trailer(&self, name: &str, value: &str) -> host::Result<()> {
+        self.set_response_trailer_bytes(name, value.as_bytes())
+    }
 
-    fn add_response_trailer(&self, name: &str, value: &str) -> host::Result<()>;
+    fn set_response_trailer_bytes(&self, name: &str, value: &[u8]) -> host::Result<()>;
+
+    fn remove_response_trailer(&self, name: &str) -> host::Result<()>;
 }
 
 /// An interface for changing response flow.

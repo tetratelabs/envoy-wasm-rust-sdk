@@ -13,23 +13,23 @@
 // limitations under the License.
 
 use crate::abi::proxy_wasm::hostcalls;
-use crate::abi::proxy_wasm::types::{BufferType, Bytes};
+use crate::abi::proxy_wasm::types::BufferType;
 
 use super::{
     ConnectionCompleteOps, DownstreamCloseOps, DownstreamDataOps, UpstreamCloseOps, UpstreamDataOps,
 };
-use crate::host;
+use crate::host::{self, ByteString};
 
 pub(super) struct Host;
 
 impl DownstreamDataOps for Host {
-    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
+    fn downstream_data(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::DownstreamData, start, max_size)
     }
 }
 
 impl UpstreamDataOps for Host {
-    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<Option<Bytes>> {
+    fn upstream_data(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
         hostcalls::get_buffer(BufferType::UpstreamData, start, max_size)
     }
 }
