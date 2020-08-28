@@ -303,7 +303,7 @@ pub trait ExtensionFactory {
 /// An interface for accessing extension config.
 pub(crate) trait ContextOps {
     /// Returns extension config.
-    fn configuration(&self) -> host::Result<ByteString>;
+    fn configuration(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
 }
 
 impl dyn ContextOps {

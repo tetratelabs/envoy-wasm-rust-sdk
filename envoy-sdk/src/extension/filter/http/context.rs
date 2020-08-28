@@ -34,11 +34,12 @@ impl<'a, F> HttpContext for HttpFilterContext<'a, F>
 where
     F: HttpFilter,
 {
-    fn on_http_request_headers(&mut self, num_headers: usize) -> Action {
-        match self
-            .filter
-            .on_request_headers(num_headers, self.filter_ops.as_request_headers_ops())
-        {
+    fn on_http_request_headers(&mut self, num_headers: usize, end_of_stream: bool) -> Action {
+        match self.filter.on_request_headers(
+            num_headers,
+            end_of_stream,
+            self.filter_ops.as_request_headers_ops(),
+        ) {
             Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
@@ -80,11 +81,12 @@ where
         }
     }
 
-    fn on_http_response_headers(&mut self, num_headers: usize) -> Action {
-        match self
-            .filter
-            .on_response_headers(num_headers, self.filter_ops.as_response_headers_ops())
-        {
+    fn on_http_response_headers(&mut self, num_headers: usize, end_of_stream: bool) -> Action {
+        match self.filter.on_response_headers(
+            num_headers,
+            end_of_stream,
+            self.filter_ops.as_response_headers_ops(),
+        ) {
             Ok(status) => status.as_action(),
             Err(err) => {
                 self.error_sink
@@ -244,7 +246,7 @@ impl<'a> VoidHttpFilterContext<'a> {
 }
 
 impl<'a> HttpContext for VoidHttpFilterContext<'a> {
-    fn on_http_request_headers(&mut self, _num_headers: usize) -> Action {
+    fn on_http_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool) -> Action {
         self.error_sink
             .observe("failed to create Proxy Wasm Http Context", &self.err);
         if let Err(err) = self.filter_ops.send_response(500, &[], None) {

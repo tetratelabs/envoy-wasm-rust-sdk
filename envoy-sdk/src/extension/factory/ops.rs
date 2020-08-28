@@ -19,8 +19,8 @@ use crate::host::{self, ByteString};
 pub(super) struct Host;
 
 impl ContextOps for Host {
-    fn configuration(&self) -> host::Result<ByteString> {
-        hostcalls::get_configuration()
+    fn configuration(&self, start: usize, max_size: usize) -> host::Result<ByteString> {
+        hostcalls::get_plugin_configuration(start, max_size)
     }
 }
 

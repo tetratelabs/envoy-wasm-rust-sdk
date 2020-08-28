@@ -87,7 +87,7 @@ pub use crate::abi::proxy_wasm::types::HttpRequestHandle as HttpClientRequestHan
 /// }
 ///
 /// impl<'a> HttpFilter for MyHttpFilter<'a> {
-///     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+///     fn on_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
 ///         self.http_client.send_request(
 ///             "cluster_name",
 ///             &[("header", "value")],

@@ -37,7 +37,7 @@ where
         let config = if configuration_size == 0 {
             Ok(ByteString::default())
         } else {
-            self.context_ops.configuration()
+            self.context_ops.configuration(0, configuration_size)
         };
         match config.and_then(|config| {
             self.factory

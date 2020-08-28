@@ -135,10 +135,6 @@ impl RequestFlowOps for Host {
     ) -> host::Result<()> {
         hostcalls::send_http_response(status_code, headers, body)
     }
-
-    fn clear_route_cache(&self) -> host::Result<()> {
-        hostcalls::clear_http_route_cache()
-    }
 }
 
 impl ResponseFlowOps for Host {

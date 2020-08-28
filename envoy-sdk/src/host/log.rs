@@ -38,7 +38,7 @@
 //! struct MyHttpFilter;
 //!
 //! impl HttpFilter for MyHttpFilter {
-//!     fn on_request_headers(&mut self, num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+//!     fn on_request_headers(&mut self, num_headers: usize, _end_of_stream: bool, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
 //!         log::info!("HTTP request contains {} headers", num_headers);
 //!         Ok(FilterHeadersStatus::Continue)
 //!     }
