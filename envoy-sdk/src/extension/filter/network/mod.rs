@@ -310,9 +310,9 @@ pub trait NetworkFilter {
     }
 }
 
-/// An interface for manipulating data in the read buffer (data read from the downstream connection).
+/// An interface for manipulating data in the read buffer from `Downstream`.
 pub trait DownstreamDataOps {
-    /// Returns data from the read buffer.
+    /// Returns data in the read buffer from `Downstream`.
     ///
     /// # Arguments
     ///
@@ -321,9 +321,10 @@ pub trait DownstreamDataOps {
     fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
 }
 
-/// An interface for manipulating data in the write buffer (data to be written to the downstream connection).
+/// An interface for manipulating data received from `Upstream`
+/// before they reach the write buffer for `Downstream`.
 pub trait UpstreamDataOps {
-    /// Returns data from the write buffer.
+    /// Returns data received from `Upstream`.
     ///
     /// # Arguments
     ///

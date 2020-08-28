@@ -57,13 +57,13 @@
 pub(crate) use self::error::function;
 
 pub use self::error::{Error, ErrorContext, Result};
-pub use http::client::{HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
-pub use shared_data::SharedData;
-pub use shared_queue::SharedQueue;
-pub use stats::Stats;
-pub use stream_info::StreamInfo;
-pub use time::Clock;
-pub use types::{ByteString, HeaderMap};
+pub use self::http::client::{HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
+pub use self::shared_data::SharedData;
+pub use self::shared_queue::SharedQueue;
+pub use self::stats::Stats;
+pub use self::stream_info::StreamInfo;
+pub use self::time::Clock;
+pub use self::types::{ByteString, HeaderMap};
 
 mod types;
 
