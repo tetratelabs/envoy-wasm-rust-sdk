@@ -221,6 +221,8 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -301,6 +303,7 @@
     <span class="kw">fn</span> <span class="ident">on_request_headers</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_num_headers</span>: <span class="ident">usize</span>,
+        <span class="ident">_end_of_stream</span>: <span class="ident">bool</span>,
         <span class="ident">filter_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">http</span>::<span class="ident">RequestHeadersOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http</span>::<span class="ident">FilterHeadersStatus</span><span class="op">&gt;</span> {
         <span class="comment">// Update stats</span>
@@ -371,6 +374,7 @@
     <span class="kw">fn</span> <span class="ident">on_response_headers</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_num_headers</span>: <span class="ident">usize</span>,
+        <span class="ident">_end_of_stream</span>: <span class="ident">bool</span>,
         <span class="ident">filter_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">http</span>::<span class="ident">ResponseHeadersOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">http</span>::<span class="ident">FilterHeadersStatus</span><span class="op">&gt;</span> {
         <span class="ident">log</span>::<span class="macro">info</span><span class="macro">!</span>(<span class="string">&quot;#{} observing response headers&quot;</span>, <span class="self">self</span>.<span class="ident">instance_id</span>);

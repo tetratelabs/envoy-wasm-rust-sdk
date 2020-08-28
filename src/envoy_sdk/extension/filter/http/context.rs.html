@@ -258,6 +258,8 @@
 <span id="258">258</span>
 <span id="259">259</span>
 <span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -295,11 +297,12 @@
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">HttpFilter</span>,
 {
-    <span class="kw">fn</span> <span class="ident">on_http_request_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num_headers</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Action</span> {
-        <span class="kw">match</span> <span class="self">self</span>
-            .<span class="ident">filter</span>
-            .<span class="ident">on_request_headers</span>(<span class="ident">num_headers</span>, <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_request_headers_ops</span>())
-        {
+    <span class="kw">fn</span> <span class="ident">on_http_request_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num_headers</span>: <span class="ident">usize</span>, <span class="ident">end_of_stream</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Action</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">on_request_headers</span>(
+            <span class="ident">num_headers</span>,
+            <span class="ident">end_of_stream</span>,
+            <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_request_headers_ops</span>(),
+        ) {
             <span class="prelude-val">Ok</span>(<span class="ident">status</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">status</span>.<span class="ident">as_action</span>(),
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">error_sink</span>
@@ -341,11 +344,12 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">on_http_response_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num_headers</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Action</span> {
-        <span class="kw">match</span> <span class="self">self</span>
-            .<span class="ident">filter</span>
-            .<span class="ident">on_response_headers</span>(<span class="ident">num_headers</span>, <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_response_headers_ops</span>())
-        {
+    <span class="kw">fn</span> <span class="ident">on_http_response_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num_headers</span>: <span class="ident">usize</span>, <span class="ident">end_of_stream</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Action</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">on_response_headers</span>(
+            <span class="ident">num_headers</span>,
+            <span class="ident">end_of_stream</span>,
+            <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">as_response_headers_ops</span>(),
+        ) {
             <span class="prelude-val">Ok</span>(<span class="ident">status</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">status</span>.<span class="ident">as_action</span>(),
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">error_sink</span>
@@ -505,7 +509,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">HttpContext</span> <span class="kw">for</span> <span class="ident">VoidHttpFilterContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">on_http_request_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_num_headers</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Action</span> {
+    <span class="kw">fn</span> <span class="ident">on_http_request_headers</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_num_headers</span>: <span class="ident">usize</span>, <span class="ident">_end_of_stream</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Action</span> {
         <span class="self">self</span>.<span class="ident">error_sink</span>
             .<span class="ident">observe</span>(<span class="string">&quot;failed to create Proxy Wasm Http Context&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">err</span>);
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">filter_ops</span>.<span class="ident">send_response</span>(<span class="number">500</span>, <span class="kw-2">&amp;</span>[], <span class="prelude-val">None</span>) {

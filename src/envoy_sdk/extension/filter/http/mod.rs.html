@@ -903,7 +903,7 @@
 <span class="doccomment">/// struct MyHttpFilter;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// impl HttpFilter for MyHttpFilter {</span>
-<span class="doccomment">///     fn on_request_headers(&amp;mut self, _num_headers: usize, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
+<span class="doccomment">///     fn on_request_headers(&amp;mut self, _num_headers: usize, _end_of_stream: bool, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
 <span class="doccomment">///         let user_agent = ops.request_header(&quot;user-agent&quot;)?.unwrap_or_else(|| &quot;&lt;unknown&gt;&quot;.into());</span>
 <span class="doccomment">///         log::info!(&quot;user-agent: {}&quot;, user_agent);</span>
 <span class="doccomment">///         Ok(FilterHeadersStatus::Continue)</span>
@@ -954,7 +954,7 @@
     <span class="doccomment">/// # struct MyHttpFilter;</span>
     <span class="doccomment">/// #</span>
     <span class="doccomment">/// # impl HttpFilter for MyHttpFilter {</span>
-    <span class="doccomment">///   fn on_request_headers(&amp;mut self, _num_headers: usize, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
+    <span class="doccomment">///   fn on_request_headers(&amp;mut self, _num_headers: usize, _end_of_stream: bool, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
     <span class="doccomment">///       let user_agent = ops.request_header(&quot;user-agent&quot;)?.unwrap_or_else(|| &quot;&lt;unknown&gt;&quot;.into());</span>
     <span class="doccomment">///       log::info!(&quot;user-agent: {}&quot;, user_agent);</span>
     <span class="doccomment">///       Ok(FilterHeadersStatus::Continue)</span>
@@ -964,6 +964,7 @@
     <span class="kw">fn</span> <span class="ident">on_request_headers</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_num_headers</span>: <span class="ident">usize</span>,
+        <span class="ident">_end_of_stream</span>: <span class="ident">bool</span>,
         <span class="ident">_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">RequestHeadersOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FilterHeadersStatus</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">FilterHeadersStatus</span>::<span class="ident">Continue</span>)
@@ -1064,6 +1065,7 @@
     <span class="kw">fn</span> <span class="ident">on_response_headers</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_num_headers</span>: <span class="ident">usize</span>,
+        <span class="ident">_end_of_stream</span>: <span class="ident">bool</span>,
         <span class="ident">_ops</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">ResponseHeadersOps</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FilterHeadersStatus</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">FilterHeadersStatus</span>::<span class="ident">Continue</span>)
@@ -1173,8 +1175,6 @@
 <span class="doccomment">/// An interface for changing request flow.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">RequestFlowOps</span> {
     <span class="kw">fn</span> <span class="ident">resume_request</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
-
-    <span class="kw">fn</span> <span class="ident">clear_route_cache</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">send_response</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,

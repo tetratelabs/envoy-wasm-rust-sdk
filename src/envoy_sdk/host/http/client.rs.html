@@ -329,7 +329,7 @@
 <span class="doccomment">/// }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// impl&lt;&#39;a&gt; HttpFilter for MyHttpFilter&lt;&#39;a&gt; {</span>
-<span class="doccomment">///     fn on_request_headers(&amp;mut self, _num_headers: usize, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
+<span class="doccomment">///     fn on_request_headers(&amp;mut self, _num_headers: usize, _end_of_stream: bool, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
 <span class="doccomment">///         self.http_client.send_request(</span>
 <span class="doccomment">///             &quot;cluster_name&quot;,</span>
 <span class="doccomment">///             &amp;[(&quot;header&quot;, &quot;value&quot;)],</span>

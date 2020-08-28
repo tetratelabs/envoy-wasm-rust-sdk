@@ -53,8 +53,8 @@
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">Host</span>;
 
 <span class="kw">impl</span> <span class="ident">ContextOps</span> <span class="kw">for</span> <span class="ident">Host</span> {
-    <span class="kw">fn</span> <span class="ident">configuration</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span> {
-        <span class="ident">hostcalls</span>::<span class="ident">get_configuration</span>()
+    <span class="kw">fn</span> <span class="ident">configuration</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">start</span>: <span class="ident">usize</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">host</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ByteString</span><span class="op">&gt;</span> {
+        <span class="ident">hostcalls</span>::<span class="ident">get_plugin_configuration</span>(<span class="ident">start</span>, <span class="ident">max_size</span>)
     }
 }
 

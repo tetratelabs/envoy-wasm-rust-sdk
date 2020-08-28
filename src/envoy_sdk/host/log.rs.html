@@ -104,7 +104,7 @@
 <span class="doccomment">//! struct MyHttpFilter;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! impl HttpFilter for MyHttpFilter {</span>
-<span class="doccomment">//!     fn on_request_headers(&amp;mut self, num_headers: usize, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
+<span class="doccomment">//!     fn on_request_headers(&amp;mut self, num_headers: usize, _end_of_stream: bool, ops: &amp;dyn RequestHeadersOps) -&gt; Result&lt;FilterHeadersStatus&gt; {</span>
 <span class="doccomment">//!         log::info!(&quot;HTTP request contains {} headers&quot;, num_headers);</span>
 <span class="doccomment">//!         Ok(FilterHeadersStatus::Continue)</span>
 <span class="doccomment">//!     }</span>
