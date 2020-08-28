@@ -21,7 +21,7 @@ crate-type = ["rlib"]
 default = ["log"]
 
 [dependencies]
-proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.6-alpha1", git = "https://github.com/yskopets/proxy-wasm-rust-sdk", branch = "feature/proxy_get_buffer_bytes" }
+proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.6" }
 anyhow = "1.0"
 
 # List of optional dependencies that get enabled by `features`.
