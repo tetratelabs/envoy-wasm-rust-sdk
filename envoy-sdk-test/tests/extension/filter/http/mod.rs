@@ -33,6 +33,7 @@ fn test_request_response() -> Result<()> {
         fn on_request_headers(
             &mut self,
             _num_headers: usize,
+            _end_of_stream: bool,
             _ops: &dyn http::RequestHeadersOps,
         ) -> Result<FilterHeadersStatus> {
             self.stats.counter("test_filter.requests_total")?.inc()?;
@@ -207,6 +208,7 @@ fn test_local_reply_on_request_headers() -> Result<()> {
         fn on_request_headers(
             &mut self,
             _num_headers: usize,
+            _end_of_stream: bool,
             ops: &dyn http::RequestHeadersOps,
         ) -> Result<FilterHeadersStatus> {
             ops.send_response(401, &[("header", "value")], Some(b"body"))?;

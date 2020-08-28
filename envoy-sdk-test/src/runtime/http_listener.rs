@@ -349,7 +349,7 @@ impl<'a> FakeHttpStream<'a> {
         let status = self
             .filter
             .borrow_mut()
-            .on_request_headers(num_headers, self);
+            .on_request_headers(num_headers, end_of_stream, self);
 
         match status {
             Ok(http::FilterHeadersStatus::Continue) => {
@@ -508,7 +508,7 @@ impl<'a> FakeHttpStream<'a> {
         let status = self
             .filter
             .borrow_mut()
-            .on_response_headers(num_headers, self);
+            .on_response_headers(num_headers, end_of_stream, self);
 
         match status {
             Ok(http::FilterHeadersStatus::Continue) => {
@@ -731,11 +731,6 @@ impl<'a> http::RequestTrailersOps for FakeHttpStream<'a> {
 impl<'a> http::RequestFlowOps for FakeHttpStream<'a> {
     fn resume_request(&self) -> host::Result<()> {
         Ok(()) // TODO(yskopets): implement
-    }
-
-    fn clear_route_cache(&self) -> host::Result<()> {
-        // TODO(yskopets): implement
-        Ok(())
     }
 
     fn send_response(
