@@ -1,4 +1,6 @@
 [![Build](https://github.com/tetratelabs/envoy-wasm-rust-sdk/workflows/build/badge.svg)](https://github.com/tetratelabs/envoy-wasm-rust-sdk/actions)
+[![Crate](https://img.shields.io/crates/v/envoy-sdk.svg)](https://crates.io/crates/envoy-sdk)
+[![Docs](https://docs.rs/envoy-sdk/badge.svg)](https://docs.rs/envoy-sdk)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 # Rust SDK for WebAssembly-based Envoy extensions
