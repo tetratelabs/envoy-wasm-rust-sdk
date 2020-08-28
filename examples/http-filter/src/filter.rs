@@ -78,6 +78,7 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
     fn on_request_headers(
         &mut self,
         _num_headers: usize,
+        _end_of_stream: bool,
         filter_ops: &dyn http::RequestHeadersOps,
     ) -> Result<http::FilterHeadersStatus> {
         // Update stats
@@ -147,6 +148,7 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
     fn on_response_headers(
         &mut self,
         _num_headers: usize,
+        _end_of_stream: bool,
         filter_ops: &dyn http::ResponseHeadersOps,
     ) -> Result<http::FilterHeadersStatus> {
         info!("#{} observing response headers", self.instance_id);

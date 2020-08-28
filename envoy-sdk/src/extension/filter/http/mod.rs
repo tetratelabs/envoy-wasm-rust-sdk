@@ -256,7 +256,7 @@ impl FilterTrailersStatus {
 /// struct MyHttpFilter;
 ///
 /// impl HttpFilter for MyHttpFilter {
-///     fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+///     fn on_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
 ///         let user_agent = ops.request_header("user-agent")?.unwrap_or_else(|| "<unknown>".into());
 ///         log::info!("user-agent: {}", user_agent);
 ///         Ok(FilterHeadersStatus::Continue)
@@ -307,7 +307,7 @@ pub trait HttpFilter {
     /// # struct MyHttpFilter;
     /// #
     /// # impl HttpFilter for MyHttpFilter {
-    ///   fn on_request_headers(&mut self, _num_headers: usize, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+    ///   fn on_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool, ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
     ///       let user_agent = ops.request_header("user-agent")?.unwrap_or_else(|| "<unknown>".into());
     ///       log::info!("user-agent: {}", user_agent);
     ///       Ok(FilterHeadersStatus::Continue)
@@ -317,6 +317,7 @@ pub trait HttpFilter {
     fn on_request_headers(
         &mut self,
         _num_headers: usize,
+        _end_of_stream: bool,
         _ops: &dyn RequestHeadersOps,
     ) -> Result<FilterHeadersStatus> {
         Ok(FilterHeadersStatus::Continue)
@@ -417,6 +418,7 @@ pub trait HttpFilter {
     fn on_response_headers(
         &mut self,
         _num_headers: usize,
+        _end_of_stream: bool,
         _ops: &dyn ResponseHeadersOps,
     ) -> Result<FilterHeadersStatus> {
         Ok(FilterHeadersStatus::Continue)
@@ -533,8 +535,6 @@ pub trait RequestTrailersOps: RequestFlowOps {
 /// An interface for changing request flow.
 pub trait RequestFlowOps {
     fn resume_request(&self) -> host::Result<()>;
-
-    fn clear_route_cache(&self) -> host::Result<()>;
 
     fn send_response(
         &self,

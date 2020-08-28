@@ -15,7 +15,7 @@
 version: '3.5'
 services:
   envoy:
-    image: yskopets/envoy-wasm:d29f7a6
+    image: yskopets/envoy-wasm:c5594b4
     volumes:
     - ./envoy.yaml:/etc/envoy/envoy.yaml
     - ../../target/wasm32-unknown-unknown/release/http_filter_module.wasm:/etc/envoy/http_filter_module.wasm

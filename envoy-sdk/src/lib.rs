@@ -26,7 +26,7 @@
 //! struct MyHttpFilter;
 //!
 //! impl HttpFilter for MyHttpFilter {
-//!     fn on_request_headers(&mut self, _num_headers: usize, _ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
+//!     fn on_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool, _ops: &dyn RequestHeadersOps) -> Result<FilterHeadersStatus> {
 //!         log::info!("proxying an HTTP request");
 //!         Ok(FilterHeadersStatus::Continue)
 //!     }

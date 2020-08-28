@@ -49,8 +49,10 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
               config:
-                configuration: |
-                  {"param":"value"}
+                configuration:
+                  "@type": type.googleapis.com/google.protobuf.StringValue
+                  value: |
+                    {"param":"value"}
                 name: examples.http_filter
                 root_id: examples.http_filter
                 vm_config:

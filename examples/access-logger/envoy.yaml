@@ -51,8 +51,10 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.access_loggers.wasm.v3.WasmAccessLog
               config:
-                configuration: |
-                  {"setting":"value"}
+                configuration:
+                  "@type": type.googleapis.com/google.protobuf.StringValue
+                  value: |
+                    {"param":"value"}
                 name: examples.access_logger
                 root_id: examples.access_logger
                 vm_config:

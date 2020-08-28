@@ -22,14 +22,15 @@ use proxy_wasm::hostcalls;
 
 use super::types::{
     BufferType, HttpRequestHandle, MapType, MetricHandle, MetricType, OptimisticLockVersion,
-    SharedQueueHandle, Status,
+    SharedQueueHandle, Status, StreamType,
 };
 use crate::host::{self, ByteString, HeaderMap};
 
 // Configuration API
 
-pub fn get_configuration() -> host::Result<ByteString> {
-    hostcalls::get_configuration().map(Option::unwrap_or_default)
+pub fn get_plugin_configuration(start: usize, max_size: usize) -> host::Result<ByteString> {
+    // note: due to a quirk of Proxy Wasm implementation, currently, it is not possible to simply use `usize::MAX`
+    get_buffer(BufferType::PluginConfiguration, start, max_size)
 }
 
 // Lifecycle API
@@ -62,9 +63,15 @@ pub use hostcalls::{get_map_value, set_map_value};
 
 // HTTP Flow API
 
-pub use hostcalls::{
-    clear_http_route_cache, resume_http_request, resume_http_response, send_http_response,
-};
+pub use hostcalls::send_http_response;
+
+pub fn resume_http_request() -> host::Result<()> {
+    hostcalls::continue_stream(StreamType::Request)
+}
+
+pub fn resume_http_response() -> host::Result<()> {
+    hostcalls::continue_stream(StreamType::Response)
+}
 
 // Shared Queue
 
