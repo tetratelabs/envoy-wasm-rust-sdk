@@ -39,52 +39,46 @@ docker-compose up
   ```
 
   ```shell
-  wasm log access-logger: logging at 2020-04-20T17:54:08.268442+00:00 with config: config for access-logger
-  wasm log access-logger:   request headers:
-  wasm log access-logger:     :authority: localhost:10000
-  wasm log access-logger:     :path: /
-  wasm log access-logger:     :method: GET
-  wasm log access-logger:     :scheme: http
-  wasm log access-logger:     user-agent: curl/7.64.1
-  wasm log access-logger:     accept: */*
-  wasm log access-logger:     x-forwarded-proto: http
-  wasm log access-logger:     x-request-id: 216ae30c-9ed0-42d4-993d-0094c42acea2
-  wasm log access-logger:     x-envoy-expected-rq-timeout-ms: 15000
-  wasm log access-logger:   response headers:
-  wasm log access-logger:     :status: 200
-  wasm log access-logger:     content-length: 22
-  wasm log access-logger:     content-type: text/plain
-  wasm log access-logger:     date: Mon, 20 Apr 2020 17:54:07 GMT
-  wasm log access-logger:     server: envoy
-  wasm log access-logger:     x-envoy-upstream-service-time: 2
-  wasm log access-logger:   upstream info:
-  wasm log access-logger:     upstream.address: 127.0.0.1:10001
-  wasm log access-logger: sent request to a log collector: @1
+  wasm log examples.access_logger: logging at 2020-08-27T16:43:26.107301+00:00 with config: SampleAccessLoggerConfig { param: "value" }
+  wasm log examples.access_logger:   request headers:
+  wasm log examples.access_logger:     :authority: localhost:10000
+  wasm log examples.access_logger:     :path: /
+  wasm log examples.access_logger:     :method: GET
+  wasm log examples.access_logger:     :scheme: http
+  wasm log examples.access_logger:     user-agent: curl/7.64.1
+  wasm log examples.access_logger:     accept: */*
+  wasm log examples.access_logger:     x-forwarded-proto: http
+  wasm log examples.access_logger:     x-request-id: 95104030-617a-4a9c-a0ea-66c5ab27b08d
+  wasm log examples.access_logger:     x-envoy-expected-rq-timeout-ms: 15000
+  wasm log examples.access_logger:   response headers:
+  wasm log examples.access_logger:     :status: 200
+  wasm log examples.access_logger:     content-length: 22
+  wasm log examples.access_logger:     content-type: text/plain
+  wasm log examples.access_logger:     date: Thu, 27 Aug 2020 16:43:26 GMT
+  wasm log examples.access_logger:     server: envoy
+  wasm log examples.access_logger:     x-envoy-upstream-service-time: 0
+  wasm log examples.access_logger:   request info:
+  wasm log examples.access_logger:     id: Some("95104030-617a-4a9c-a0ea-66c5ab27b08d")
+  wasm log examples.access_logger:   connection info:
+  wasm log examples.access_logger:     id: None
+  wasm log examples.access_logger:   listener info:
+  wasm log examples.access_logger:     traffic_direction: None
+  wasm log examples.access_logger:   route info:
+  wasm log examples.access_logger:     route.name: None
+  wasm log examples.access_logger:   cluster info:
+  wasm log examples.access_logger:     cluster.name: Some("mock_service")
+  wasm log examples.access_logger:   upstream info:
+  wasm log examples.access_logger:     address: Some("127.0.0.1:10001")
+  wasm log examples.access_logger: sent request to a log collector: @2
+  wasm log examples.access_logger: received response from a log collector on request: @2
+  wasm log examples.access_logger:   headers[count=6]:
+  wasm log examples.access_logger:     :status: 200
+  wasm log examples.access_logger:     content-length: 22
+  wasm log examples.access_logger:     content-type: text/plain
+  wasm log examples.access_logger:     date: Thu, 27 Aug 2020 16:43:26 GMT
+  wasm log examples.access_logger:     server: envoy
+  wasm log examples.access_logger:     x-envoy-upstream-service-time: 1
   ```
-* Make N more HTTP requests (where N is a number of Envoy worker threads)
-  ```shell
-  curl -i localhost:10000/
-
-  curl: (56) Recv failure: Connection reset by peer
-  ```
-
-```shell
-envoy_1  | [2020-04-20 18:07:13.595][20][critical][wasm] [source/extensions/common/wasm/context.cc:1101] wasm log access-logger: panicked at 'invalid context_id', /home/builder/.cargo/registry/src/github.com-1ecc6299db9ec823/proxy-wasm-0.1.0/src/dispatcher.rs:183:13
-envoy_1  | [2020-04-20 18:07:13.602][20][critical][main] [source/exe/terminate_handler.cc:13] std::terminate called! (possible uncaught exception, see trace)
-envoy_1  | [2020-04-20 18:07:13.602][20][critical][backtrace] [bazel-out/k8-opt/bin/source/server/_virtual_includes/backtrace_lib/server/backtrace.h:91] Backtrace (use tools/stack_decode.py to get line numbers):
-envoy_1  | [2020-04-20 18:07:13.602][20][critical][backtrace] [bazel-out/k8-opt/bin/source/server/_virtual_includes/backtrace_lib/server/backtrace.h:92] Envoy version: d29f7a659ba736aab97697a7bcfc69a71bc66b66/1.14.0-dev/Clean/RELEASE/BoringSSL
-envoy_1  | [2020-04-20 18:07:13.614][20][critical][backtrace] [bazel-out/k8-opt/bin/source/server/_virtual_includes/backtrace_lib/server/backtrace.h:96] #0: Envoy::TerminateHandler::logOnTerminate()::$_0::operator()() [0x55ea34500bbe]
-envoy_1  | [2020-04-20 18:07:13.625][20][critical][backtrace] [bazel-out/k8-opt/bin/source/server/_virtual_includes/backtrace_lib/server/backtrace.h:98] #1: [0x55ea34500ac9]
-envoy_1  | [2020-04-20 18:07:13.639][20][critical][backtrace] [bazel-out/k8-opt/bin/source/server/_virtual_includes/backtrace_lib/server/backtrace.h:96] #2: std::__terminate() [0x55ea34a87893]
-envoy_1  | [2020-04-20 18:07:13.653][20][critical][backtrace] [bazel-out/k8-opt/bin/source/server/_virtual_includes/backtrace_lib/server/backtrace.h:96] #3: Envoy::Http::ConnectionManagerImpl::ActiveStream::~ActiveStream() [0x55ea3429e815]
-```
-
-### Known issues:
-
-* [proxy-wasm](https://github.com/proxy-wasm/proxy-wasm-rust-sdk) destroys Access Logger after the first use.
-  Any subsequent request (to ther same Envoy worker thread) will crash Envoy because Access Logger has already been destroyed.
-* in the attached log one can notice that Access Logger never receives a response on the request to a log collector.
-  This is caused by the issue above.
 
 ### How to Run unit tests
 
