@@ -17,7 +17,9 @@ use std::time::Duration;
 
 use envoy::extension::filter::http;
 use envoy::extension::{HttpFilter, InstanceId, Result};
-use envoy::host::{log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps};
+use envoy::host::{
+    log, Clock, HttpClient, HttpClientRequestHandle, HttpClientResponseOps, StreamInfo,
+};
 
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -38,6 +40,7 @@ pub struct SampleHttpFilter<'a> {
     // Metrics API provided by Envoy host.
     clock: &'a dyn Clock,
     http_client: &'a dyn HttpClient,
+    stream_info: &'a dyn StreamInfo,
 
     active_request: Option<HttpClientRequestHandle>,
     response_body_size: u64,
@@ -51,6 +54,7 @@ impl<'a> SampleHttpFilter<'a> {
         instance_id: InstanceId,
         clock: &'a dyn Clock,
         http_client: &'a dyn HttpClient,
+        stream_info: &'a dyn StreamInfo,
     ) -> Self {
         // Inject dependencies on Envoy host APIs
         SampleHttpFilter {
@@ -59,6 +63,7 @@ impl<'a> SampleHttpFilter<'a> {
             instance_id,
             clock,
             http_client,
+            stream_info,
             active_request: None,
             response_body_size: 0,
         }
@@ -90,6 +95,16 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
         for (name, value) in &filter_ops.request_headers()? {
             log::info!("#{} -> {}: {}", self.instance_id, name, value);
         }
+
+        log::info!("  connection.id: {:?}", self.stream_info.connection().id()?);
+        log::info!("  request.id: {:?}", self.stream_info.request().id()?);
+        log::info!(
+            "  listener.traffic_direction: {:?}",
+            self.stream_info.listener().traffic_direction()?
+        );
+        log::info!("  route.name: {:?}", self.stream_info.route().name()?);
+        log::info!("  cluster.name: {:?}", self.stream_info.cluster().name()?);
+        log::info!("  plugin.name: {:?}", self.stream_info.plugin().name()?);
 
         match filter_ops.request_header(":path")? {
             Some(path) if path == "/ping" => {
@@ -163,6 +178,10 @@ impl<'a> HttpFilter for SampleHttpFilter<'a> {
             .record(self.response_body_size)?;
 
         log::info!("#{} http exchange complete", self.instance_id);
+        log::info!(
+            "  response.flags: {:?}",
+            self.stream_info.response().flags()?
+        );
         Ok(())
     }
 

@@ -63,7 +63,7 @@
 
 use crate::extension::{ConfigStatus, DrainStatus, Result};
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
-use crate::host::{self, ByteString, HeaderMap};
+use crate::host::{self, ByteString, HeaderMap, StreamInfo};
 
 pub(crate) use self::context::AccessLoggerContext;
 
@@ -93,7 +93,7 @@ mod ops;
 ///     fn name() -> &'static str { "my_access_logger" }
 ///
 ///     fn on_log(&mut self, ops: &dyn LogOps) -> Result<()> {
-///         let upstream_address = ops.stream_property(&["upstream", "address"])?
+///         let upstream_address = ops.stream_info().upstream().address()?
 ///             .unwrap_or_else(|| "<unknown>".into());
 ///         log::info!("upstream.address : {}", upstream_address);
 ///         Ok(())
@@ -195,7 +195,7 @@ pub trait AccessLogger {
 }
 
 /// An interface for accessing extension config.
-pub trait ContextOps {
+pub(crate) trait ContextOps {
     /// Returns extension config.
     fn configuration(&self) -> host::Result<ByteString>;
 }
@@ -226,19 +226,26 @@ pub trait DrainOps {
 
 /// An interface for accessing data of the HTTP stream or TCP connection that is being logged.
 pub trait LogOps {
+    /// Returns request headers.
     fn request_headers(&self) -> host::Result<HeaderMap>;
 
+    /// Returns request header by name.
     fn request_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
+    /// Returns response headers.
     fn response_headers(&self) -> host::Result<HeaderMap>;
 
+    /// Returns response header by name.
     fn response_header(&self, name: &str) -> host::Result<Option<ByteString>>;
 
+    /// Returns response trailers.
     fn response_trailers(&self) -> host::Result<HeaderMap>;
 
+    /// Returns response trailer by name.
     fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>>;
 
-    fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>>;
+    /// Provides access to properties of the stream.
+    fn stream_info(&self) -> &dyn StreamInfo;
 }
 
 #[doc(hidden)]

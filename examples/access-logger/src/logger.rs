@@ -118,11 +118,31 @@ impl<'a> AccessLogger for SampleAccessLogger<'a> {
         for (name, value) in &response_headers {
             log::info!("    {}: {}", name, value);
         }
-        let upstream_address = logger_ops
-            .stream_property(&["upstream", "address"])?
-            .unwrap_or_else(ByteString::default);
+
+        log::info!("  request info:");
+        log::info!("    id: {:?}", logger_ops.stream_info().request().id()?);
+        log::info!("  connection info:");
+        log::info!("    id: {:?}", logger_ops.stream_info().connection().id()?);
+        log::info!("  listener info:");
+        log::info!(
+            "    traffic_direction: {:?}",
+            logger_ops.stream_info().listener().traffic_direction()?
+        );
+        log::info!("  route info:");
+        log::info!(
+            "    route.name: {:?}",
+            logger_ops.stream_info().route().name()?
+        );
+        log::info!("  cluster info:");
+        log::info!(
+            "    cluster.name: {:?}",
+            logger_ops.stream_info().cluster().name()?
+        );
         log::info!("  upstream info:");
-        log::info!("    {}: {}", "upstream.address", upstream_address);
+        log::info!(
+            "    address: {:?}",
+            logger_ops.stream_info().upstream().address()?
+        );
 
         // simulate sending a log entry off
         self.active_request = Some(self.http_client.send_request(

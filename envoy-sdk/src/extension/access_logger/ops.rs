@@ -15,7 +15,7 @@
 use super::{ConfigureOps, ContextOps, DrainOps, LogOps};
 use crate::abi::proxy_wasm::hostcalls;
 use crate::abi::proxy_wasm::types::MapType;
-use crate::host::{self, ByteString, HeaderMap};
+use crate::host::{self, ByteString, HeaderMap, StreamInfo};
 
 pub(super) struct Host;
 
@@ -52,8 +52,8 @@ impl LogOps for Host {
         hostcalls::get_map_value(MapType::HttpResponseTrailers, &name)
     }
 
-    fn stream_property(&self, path: &[&str]) -> host::Result<Option<ByteString>> {
-        hostcalls::get_property(path)
+    fn stream_info(&self) -> &dyn StreamInfo {
+        StreamInfo::default()
     }
 }
 
