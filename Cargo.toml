@@ -2,6 +2,7 @@
 
 members = [
     "envoy-sdk",
+    "envoy-sdk-test",
     "examples/access-logger",
     "examples/access-logger/wasm/module",
     "examples/http-filter",
