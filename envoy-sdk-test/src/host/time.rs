@@ -81,8 +81,7 @@
 use std::cell::RefCell;
 use std::time::{Duration, SystemTime};
 
-use envoy::host::time::Clock;
-use envoy::host::Result;
+use envoy::host::{Clock, Result};
 
 /// Fake `System Clock`.
 pub struct FakeClock(RefCell<SystemTime>);
