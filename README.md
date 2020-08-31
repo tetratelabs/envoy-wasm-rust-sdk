@@ -16,22 +16,21 @@ envoy = { package = "envoy-sdk", version = "0.1" }
 ```
 
 ```rust
-use envoy::extension::{HttpFilter, Result};
 use envoy::extension::filter::http;
+use envoy::extension::{HttpFilter, Result};
 use envoy::host::log;
 
 /// My very own `HttpFilter`.
 struct MyHttpFilter;
 
 impl HttpFilter for MyHttpFilter {
-
-  /// Called when HTTP request headers have been received.
-  ///
-  /// Use `_ops` to access or mutate request headers.
-  fn on_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool, _ops: &dyn http::RequestHeadersOps) -> Result<http::FilterHeadersStatus> {
-    log::info!("proxying an HTTP request");
-    Ok(http::FilterHeadersStatus::Continue)
-  }
+    /// Called when HTTP request headers have been received.
+    ///
+    /// Use `_ops` to access or mutate request headers.
+    fn on_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool, _ops: &dyn http::RequestHeadersOps) -> Result<http::FilterHeadersStatus> {
+        log::info!("proxying an HTTP request");
+        Ok(http::FilterHeadersStatus::Continue)
+    }
 }
 ```
 
