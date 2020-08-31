@@ -20,7 +20,7 @@
 //!
 //! ```
 //! # use envoy_sdk_test as envoy_test;
-//! use std::time::{Duration, SystemTime};
+//! use std::time::SystemTime;
 //! use envoy::host::Clock;
 //! use envoy_test::FakeClock;
 //!
