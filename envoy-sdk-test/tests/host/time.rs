@@ -20,7 +20,7 @@ use envoy_sdk_test as envoy_test;
 use envoy_test::FakeClock;
 
 #[test]
-fn test_fake_clock() -> Result<()> {
+fn test_default_fake_clock() -> Result<()> {
     let clock = FakeClock::default();
 
     assert_eq!(clock.now()?, SystemTime::UNIX_EPOCH);
@@ -31,11 +31,9 @@ fn test_fake_clock() -> Result<()> {
 
 #[test]
 fn test_fake_clock_at_given_time() -> Result<()> {
-    let clock = FakeClock::default();
-
     let t0 = SystemTime::UNIX_EPOCH + Duration::from_secs(5);
 
-    clock.freeze_at(t0);
+    let clock = FakeClock::new(t0);
 
     assert_eq!(clock.now()?, t0);
     assert_eq!(clock.now()?, t0);
@@ -44,17 +42,18 @@ fn test_fake_clock_at_given_time() -> Result<()> {
 }
 
 #[test]
-fn test_fake_clock_at_given_times() -> Result<()> {
+fn test_advance_fake_clock() -> Result<()> {
     let clock = FakeClock::default();
 
-    let t0 = SystemTime::UNIX_EPOCH;
-    let moments = (0..).map(move |i| t0 + Duration::from_secs(i));
+    assert_eq!(clock.now()?, SystemTime::UNIX_EPOCH);
+    assert_eq!(clock.now()?, SystemTime::UNIX_EPOCH);
 
-    clock.tick_at(moments);
+    clock.advance(Duration::from_secs(3));
 
-    assert_eq!(clock.now()?, t0);
-    assert_eq!(clock.now()?, t0 + Duration::from_secs(1));
-    assert_eq!(clock.now()?, t0 + Duration::from_secs(2));
+    let t1 = SystemTime::UNIX_EPOCH + Duration::from_secs(3);
+
+    assert_eq!(clock.now()?, t1);
+    assert_eq!(clock.now()?, t1);
 
     Ok(())
 }

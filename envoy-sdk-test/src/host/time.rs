@@ -33,7 +33,7 @@
 //! # }
 //! ```
 //!
-//! #### Setting a time of the [`FakeClock`]:
+//! #### Choosing initial time of the [`FakeClock`]:
 //!
 //! ```
 //! # use envoy_sdk_test as envoy_test;
@@ -42,11 +42,9 @@
 //! use envoy_test::FakeClock;
 //!
 //! # fn main() -> envoy::host::Result<()> {
-//! let mut clock = FakeClock::default();
-//!
 //! let t0 = SystemTime::UNIX_EPOCH + Duration::from_secs(5);
 //!
-//! clock.freeze_at(t0);
+//! let mut clock = FakeClock::new(t0);
 //!
 //! assert_eq!(clock.now()?, t0);
 //! assert_eq!(clock.now()?, t0);
@@ -54,7 +52,7 @@
 //! # }
 //! ```
 //!
-//! #### Setting a sequence of time values of the [`FakeClock`]:
+//! #### Advancing time of [`FakeClock`]:
 //!
 //! ```
 //! # use envoy_sdk_test as envoy_test;
@@ -65,14 +63,15 @@
 //! # fn main() -> envoy::host::Result<()> {
 //! let mut clock = FakeClock::default();
 //!
-//! let t0 = SystemTime::UNIX_EPOCH;
-//! let moments = (0..).map(move |i| t0 + Duration::from_secs(i));
+//! assert_eq!(clock.now()?, SystemTime::UNIX_EPOCH);
+//! assert_eq!(clock.now()?, SystemTime::UNIX_EPOCH);
 //!
-//! clock.tick_at(moments);
+//! clock.advance(Duration::from_secs(3));
 //!
-//! assert_eq!(clock.now()?, t0);
-//! assert_eq!(clock.now()?, t0 + Duration::from_secs(1));
-//! assert_eq!(clock.now()?, t0 + Duration::from_secs(2));
+//! let t1 = SystemTime::UNIX_EPOCH + Duration::from_secs(3);
+//!
+//! assert_eq!(clock.now()?, t1);
+//! assert_eq!(clock.now()?, t1);
 //! # Ok(())
 //! # }
 //! ```
@@ -80,45 +79,49 @@
 //! [`FakeClock`]: struct.FakeClock.html
 
 use std::cell::RefCell;
-use std::iter;
-use std::time::SystemTime;
+use std::time::{Duration, SystemTime};
 
-use envoy::error::format_err;
 use envoy::host::time::Clock;
 use envoy::host::Result;
 
 /// Fake `System Clock`.
-pub struct FakeClock(RefCell<Box<dyn Iterator<Item = SystemTime>>>);
+pub struct FakeClock(RefCell<SystemTime>);
 
 impl Clock for FakeClock {
     /// Returns current system time.
     fn now(&self) -> Result<SystemTime> {
-        self.0
-            .borrow_mut()
-            .next()
-            .ok_or_else(|| format_err!("no more ticks"))
+        Ok(*self.0.borrow())
     }
 }
 
 impl Default for FakeClock {
     /// Returns a clock freezed at [`UNIX_EPOCH`] time.
     ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use envoy_sdk_test as envoy_test;
+    /// use std::time::{Duration, SystemTime};
+    /// use envoy::host::Clock;
+    /// use envoy_test::FakeClock;
+    ///
+    /// # fn main() -> envoy::host::Result<()> {
+    /// let clock = FakeClock::default();
+    ///
+    /// assert_eq!(clock.now()?, SystemTime::UNIX_EPOCH);
+    /// assert_eq!(clock.now()?, SystemTime::UNIX_EPOCH);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     /// [`UNIX_EPOCH`]: https://doc.rust-lang.org/std/time/constant.UNIX_EPOCH.html
     fn default() -> Self {
-        FakeClock::new(iter::repeat(SystemTime::UNIX_EPOCH))
+        Self::new(SystemTime::UNIX_EPOCH)
     }
 }
 
 impl FakeClock {
-    fn new<T>(ticker: T) -> Self
-    where
-        T: IntoIterator<Item = SystemTime>,
-        T::IntoIter: 'static,
-    {
-        FakeClock(RefCell::new(Box::new(ticker.into_iter())))
-    }
-
-    /// Sets a time value to be returned by the subsequent calls to `now()`.
+    /// Returns a new `FakeClock` freezed at given time.
     ///
     /// # Examples
     ///
@@ -129,23 +132,20 @@ impl FakeClock {
     /// use envoy_test::FakeClock;
     ///
     /// # fn main() -> envoy::host::Result<()> {
-    /// let mut clock = FakeClock::default();
-    ///
     /// let t0 = SystemTime::UNIX_EPOCH + Duration::from_secs(5);
     ///
-    /// clock.freeze_at(t0);
+    /// let clock = FakeClock::new(t0);
     ///
     /// assert_eq!(clock.now()?, t0);
     /// assert_eq!(clock.now()?, t0);
     /// # Ok(())
     /// # }
     /// ```
-    pub fn freeze_at(&self, time: SystemTime) -> &Self {
-        drop(self.0.replace(Box::new(iter::repeat(time))));
-        self
+    pub fn new(current_time: SystemTime) -> Self {
+        FakeClock(RefCell::new(current_time))
     }
 
-    /// Sets a sequence of time values to be returned by the subsequent calls to `now()`.
+    /// Advances time forward by the specified `duration`.
     ///
     /// # Examples
     ///
@@ -156,25 +156,25 @@ impl FakeClock {
     /// use envoy_test::FakeClock;
     ///
     /// # fn main() -> envoy::host::Result<()> {
-    /// let mut clock = FakeClock::default();
+    /// let t0 = SystemTime::UNIX_EPOCH + Duration::from_secs(5);
     ///
-    /// let t0 = SystemTime::UNIX_EPOCH;
-    /// let moments = (0..).map(move |i| t0 + Duration::from_secs(i));
-    ///
-    /// clock.tick_at(moments);
+    /// let mut clock = FakeClock::new(t0);
     ///
     /// assert_eq!(clock.now()?, t0);
-    /// assert_eq!(clock.now()?, t0 + Duration::from_secs(1));
-    /// assert_eq!(clock.now()?, t0 + Duration::from_secs(2));
+    /// assert_eq!(clock.now()?, t0);
+    ///
+    /// clock.advance(Duration::from_secs(3));
+    ///
+    /// let t1 = t0 + Duration::from_secs(3);
+    ///
+    /// assert_eq!(clock.now()?, t1);
+    /// assert_eq!(clock.now()?, t1);
     /// # Ok(())
     /// # }
     /// ```
-    pub fn tick_at<T>(&self, ticker: T) -> &Self
-    where
-        T: IntoIterator<Item = SystemTime>,
-        T::IntoIter: 'static,
-    {
-        drop(self.0.replace(Box::new(ticker.into_iter())));
+    pub fn advance(&self, duration: Duration) -> &Self {
+        let now = *self.0.borrow();
+        self.0.replace(now + duration);
         self
     }
 }
