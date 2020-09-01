@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["client","Fake `HTTP Client API`."]],"struct":[["FakeHttpMessage","HTTP message."],["FakeHttpMessageBuilder",""]]});
