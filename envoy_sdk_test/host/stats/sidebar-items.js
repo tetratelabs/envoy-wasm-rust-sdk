@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["FakeStats","Fake `Stats API`."]]});

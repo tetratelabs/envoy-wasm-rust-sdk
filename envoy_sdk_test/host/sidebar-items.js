@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["time","Fake `Time API`."]]});
+initSidebarItems({"mod":[["stats","Fake `Stats API`."],["time","Fake `Time API`."]]});
