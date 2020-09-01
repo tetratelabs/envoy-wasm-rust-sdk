@@ -12,6 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod http;
-mod stats;
-mod time;
+mod client;
