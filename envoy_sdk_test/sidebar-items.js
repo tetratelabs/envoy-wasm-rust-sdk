@@ -1,1 +1,1 @@
-initSidebarItems({});
+initSidebarItems({"mod":[["host","Fake `Envoy` `Host APIs` for use in unit tests."]]});
