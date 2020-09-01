@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![doc(html_root_url = "https://docs.rs/envoy-sdk-test/0.0.1")]
+//! Fake `Envoy` `Host APIs` for use in unit tests.
 
-pub use self::host::*;
+pub use self::time::FakeClock;
 
-pub mod host;
+pub mod time;
