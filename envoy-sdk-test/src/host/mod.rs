@@ -14,6 +14,8 @@
 
 //! Fake `Envoy` `Host APIs` for use in unit tests.
 
+pub use self::stats::FakeStats;
 pub use self::time::FakeClock;
 
+pub mod stats;
 pub mod time;
