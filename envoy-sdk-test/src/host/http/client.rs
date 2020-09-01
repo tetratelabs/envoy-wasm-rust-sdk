@@ -127,9 +127,9 @@ impl HttpClient for FakeHttpClient {
         let request = FakeHttpClientRequest {
             upstream: upstream.to_owned(),
             message: FakeHttpMessage {
-                headers: headers.iter().collect(),
+                headers: headers.into(),
                 body: body.unwrap_or_default().into(),
-                trailers: trailers.unwrap_or_default().iter().collect(),
+                trailers: trailers.unwrap_or_default().into(),
             },
             timeout,
         };
@@ -173,9 +173,9 @@ impl FakeHttpClientRequestBuilder {
 
     pub fn body<B>(mut self, body: B) -> Self
     where
-        B: Into<Vec<u8>>,
+        B: Into<ByteString>,
     {
-        self.request.message.body = body.into().into();
+        self.request.message.body = body.into();
         self
     }
 
@@ -216,9 +216,9 @@ impl FakeHttpClientResponseBuilder {
 
     pub fn body<B>(mut self, body: B) -> Self
     where
-        B: Into<Vec<u8>>,
+        B: Into<ByteString>,
     {
-        self.response.message.body = body.into().into();
+        self.response.message.body = body.into();
         self
     }
 

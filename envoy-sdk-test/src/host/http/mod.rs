@@ -54,9 +54,9 @@ impl FakeHttpMessageBuilder {
 
     pub fn body<B>(mut self, body: B) -> Self
     where
-        B: Into<Vec<u8>>,
+        B: Into<ByteString>,
     {
-        self.message.body = body.into().into();
+        self.message.body = body.into();
         self
     }
 
