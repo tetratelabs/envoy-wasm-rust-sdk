@@ -1025,7 +1025,7 @@ impl access_logger::LogOps for FakeStreamInfo {
             .request
             .as_ref()
             .map(|request| request.message.headers.clone())
-            .unwrap_or_else(Default::default))
+            .unwrap_or_default())
     }
 
     fn request_header(&self, name: &str) -> host::Result<Option<ByteString>> {
@@ -1041,7 +1041,7 @@ impl access_logger::LogOps for FakeStreamInfo {
             .response
             .as_ref()
             .map(|response| response.message.headers.clone())
-            .unwrap_or_else(Default::default))
+            .unwrap_or_default())
     }
 
     fn response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
@@ -1057,7 +1057,7 @@ impl access_logger::LogOps for FakeStreamInfo {
             .response
             .as_ref()
             .map(|response| response.message.trailers.clone())
-            .unwrap_or_else(Default::default))
+            .unwrap_or_default())
     }
 
     fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
