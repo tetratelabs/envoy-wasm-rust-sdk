@@ -26,7 +26,6 @@ fn test_connection() -> Result<()> {
     let fake_info = FakeStreamInfo::new().with(|info| {
         info.connection()
             .id(123)
-            .mtls(true)
             .requested_server_name("example.org")
             .tls()
             .version("TLSv1.2")

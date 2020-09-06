@@ -41,7 +41,6 @@ pub struct FakeStreamInfo {
 #[derive(Debug, Default, Clone)]
 struct FakeConnectionInfo {
     id: u64,
-    mtls: bool,
     requested_server_name: String,
     tls: Option<FakeTlsInfo>,
 }
@@ -237,14 +236,59 @@ impl FakeStreamInfo {
     }
 }
 
+impl FakeTlsInfo {
+    fn has_local_cert(&self) -> bool {
+        self.subject_local_certificate.is_some()
+            || self.uri_san_local_certificate.is_some()
+            || self.dns_san_local_certificate.is_some()
+    }
+
+    fn has_peer_cert(&self) -> bool {
+        self.subject_peer_certificate.is_some()
+            || self.uri_san_peer_certificate.is_some()
+            || self.dns_san_peer_certificate.is_some()
+    }
+
+    fn is_mtls(&self) -> bool {
+        self.has_local_cert() && self.has_peer_cert()
+    }
+}
+
+impl FakeRequestInfo {
+    fn url_path(&self) -> host::Result<Option<String>> {
+        if let Some(path) = self.message.headers.get(":path") {
+            let path = path.clone().into_string()?;
+            let path: Vec<&str> = path.splitn(2, '?').collect();
+            Ok(path[0].to_owned()).map(Option::from)
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl FakeResponseInfo {
+    fn status_code(&self) -> host::Result<Option<u16>> {
+        if let Some(status) = self.message.headers.get(":status") {
+            let status = status.clone().into_string()?;
+            Ok(status.parse::<u16>()?).map(Option::from)
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn grpc_status(&self) -> host::Result<Option<i32>> {
+        if let Some(status) = self.message.trailers.get("grpc-status") {
+            let status = status.clone().into_string()?;
+            Ok(status.parse::<i32>()?).map(Option::from)
+        } else {
+            Ok(None)
+        }
+    }
+}
+
 impl<'a> FakeConnectionInfoBuilder<'a> {
     pub fn id(&mut self, value: u64) -> &mut Self {
         self.connection.get_or_insert_with(Default::default).id = value;
-        self
-    }
-
-    pub fn mtls(&mut self, value: bool) -> &mut Self {
-        self.connection.get_or_insert_with(Default::default).mtls = value;
         self
     }
 
@@ -497,38 +541,6 @@ impl<'a> FakeResponseInfoBuilder<'a> {
     }
 }
 
-impl FakeRequestInfo {
-    fn url_path(&self) -> host::Result<Option<String>> {
-        if let Some(path) = self.message.headers.get(":path") {
-            let path = path.clone().into_string()?;
-            let path: Vec<&str> = path.splitn(2, '?').collect();
-            Ok(path[0].to_owned()).map(Option::from)
-        } else {
-            Ok(None)
-        }
-    }
-}
-
-impl FakeResponseInfo {
-    fn status_code(&self) -> host::Result<Option<u16>> {
-        if let Some(status) = self.message.headers.get(":status") {
-            let status = status.clone().into_string()?;
-            Ok(status.parse::<u16>()?).map(Option::from)
-        } else {
-            Ok(None)
-        }
-    }
-
-    fn grpc_status(&self) -> host::Result<Option<i32>> {
-        if let Some(status) = self.message.trailers.get("grpc-status") {
-            let status = status.clone().into_string()?;
-            Ok(status.parse::<i32>()?).map(Option::from)
-        } else {
-            Ok(None)
-        }
-    }
-}
-
 impl<'a> FakeUpstreamInfoBuilder<'a> {
     pub fn address<T>(&mut self, value: T) -> &mut Self
     where
@@ -669,7 +681,9 @@ impl StreamInfo for FakeStreamInfo {
             ["connection", "mtls"] => self
                 .connection
                 .as_ref()
-                .map(|con| con.mtls)
+                .map(|con| con.tls.as_ref())
+                .flatten()
+                .map(|tls| tls.is_mtls())
                 .map(Encoder::encode_bool),
             ["connection", "requested_server_name"] => self
                 .connection
