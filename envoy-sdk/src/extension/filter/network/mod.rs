@@ -99,13 +99,14 @@
 //! [`ExtensionFactory`]: ../../factory/trait.ExtensionFactory.html
 //! [`Register`]: ../../../macro.entrypoint.html
 
-use crate::abi::proxy_wasm::types::{Action, PeerType};
+use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
 use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 use crate::host::{self, ByteString};
 
 pub(crate) use self::context::{NetworkFilterContext, VoidNetworkFilterContext};
+pub use crate::abi::proxy_wasm::types::PeerType;
 
 mod context;
 mod ops;

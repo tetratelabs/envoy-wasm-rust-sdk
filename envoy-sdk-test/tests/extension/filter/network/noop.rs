@@ -12,5 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod extension;
-mod host;
+//! No-op `Network Filter` for use in unit tests.
+
+use envoy::extension::{ExtensionFactory, InstanceId, NetworkFilter, Result};
+
+#[derive(Debug, Default)]
+pub struct NoOpNetworkFilter;
+
+impl NetworkFilter for NoOpNetworkFilter {}
+
+#[derive(Debug, Default)]
+pub struct NoOpNetworkFilterFactory;
+
+impl ExtensionFactory for NoOpNetworkFilterFactory {
+    type Extension = NoOpNetworkFilter;
+
+    fn name() -> &'static str {
+        "noop"
+    }
+
+    fn new_extension(&mut self, _instance_id: InstanceId) -> Result<Self::Extension> {
+        Ok(NoOpNetworkFilter)
+    }
+}

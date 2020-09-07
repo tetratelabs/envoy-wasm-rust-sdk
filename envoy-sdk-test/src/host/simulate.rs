@@ -33,3 +33,33 @@ pub fn get_buffer_bytes(buf: &[u8], offset: usize, max_size: usize) -> host::Res
     }
     Ok(ByteString::default())
 }
+
+/// Mutates buffer similarly to `Proxy Wasm` inside Envoy.
+pub fn set_buffer_bytes(
+    buf: &mut Vec<u8>,
+    start: usize,
+    length: usize,
+    data: &[u8],
+) -> host::Result<()> {
+    // implementation based on `envoyproxy/envoy-wasm`
+
+    if start == 0 {
+        if length == 0 {
+            let tail: Vec<u8> = buf.drain(..).collect();
+            buf.extend(data);
+            buf.extend(tail);
+            Ok(())
+        } else if length >= buf.len() {
+            buf.truncate(0);
+            buf.extend(data);
+            Ok(())
+        } else {
+            Err(format_err!("Status::BadArgument"))
+        }
+    } else if start >= buf.len() {
+        buf.extend(data);
+        Ok(())
+    } else {
+        Err(format_err!("Status::BadArgument"))
+    }
+}
