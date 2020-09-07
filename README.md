@@ -37,7 +37,13 @@ impl HttpFilter for MyHttpFilter {
 ## Components
 
 * [envoy-sdk](./envoy-sdk/) - `Envoy SDK`
+* [envoy-sdk-test](./envoy-sdk-test/) - `Unit Test Framework` accompanying `Envoy SDK`
 * [examples](./examples/) - `Envoy SDK` usage examples
   * [http-filter](./examples/http-filter/) - logs HTTP request/response headers, makes an outgoing HTTP request
   * [network-filter](./examples/network-filter/) - logs start and end of a TCP conection, makes an outgoing HTTP request
   * [access-logger](./examples/access-logger/) - logs information about an HTTP request or a TCP connection, makes an outgoing HTTP request
+
+## Latest docs (on `master`)
+
+* [envoy-sdk](https://tetratelabs.github.io/envoy-wasm-rust-sdk/envoy_sdk/)
+* [envoy-sdk-test](https://tetratelabs.github.io/envoy-wasm-rust-sdk/envoy_sdk_test/)

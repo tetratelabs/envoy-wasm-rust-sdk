@@ -16,10 +16,12 @@
 
 pub use self::http::client::{FakeHttpClient, FakeHttpClientRequest, FakeHttpClientResponse};
 pub use self::stats::FakeStats;
+pub use self::stream_info::FakeStreamInfo;
 pub use self::time::FakeClock;
 
 pub mod http;
 pub mod stats;
+pub mod stream_info;
 pub mod time;
 
 pub(crate) mod simulate;
