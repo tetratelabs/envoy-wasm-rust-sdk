@@ -36,7 +36,6 @@ fn test_access_logger() -> Result<()> {
     let fake_http_request = FakeStreamInfo::new().with(|info| {
         info.connection()
             .id(123)
-            .mtls(true)
             .requested_server_name("example.org");
         info.request()
             .id("a-b-c-d")

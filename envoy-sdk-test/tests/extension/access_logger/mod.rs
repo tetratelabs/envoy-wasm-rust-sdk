@@ -48,9 +48,7 @@ fn test_access_logger() -> Result<()> {
         .configure("{}")?;
 
     let fake_http_request = FakeStreamInfo::new().with(|info| {
-        info.connection()
-            .mtls(true)
-            .requested_server_name("example.org");
+        info.connection().requested_server_name("example.org");
     });
 
     fake_access_log.log(&fake_http_request)?;
@@ -62,9 +60,7 @@ fn test_access_logger() -> Result<()> {
     );
 
     let fake_connection = FakeStreamInfo::new().with(|info| {
-        info.connection()
-            .mtls(false)
-            .requested_server_name("www.example.com");
+        info.connection().requested_server_name("www.example.com");
     });
 
     fake_access_log.log(&fake_connection)?;
