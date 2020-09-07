@@ -13,6 +13,55 @@
 // limitations under the License.
 
 //! Fake `Stream Info API`.
+//!
+//! # Examples
+//!
+//! #### Basic usage of [`FakeStreamInfo`]:
+//!
+//! ```
+//! # use envoy_sdk_test as envoy_test;
+//! use envoy::host::StreamInfo;
+//! use envoy_test::FakeStreamInfo;
+//!
+//! # fn main() -> envoy::host::Result<()> {
+//! let fake_info = FakeStreamInfo::new().with(|info| {
+//!     info.connection()
+//!         .id(123)
+//!         .requested_server_name("example.org")
+//!         .tls()
+//!         .version("TLSv1.2")
+//!         .uri_san_local_certificate("spiffe://cluster.local/gateway");
+//!     info.request()
+//!         .id("a-b-c-d")
+//!         .size(1024)
+//!         .total_size(2048)
+//!         .method("GET")
+//!         .scheme("https")
+//!         .host("www.example.com")
+//!         .path("/search?q=example")
+//!         .protocol("HTTP/1.1")
+//!         .header("content-type", "application/json");
+//! });
+//! let stream_info: &dyn StreamInfo = &fake_info;
+//!
+//! assert_eq!(
+//!     stream_info.connection().requested_server_name()?,
+//!     Some("example.org".to_owned())
+//! );
+//! assert_eq!(
+//!     stream_info.request().path()?,
+//!     Some("/search?q=example".into())
+//! );
+//! assert_eq!(
+//!     stream_info.request().url_path()?,
+//!     Some("/search".into())
+//! );
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 
 use std::time::{Duration, SystemTime};
 
@@ -121,114 +170,182 @@ struct FakePluginInfo {
     vm_id: String,
 }
 
+/// Builder for `connection` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeConnectionInfoBuilder<'a> {
     connection: &'a mut Option<FakeConnectionInfo>,
 }
 
+/// Builder for `tls` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeTlsInfoBuilder<'a> {
     tls: &'a mut Option<FakeTlsInfo>,
 }
 
+/// Builder for `request` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeRequestInfoBuilder<'a> {
     request: &'a mut Option<FakeRequestInfo>,
 }
 
+/// Builder for `response` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeResponseInfoBuilder<'a> {
     response: &'a mut Option<FakeResponseInfo>,
 }
 
+/// Builder for `upstream` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeUpstreamInfoBuilder<'a> {
     upstream: &'a mut Option<FakeUpstreamInfo>,
 }
 
+/// Builder for `source` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeSourceInfoBuilder<'a> {
     source: &'a mut Option<FakePeerInfo>,
 }
 
+/// Builder for `destination` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeDestinationInfoBuilder<'a> {
     destination: &'a mut Option<FakePeerInfo>,
 }
 
+/// Builder for `listener` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeListenerInfoBuilder<'a> {
     listener: &'a mut Option<FakeListenerInfo>,
 }
 
+/// Builder for `route` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeRouteInfoBuilder<'a> {
     route: &'a mut Option<FakeRouteInfo>,
 }
 
+/// Builder for `cluster` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakeClusterInfoBuilder<'a> {
     cluster: &'a mut Option<FakeClusterInfo>,
 }
 
+/// Builder for `plugin` properties within [`FakeStreamInfo`].
+///
+/// [`FakeStreamInfo`]: struct.FakeStreamInfo.html
 pub struct FakePluginInfoBuilder<'a> {
     plugin: &'a mut Option<FakePluginInfo>,
 }
 
 impl FakeStreamInfo {
+    /// Returns a new instance.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Sets values of stream properties using a given callback.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use envoy_sdk_test as envoy_test;
+    /// use envoy_test::FakeStreamInfo;
+    ///
+    /// # fn main() -> envoy::host::Result<()> {
+    /// let fake_info = FakeStreamInfo::new().with(|info| {
+    ///     info.connection()
+    ///         .id(123)
+    ///         .requested_server_name("example.org");
+    ///     info.request()
+    ///         .method("GET")
+    ///         .scheme("https")
+    ///         .host("www.example.com")
+    ///         .path("/search?q=example")
+    ///         .protocol("HTTP/1.1")
+    ///         .header("content-type", "application/json");
+    /// });
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn with(mut self, builder: impl FnOnce(&mut Self)) -> Self {
         builder(&mut self);
         self
     }
 
+    /// Returns a builder for `connection` properties.
     pub fn connection(&mut self) -> FakeConnectionInfoBuilder<'_> {
         FakeConnectionInfoBuilder {
             connection: &mut self.connection,
         }
     }
 
+    /// Returns a builder for `request` properties.
     pub fn request(&mut self) -> FakeRequestInfoBuilder<'_> {
         FakeRequestInfoBuilder {
             request: &mut self.request,
         }
     }
 
+    /// Returns a builder for `response` properties.
     pub fn response(&mut self) -> FakeResponseInfoBuilder<'_> {
         FakeResponseInfoBuilder {
             response: &mut self.response,
         }
     }
 
+    /// Returns a builder for `upstream` properties.
     pub fn upstream(&mut self) -> FakeUpstreamInfoBuilder<'_> {
         FakeUpstreamInfoBuilder {
             upstream: &mut self.upstream,
         }
     }
 
+    /// Returns a builder for `source` properties.
     pub fn source(&mut self) -> FakeSourceInfoBuilder<'_> {
         FakeSourceInfoBuilder {
             source: &mut self.source,
         }
     }
 
+    /// Returns a builder for `destination` properties.
     pub fn destination(&mut self) -> FakeDestinationInfoBuilder<'_> {
         FakeDestinationInfoBuilder {
             destination: &mut self.destination,
         }
     }
 
+    /// Returns a builder for `listener` properties.
     pub fn listener(&mut self) -> FakeListenerInfoBuilder<'_> {
         FakeListenerInfoBuilder {
             listener: &mut self.listener,
         }
     }
 
+    /// Returns a builder for `route` properties.
     pub fn route(&mut self) -> FakeRouteInfoBuilder<'_> {
         FakeRouteInfoBuilder {
             route: &mut self.route,
         }
     }
 
+    /// Returns a builder for `cluster` properties.
     pub fn cluster(&mut self) -> FakeClusterInfoBuilder<'_> {
         FakeClusterInfoBuilder {
             cluster: &mut self.cluster,
         }
     }
 
+    /// Returns a builder for `plugin` properties.
     pub fn plugin(&mut self) -> FakePluginInfoBuilder<'_> {
         FakePluginInfoBuilder {
             plugin: &mut self.plugin,
@@ -237,24 +354,28 @@ impl FakeStreamInfo {
 }
 
 impl FakeTlsInfo {
+    /// Returns `true` if one of local certificate properties has been set.
     fn has_local_cert(&self) -> bool {
         self.subject_local_certificate.is_some()
             || self.uri_san_local_certificate.is_some()
             || self.dns_san_local_certificate.is_some()
     }
 
+    /// Returns `true` if one of peer certificate properties has been set.
     fn has_peer_cert(&self) -> bool {
         self.subject_peer_certificate.is_some()
             || self.uri_san_peer_certificate.is_some()
             || self.dns_san_peer_certificate.is_some()
     }
 
+    /// Returns `true` if both local and peer certificate properties have been set.
     fn is_mtls(&self) -> bool {
         self.has_local_cert() && self.has_peer_cert()
     }
 }
 
 impl FakeRequestInfo {
+    /// Returns the value of `:path` pseudo-header without a query component.
     fn url_path(&self) -> host::Result<Option<String>> {
         if let Some(path) = self.message.headers.get(":path") {
             let path = path.clone().into_string()?;
@@ -267,6 +388,7 @@ impl FakeRequestInfo {
 }
 
 impl FakeResponseInfo {
+    /// Returns the value of `:status` pseudo-header.
     fn status_code(&self) -> host::Result<Option<u16>> {
         if let Some(status) = self.message.headers.get(":status") {
             let status = status.clone().into_string()?;
@@ -276,6 +398,7 @@ impl FakeResponseInfo {
         }
     }
 
+    /// Returns the value of `grpc-status` trailer.
     fn grpc_status(&self) -> host::Result<Option<i32>> {
         if let Some(status) = self.message.trailers.get("grpc-status") {
             let status = status.clone().into_string()?;
@@ -287,11 +410,13 @@ impl FakeResponseInfo {
 }
 
 impl<'a> FakeConnectionInfoBuilder<'a> {
+    /// Sets the value of connection `id` property.
     pub fn id(&mut self, value: u64) -> &mut Self {
         self.connection.get_or_insert_with(Default::default).id = value;
         self
     }
 
+    /// Sets the value of connection `requested_server_name` property.
     pub fn requested_server_name<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -302,6 +427,7 @@ impl<'a> FakeConnectionInfoBuilder<'a> {
         self
     }
 
+    /// Returns a builder for `tls` properties of the downstream connection.
     pub fn tls(&mut self) -> FakeTlsInfoBuilder<'_> {
         FakeTlsInfoBuilder {
             tls: &mut self.connection.get_or_insert_with(Default::default).tls,
@@ -310,6 +436,7 @@ impl<'a> FakeConnectionInfoBuilder<'a> {
 }
 
 impl<'a> FakeTlsInfoBuilder<'a> {
+    /// Sets the value of `tls version` property.
     pub fn version<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -318,6 +445,7 @@ impl<'a> FakeTlsInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `subject_local_certificate` property.
     pub fn subject_local_certificate<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -328,6 +456,7 @@ impl<'a> FakeTlsInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `subject_peer_certificate` property.
     pub fn subject_peer_certificate<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -338,6 +467,7 @@ impl<'a> FakeTlsInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `uri_san_local_certificate` property.
     pub fn uri_san_local_certificate<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -348,6 +478,7 @@ impl<'a> FakeTlsInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `uri_san_peer_certificate` property.
     pub fn uri_san_peer_certificate<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -358,6 +489,7 @@ impl<'a> FakeTlsInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `dns_san_local_certificate` property.
     pub fn dns_san_local_certificate<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -368,6 +500,7 @@ impl<'a> FakeTlsInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `dns_san_peer_certificate` property.
     pub fn dns_san_peer_certificate<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -380,6 +513,7 @@ impl<'a> FakeTlsInfoBuilder<'a> {
 }
 
 impl<'a> FakeRequestInfoBuilder<'a> {
+    /// Sets the value of an HTTP request header.
     pub fn header<K, V>(&mut self, name: K, value: V) -> &mut Self
     where
         K: Into<ByteString>,
@@ -393,6 +527,7 @@ impl<'a> FakeRequestInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `:method` pseudo-header.
     pub fn method<V>(&mut self, value: V) -> &mut Self
     where
         V: AsRef<str>,
@@ -405,6 +540,7 @@ impl<'a> FakeRequestInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `:scheme` pseudo-header.
     pub fn scheme<V>(&mut self, value: V) -> &mut Self
     where
         V: AsRef<str>,
@@ -417,6 +553,7 @@ impl<'a> FakeRequestInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `:authority` pseudo-header.
     pub fn host<V>(&mut self, value: V) -> &mut Self
     where
         V: AsRef<str>,
@@ -429,6 +566,7 @@ impl<'a> FakeRequestInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of `:path` pseudo-header.
     pub fn path<V>(&mut self, value: V) -> &mut Self
     where
         V: AsRef<str>,
@@ -441,6 +579,7 @@ impl<'a> FakeRequestInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of request `protocol` property.
     pub fn protocol<V>(&mut self, value: V) -> &mut Self
     where
         V: AsRef<str>,
@@ -449,6 +588,7 @@ impl<'a> FakeRequestInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of request `id` property.
     pub fn id<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -457,21 +597,25 @@ impl<'a> FakeRequestInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of request `time` property.
     pub fn time(&mut self, value: SystemTime) -> &mut Self {
         self.request.get_or_insert_with(Default::default).time = Some(value);
         self
     }
 
+    /// Sets the value of request `duration` property.
     pub fn duration(&mut self, value: Duration) -> &mut Self {
         self.request.get_or_insert_with(Default::default).duration = Some(value);
         self
     }
 
+    /// Sets the value of request `size` property.
     pub fn size(&mut self, value: u64) -> &mut Self {
         self.request.get_or_insert_with(Default::default).size = value;
         self
     }
 
+    /// Sets the value of request `total_size` property.
     pub fn total_size(&mut self, value: u64) -> &mut Self {
         self.request.get_or_insert_with(Default::default).total_size = value;
         self
@@ -479,6 +623,7 @@ impl<'a> FakeRequestInfoBuilder<'a> {
 }
 
 impl<'a> FakeResponseInfoBuilder<'a> {
+    /// Returns the value of `:status` pseudo-header.
     pub fn status_code(&mut self, value: u16) -> &mut Self {
         self.response
             .get_or_insert_with(Default::default)
@@ -488,6 +633,7 @@ impl<'a> FakeResponseInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of an HTTP response header.
     pub fn header<K, V>(&mut self, name: K, value: V) -> &mut Self
     where
         K: Into<ByteString>,
@@ -501,6 +647,7 @@ impl<'a> FakeResponseInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of an HTTP response trailer.
     pub fn trailer<K, V>(&mut self, name: K, value: V) -> &mut Self
     where
         K: Into<ByteString>,
@@ -514,11 +661,13 @@ impl<'a> FakeResponseInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of request `size` property.
     pub fn size(&mut self, value: u64) -> &mut Self {
         self.response.get_or_insert_with(Default::default).size = value;
         self
     }
 
+    /// Sets the value of request `total_size` property.
     pub fn total_size(&mut self, value: u64) -> &mut Self {
         self.response
             .get_or_insert_with(Default::default)
@@ -526,11 +675,13 @@ impl<'a> FakeResponseInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of request `response_flags` property.
     pub fn response_flags(&mut self, value: ResponseFlags) -> &mut Self {
         self.response.get_or_insert_with(Default::default).flags = value;
         self
     }
 
+    /// Sets the value of `grpc-status` trailer.
     pub fn grpc_status(&mut self, value: i32) -> &mut Self {
         self.response
             .get_or_insert_with(Default::default)
@@ -542,6 +693,7 @@ impl<'a> FakeResponseInfoBuilder<'a> {
 }
 
 impl<'a> FakeUpstreamInfoBuilder<'a> {
+    /// Sets the value of upstream `address` property.
     pub fn address<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -550,11 +702,13 @@ impl<'a> FakeUpstreamInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of upstream `port` property.
     pub fn port(&mut self, value: u32) -> &mut Self {
         self.upstream.get_or_insert_with(Default::default).port = value;
         self
     }
 
+    /// Sets the value of upstream `local_address` property.
     pub fn local_address<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -565,6 +719,7 @@ impl<'a> FakeUpstreamInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of upstream `transport_failure_reason` property.
     pub fn transport_failure_reason<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -575,6 +730,7 @@ impl<'a> FakeUpstreamInfoBuilder<'a> {
         self
     }
 
+    /// Returns a builder for `tls` properties of the upstream connection.
     pub fn tls(&mut self) -> FakeTlsInfoBuilder<'_> {
         FakeTlsInfoBuilder {
             tls: &mut self.upstream.get_or_insert_with(Default::default).tls,
@@ -583,6 +739,7 @@ impl<'a> FakeUpstreamInfoBuilder<'a> {
 }
 
 impl<'a> FakeSourceInfoBuilder<'a> {
+    /// Sets the value of source `address` property.
     pub fn address<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -591,6 +748,7 @@ impl<'a> FakeSourceInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of source `port` property.
     pub fn port(&mut self, value: u32) -> &mut Self {
         self.source.get_or_insert_with(Default::default).port = value;
         self
@@ -598,6 +756,7 @@ impl<'a> FakeSourceInfoBuilder<'a> {
 }
 
 impl<'a> FakeDestinationInfoBuilder<'a> {
+    /// Sets the value of destination `address` property.
     pub fn address<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -608,6 +767,7 @@ impl<'a> FakeDestinationInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of destination `port` property.
     pub fn port(&mut self, value: u32) -> &mut Self {
         self.destination.get_or_insert_with(Default::default).port = value;
         self
@@ -615,6 +775,7 @@ impl<'a> FakeDestinationInfoBuilder<'a> {
 }
 
 impl<'a> FakeListenerInfoBuilder<'a> {
+    /// Sets the value of listener `traffic_direction` property.
     pub fn traffic_direction(&mut self, value: TrafficDirection) -> &mut Self {
         self.listener
             .get_or_insert_with(Default::default)
@@ -624,6 +785,7 @@ impl<'a> FakeListenerInfoBuilder<'a> {
 }
 
 impl<'a> FakeRouteInfoBuilder<'a> {
+    /// Sets the value of route `name` property.
     pub fn name<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -634,6 +796,7 @@ impl<'a> FakeRouteInfoBuilder<'a> {
 }
 
 impl<'a> FakeClusterInfoBuilder<'a> {
+    /// Sets the value of cluster `name` property.
     pub fn name<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -644,6 +807,7 @@ impl<'a> FakeClusterInfoBuilder<'a> {
 }
 
 impl<'a> FakePluginInfoBuilder<'a> {
+    /// Sets the value of plugin `name` property.
     pub fn name<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -652,6 +816,7 @@ impl<'a> FakePluginInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of plugin `root_id` property.
     pub fn root_id<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
@@ -660,6 +825,7 @@ impl<'a> FakePluginInfoBuilder<'a> {
         self
     }
 
+    /// Sets the value of plugin `vm_id` property.
     pub fn vm_id<T>(&mut self, value: T) -> &mut Self
     where
         T: AsRef<str>,
