@@ -23,6 +23,8 @@
 <span id="23">23</span>
 <span id="24">24</span>
 <span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2020 Tetrate</span>
 <span class="comment">//</span>
@@ -42,10 +44,12 @@
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">http</span>::<span class="ident">client</span>::{<span class="ident">FakeHttpClient</span>, <span class="ident">FakeHttpClientRequest</span>, <span class="ident">FakeHttpClientResponse</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">stats</span>::<span class="ident">FakeStats</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">stream_info</span>::<span class="ident">FakeStreamInfo</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">time</span>::<span class="ident">FakeClock</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">http</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">stats</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">stream_info</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">time</span>;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">simulate</span>;
