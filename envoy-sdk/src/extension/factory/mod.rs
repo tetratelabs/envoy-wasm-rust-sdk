@@ -50,7 +50,7 @@
 use crate::extension::{factory, InstanceId, Result};
 use crate::host::{self, ByteString};
 
-pub(crate) use self::context::ExtensionFactoryContext;
+pub(crate) use self::context::{ChildContextFactory, ExtensionFactoryContext};
 
 mod context;
 mod ops;

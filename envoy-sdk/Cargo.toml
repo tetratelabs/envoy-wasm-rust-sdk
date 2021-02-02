@@ -21,7 +21,7 @@ crate-type = ["rlib"]
 default = ["log"]
 
 [dependencies]
-proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.7" }
+proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.8" }
 anyhow = "1.0"
 bitflags = "1.2.1"
 
