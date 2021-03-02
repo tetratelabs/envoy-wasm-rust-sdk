@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use proxy_wasm::types::ContextType;
-
 use super::{ContextOps, DrainStatus, ExtensionFactory, Ops};
 use crate::abi::proxy_wasm::traits::{Context, HttpContext, RootContext, StreamContext};
+use crate::abi::proxy_wasm::types::ContextType;
 use crate::extension::error::ErrorSink;
 use crate::extension::{ConfigStatus, InstanceId};
 use crate::host::ByteString;
