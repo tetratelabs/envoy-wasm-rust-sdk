@@ -19,6 +19,7 @@ crate-type = ["rlib"]
 # Default set of optional packages.
 # Most people will want to use these packages, but they are strictly optional.
 default = ["log"]
+wee-alloc = ["proxy-wasm/wee-alloc"]
 
 [dependencies]
 proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.8" }
