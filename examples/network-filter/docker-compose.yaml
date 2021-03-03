@@ -15,7 +15,7 @@
 version: '3.5'
 services:
   envoy:
-    image: yskopets/envoy-wasm:8343a96
+    image: envoyproxy/envoy:v1.17-latest
     volumes:
     - ./envoy.yaml:/etc/envoy/envoy.yaml
     - ../../target/wasm32-unknown-unknown/release/network_filter_module.wasm:/etc/envoy/network_filter_module.wasm
