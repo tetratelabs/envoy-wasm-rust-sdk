@@ -48,7 +48,7 @@ impl<'a> ContextSelector<'a> {
         if let Some(root_context_factory) = self.factories.get_mut(&name) {
             return root_context_factory(context_id);
         }
-        if name == "" && self.factories.keys().len() == 1 {
+        if name.is_empty() && self.factories.keys().len() == 1 {
             if let Some(root_context_factory) = self.factories.values_mut().next() {
                 return root_context_factory(context_id);
             }
