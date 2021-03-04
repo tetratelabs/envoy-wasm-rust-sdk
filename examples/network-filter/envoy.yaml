@@ -77,7 +77,7 @@ static_resources:
                   body:
                     inline_string: "Hi from mock service!\n"
           http_filters:
-          - name: envoy.router
+          - name: envoy.filters.http.router
 
   clusters:
   - name: mock_service
