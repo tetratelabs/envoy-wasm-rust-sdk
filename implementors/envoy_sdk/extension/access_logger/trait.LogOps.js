@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["envoy_sdk_test"] = [{"text":"impl <a class=\"trait\" href=\"envoy_sdk/extension/access_logger/trait.LogOps.html\" title=\"trait envoy_sdk::extension::access_logger::LogOps\">LogOps</a> for <a class=\"struct\" href=\"envoy_sdk_test/host/stream_info/struct.FakeStreamInfo.html\" title=\"struct envoy_sdk_test::host::stream_info::FakeStreamInfo\">FakeStreamInfo</a>","synthetic":false,"types":["envoy_sdk_test::host::stream_info::FakeStreamInfo"]}];
+implementors["envoy_sdk_test"] = [{"text":"impl LogOps for FakeStreamInfo","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["envoy_sdk"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/bit/trait.BitOr.html\" title=\"trait core::ops::bit::BitOr\">BitOr</a>&lt;<a class=\"struct\" href=\"envoy_sdk/host/stream_info/struct.ResponseFlags.html\" title=\"struct envoy_sdk::host::stream_info::ResponseFlags\">ResponseFlags</a>&gt; for <a class=\"struct\" href=\"envoy_sdk/host/stream_info/struct.ResponseFlags.html\" title=\"struct envoy_sdk::host::stream_info::ResponseFlags\">ResponseFlags</a>","synthetic":false,"types":["envoy_sdk::host::stream_info::types::ResponseFlags"]}];
+implementors["envoy_sdk"] = [{"text":"impl BitOr&lt;ResponseFlags&gt; for ResponseFlags","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

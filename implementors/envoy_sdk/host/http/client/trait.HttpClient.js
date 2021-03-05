@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["envoy_sdk_test"] = [{"text":"impl <a class=\"trait\" href=\"envoy_sdk/host/http/client/trait.HttpClient.html\" title=\"trait envoy_sdk::host::http::client::HttpClient\">HttpClient</a> for <a class=\"struct\" href=\"envoy_sdk_test/host/http/client/struct.FakeHttpClient.html\" title=\"struct envoy_sdk_test::host::http::client::FakeHttpClient\">FakeHttpClient</a>","synthetic":false,"types":["envoy_sdk_test::host::http::client::FakeHttpClient"]}];
+implementors["envoy_sdk_test"] = [{"text":"impl HttpClient for FakeHttpClient","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
