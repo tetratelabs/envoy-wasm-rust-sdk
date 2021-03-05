@@ -1,6 +1,6 @@
 [package]
 name = "envoy-sdk"
-version = "0.1.0"
+version = "0.2.0-alpha.1"
 authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
 description = "Rust SDK for WebAssembly-based Envoy extensions"
 license = "Apache-2.0"
@@ -19,9 +19,10 @@ crate-type = ["rlib"]
 # Default set of optional packages.
 # Most people will want to use these packages, but they are strictly optional.
 default = ["log"]
+wee-alloc = ["proxy-wasm/wee-alloc"]
 
 [dependencies]
-proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.7" }
+proxy-wasm = { package = "proxy-wasm-experimental", version = "0.0.8" }
 anyhow = "1.0"
 bitflags = "1.2.1"
 

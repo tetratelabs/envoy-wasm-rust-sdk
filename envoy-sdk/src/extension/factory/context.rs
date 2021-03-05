@@ -13,20 +13,30 @@
 // limitations under the License.
 
 use super::{ContextOps, DrainStatus, ExtensionFactory, Ops};
-use crate::abi::proxy_wasm::traits::{ChildContext, Context, RootContext};
+use crate::abi::proxy_wasm::traits::{Context, HttpContext, RootContext, StreamContext};
+use crate::abi::proxy_wasm::types::ContextType;
 use crate::extension::error::ErrorSink;
 use crate::extension::{ConfigStatus, InstanceId};
 use crate::host::ByteString;
+use std::cell::RefCell;
+
+pub(crate) enum ChildContextFactory<F>
+where
+    F: ExtensionFactory,
+{
+    StreamContextFactory(fn(&mut F, InstanceId) -> Box<dyn StreamContext>),
+    HttpContextFactory(fn(&mut F, InstanceId) -> Box<dyn HttpContext>),
+}
 
 pub(crate) struct ExtensionFactoryContext<'a, F>
 where
     F: ExtensionFactory,
 {
-    factory: F,
+    factory: RefCell<F>,
     context_ops: &'a dyn ContextOps,
     factory_ops: &'a dyn Ops,
     error_sink: &'a dyn ErrorSink,
-    child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
+    child_context_factory: ChildContextFactory<F>,
 }
 
 impl<'a, F> RootContext for ExtensionFactoryContext<'a, F>
@@ -41,6 +51,7 @@ where
         };
         match config.and_then(|config| {
             self.factory
+                .borrow_mut()
                 .on_configure(config, self.factory_ops.as_configure_ops())
         }) {
             Ok(status) => status.as_bool(),
@@ -52,12 +63,31 @@ where
         }
     }
 
-    fn on_create_child_context(&mut self, context_id: u32) -> Option<ChildContext> {
-        let new_child_context = self.child_context_factory;
-        Some(new_child_context(
-            &mut self.factory,
-            InstanceId::from(context_id),
-        ))
+    fn get_type(&self) -> Option<ContextType> {
+        match self.child_context_factory {
+            ChildContextFactory::HttpContextFactory(_) => Some(ContextType::HttpContext),
+            ChildContextFactory::StreamContextFactory(_) => Some(ContextType::StreamContext),
+        }
+    }
+
+    fn create_http_context(&self, context_id: u32) -> Option<Box<dyn HttpContext>> {
+        match self.child_context_factory {
+            ChildContextFactory::HttpContextFactory(f) => Some(f(
+                &mut self.factory.borrow_mut(),
+                InstanceId::from(context_id),
+            )),
+            _ => None,
+        }
+    }
+
+    fn create_stream_context(&self, context_id: u32) -> Option<Box<dyn StreamContext>> {
+        match self.child_context_factory {
+            ChildContextFactory::StreamContextFactory(f) => Some(f(
+                &mut self.factory.borrow_mut(),
+                InstanceId::from(context_id),
+            )),
+            _ => None,
+        }
     }
 }
 
@@ -66,7 +96,7 @@ where
     F: ExtensionFactory,
 {
     fn on_done(&mut self) -> bool {
-        match self.factory.on_drain() {
+        match self.factory.borrow_mut().on_drain() {
             Ok(status) => status.as_bool(),
             Err(err) => {
                 self.error_sink
@@ -86,10 +116,10 @@ where
         context_ops: &'a dyn ContextOps,
         factory_ops: &'a dyn Ops,
         error_sink: &'a dyn ErrorSink,
-        child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
+        child_context_factory: ChildContextFactory<F>,
     ) -> Self {
         ExtensionFactoryContext {
-            factory,
+            factory: RefCell::new(factory),
             context_ops,
             factory_ops,
             error_sink,
@@ -98,10 +128,7 @@ where
     }
 
     /// Creates a new factory context bound to the actual Envoy ABI.
-    pub fn with_default_ops(
-        factory: F,
-        child_context_factory: fn(&mut F, InstanceId) -> ChildContext,
-    ) -> Self {
+    pub fn with_default_ops(factory: F, child_context_factory: ChildContextFactory<F>) -> Self {
         Self::new(
             factory,
             ContextOps::default(),

@@ -61,7 +61,7 @@ static_resources:
                   code:
                     local:
                       filename: /etc/envoy/http_filter_module.wasm
-          - name: envoy.router
+          - name: envoy.filters.http.router
 
   - name: mock
     address:
@@ -88,14 +88,19 @@ static_resources:
                   body:
                     inline_string: "Hi from mock service!\n"
           http_filters:
-          - name: envoy.router
+          - name: envoy.filters.http.router
 
   clusters:
   - name: mock_service
     connect_timeout: 0.25s
     type: static
     lb_policy: round_robin
-    hosts:
-    - socket_address:
-        address: 127.0.0.1
-        port_value: 10001
+    load_assignment:
+      cluster_name: mock_service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 10001

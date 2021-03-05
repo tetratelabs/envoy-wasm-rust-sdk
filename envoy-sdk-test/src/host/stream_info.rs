@@ -1177,7 +1177,7 @@ impl StreamInfo for FakeStreamInfo {
                 .map(Encoder::encode_str),
             _ => None,
         };
-        encoded.unwrap_or_else(|| Ok(None))
+        encoded.unwrap_or(Ok(None))
     }
 
     fn set_stream_property(&self, _path: &[&str], _value: &[u8]) -> host::Result<()> {
