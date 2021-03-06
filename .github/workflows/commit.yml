@@ -49,19 +49,13 @@ jobs:
     - name: "Check code mistakes"
       run: cargo clippy --all -- -Dwarnings
 
-  build:
-    name: "Build"
+  build_pr: &build_pr
+    name: "Build (pull request)"
     needs: lint
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        rust: [stable]
-        include:
-        - os: ubuntu-latest
-          rust: beta
-        - os: ubuntu-latest
-          rust: nightly
+        rust: [stable, nightly]
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
@@ -85,10 +79,12 @@ jobs:
 
     - name: "Build"
       run: cargo build:wasm --workspace --verbose
+    if: ${{ github.event_name == 'pull_request' }}
 
-  test:
-    name: "Test"
-    needs: lint
+  # build `master` branch on a wider co
+  build_master:
+    <<: *build_pr
+    name: "Build (master)"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -99,6 +95,15 @@ jobs:
           rust: beta
         - os: ubuntu-latest
           rust: nightly
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+
+  test_pr: &test_pr
+    name: "Test (pull request)"
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, nightly]
     steps:
     - name: "Checkout"
       uses: actions/checkout@v2
@@ -118,6 +123,22 @@ jobs:
 
     - name: "Test"
       run: cargo test --workspace --verbose
+    if: ${{ github.event_name == 'pull_request' }}
+
+  test_master: &test_pr
+    <<: *test_pr
+    name: "Test (master)"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable]
+        include:
+        - os: ubuntu-latest
+          rust: beta
+        - os: ubuntu-latest
+          rust: nightly
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
 
   docs:
     name: "Docs"
