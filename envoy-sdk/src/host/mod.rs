@@ -67,6 +67,7 @@ pub use self::types::{ByteString, HeaderMap};
 
 mod types;
 
+pub mod buffer;
 pub mod error;
 pub mod http;
 pub mod log;

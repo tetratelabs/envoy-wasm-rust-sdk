@@ -101,6 +101,7 @@
 
 use crate::abi::proxy_wasm::types::Action;
 use crate::extension::Result;
+use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 use crate::host::{self, ByteString, HeaderMap};
 
@@ -494,6 +495,13 @@ pub trait RequestBodyOps: RequestFlowOps {
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
     fn request_data(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate request data received from `Downstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_request_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating request trailers.
@@ -551,6 +559,13 @@ pub trait ResponseBodyOps: ResponseFlowOps {
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
     fn response_data(&self, start: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate response data received from `Upstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_response_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating response trailers.

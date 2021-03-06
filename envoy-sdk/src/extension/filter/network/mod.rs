@@ -101,6 +101,7 @@
 
 use crate::abi::proxy_wasm::types::{Action, PeerType};
 use crate::extension::Result;
+use crate::host::buffer::Transform;
 use crate::host::http::client::{HttpClientRequestHandle, HttpClientResponseOps};
 use crate::host::{self, ByteString};
 
@@ -319,6 +320,13 @@ pub trait DownstreamDataOps {
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
     fn downstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate data in the read buffer from `Downstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_downstream_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for manipulating data received from `Upstream`
@@ -331,6 +339,13 @@ pub trait UpstreamDataOps {
     /// * `offset`   - offset to start reading data from.
     /// * `max_size` - maximum size of data to return.
     fn upstream_data(&self, offset: usize, max_size: usize) -> host::Result<ByteString>;
+
+    /// Mutate data received from `Upstream`.
+    ///
+    /// # Arguments
+    ///
+    /// * `change` - transformation to apply to data in the buffer.
+    fn mutate_upstream_data(&self, change: Transform) -> host::Result<()>;
 }
 
 /// An interface for operations available in the context of [`on_downstream_close`]

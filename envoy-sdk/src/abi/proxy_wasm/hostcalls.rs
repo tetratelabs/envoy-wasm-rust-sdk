@@ -52,6 +52,18 @@ pub fn get_buffer(
         .map_err(|err| format_err!(err))
 }
 
+pub fn set_buffer<B>(
+    buffer_type: BufferType,
+    start: usize,
+    size: usize,
+    value: B,
+) -> host::Result<()>
+where
+    B: AsRef<[u8]>,
+{
+    hostcalls::set_buffer(buffer_type, start, size, value).map_err(|err| format_err!(err))
+}
+
 pub fn get_map(map_type: MapType) -> host::Result<HeaderMap> {
     hostcalls::get_map(map_type)
         .map(HeaderMap::from)
