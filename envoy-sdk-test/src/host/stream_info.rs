@@ -65,7 +65,6 @@
 
 use std::time::{Duration, SystemTime};
 
-use envoy::extension::access_logger;
 use envoy::host::stream_info::{ResponseFlags, StreamInfo, TrafficDirection};
 use envoy::host::{self, ByteString, HeaderMap};
 
@@ -1182,60 +1181,6 @@ impl StreamInfo for FakeStreamInfo {
 
     fn set_stream_property(&self, _path: &[&str], _value: &[u8]) -> host::Result<()> {
         Ok(())
-    }
-}
-
-impl access_logger::LogOps for FakeStreamInfo {
-    fn request_headers(&self) -> host::Result<HeaderMap> {
-        Ok(self
-            .request
-            .as_ref()
-            .map(|request| request.message.headers.clone())
-            .unwrap_or_default())
-    }
-
-    fn request_header(&self, name: &str) -> host::Result<Option<ByteString>> {
-        Ok(self
-            .request
-            .as_ref()
-            .map(|request| request.message.headers.get(name).map(Clone::clone))
-            .flatten())
-    }
-
-    fn response_headers(&self) -> host::Result<HeaderMap> {
-        Ok(self
-            .response
-            .as_ref()
-            .map(|response| response.message.headers.clone())
-            .unwrap_or_default())
-    }
-
-    fn response_header(&self, name: &str) -> host::Result<Option<ByteString>> {
-        Ok(self
-            .response
-            .as_ref()
-            .map(|response| response.message.headers.get(name).map(Clone::clone))
-            .flatten())
-    }
-
-    fn response_trailers(&self) -> host::Result<HeaderMap> {
-        Ok(self
-            .response
-            .as_ref()
-            .map(|response| response.message.trailers.clone())
-            .unwrap_or_default())
-    }
-
-    fn response_trailer(&self, name: &str) -> host::Result<Option<ByteString>> {
-        Ok(self
-            .response
-            .as_ref()
-            .map(|response| response.message.trailers.get(name).map(Clone::clone))
-            .flatten())
-    }
-
-    fn stream_info(&self) -> &dyn StreamInfo {
-        self
     }
 }
 

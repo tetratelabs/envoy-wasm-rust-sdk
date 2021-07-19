@@ -16,17 +16,14 @@
 
 use std::fmt;
 
-pub use self::access_logger::AccessLogger;
 pub use self::error::{Error, ErrorContext, Result};
 pub use self::factory::{ConfigStatus, DrainStatus, ExtensionFactory};
 pub use self::filter::http::HttpFilter;
-pub use self::filter::network::NetworkFilter;
 pub use self::module::{install, Module};
 pub use crate::entrypoint;
 
 mod module;
 
-pub mod access_logger;
 pub mod error;
 pub mod factory;
 pub mod filter;

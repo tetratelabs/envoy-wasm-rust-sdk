@@ -14,14 +14,10 @@
 
 use super::{ContextFactory, ContextFactoryHashMap};
 
-use crate::abi::proxy_wasm::traits::{HttpContext, RootContext, StreamContext};
-use crate::extension::access_logger::{AccessLogger, AccessLoggerContext};
+use crate::abi::proxy_wasm::traits::{HttpContext, RootContext};
 use crate::extension::error::ModuleError;
 use crate::extension::factory::{ChildContextFactory, ExtensionFactory, ExtensionFactoryContext};
 use crate::extension::filter::http::{HttpFilter, HttpFilterContext, VoidHttpFilterContext};
-use crate::extension::filter::network::{
-    NetworkFilter, NetworkFilterContext, VoidNetworkFilterContext,
-};
 use crate::extension::{InstanceId, Result};
 
 /// Registry of extensions provided by the WebAssembly module.
@@ -48,55 +44,6 @@ impl Module {
         } else {
             Ok(self)
         }
-    }
-
-    pub fn add_access_logger<T, F>(self, mut new: F) -> Result<Self>
-    where
-        T: AccessLogger + 'static,
-        F: FnMut(InstanceId) -> Result<T> + 'static,
-    {
-        let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
-            let logger = new(InstanceId::from(context_id))?;
-
-            // Bridge between Access Logger abstraction and Proxy Wasm ABI
-            Ok(Box::new(AccessLoggerContext::with_default_ops(logger)))
-        });
-        self.add_extension(T::name(), factory)
-    }
-
-    pub fn add_network_filter<T, F>(self, mut new: F) -> Result<Self>
-    where
-        T: ExtensionFactory + 'static,
-        T::Extension: NetworkFilter,
-        F: FnMut(InstanceId) -> Result<T> + 'static,
-    {
-        let factory = Box::new(move |context_id| -> Result<Box<dyn RootContext>> {
-            let network_filter_factory = new(InstanceId::from(context_id))?;
-
-            // Bridge between Network Filter Factory abstraction and Proxy Wasm ABI
-            Ok(Box::new(ExtensionFactoryContext::with_default_ops(
-                network_filter_factory,
-                ChildContextFactory::StreamContextFactory(
-                    |network_filter_factory, instance_id| -> Box<dyn StreamContext> {
-                        let stream_context: Box<dyn StreamContext> =
-                            match <T as ExtensionFactory>::new_extension(
-                                network_filter_factory,
-                                instance_id,
-                            ) {
-                                Ok(network_filter) => {
-                                    Box::new(NetworkFilterContext::with_default_ops(network_filter))
-                                }
-                                Err(err) => {
-                                    Box::new(VoidNetworkFilterContext::with_default_ops(err))
-                                }
-                            };
-                        // Bridge between Network Filter abstraction and Proxy Wasm ABI
-                        stream_context
-                    },
-                ),
-            )))
-        });
-        self.add_extension(T::name(), factory)
     }
 
     pub fn add_http_filter<T, F>(self, mut new: F) -> Result<Self>

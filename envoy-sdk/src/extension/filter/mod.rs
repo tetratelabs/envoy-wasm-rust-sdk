@@ -15,4 +15,3 @@
 //! `Envoy` filter extensions.
 
 pub mod http;
-pub mod network;

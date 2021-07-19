@@ -54,7 +54,6 @@
 //! ## Example extensions
 //!
 //! * [`Sample HTTP Filter`][`SampleHttpFilter`]
-//! * [`Sample Network Filter`][`SampleNetworkFilter`]
 //! * [`Sample Access Logger`][`SampleAccessLogger`]
 //!
 //! ## How To

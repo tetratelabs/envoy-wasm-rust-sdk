@@ -15,7 +15,6 @@ that brings in structure and guidance for extension developers.
     * [access_logger/](./src/extension/access_logger/) - base types for `Envoy` `Access Logger`s
     * [filter/](./src/extension/filter/) - base types for `Envoy` filters
       * [http/](./src/extension/filter/http/) - base types for `Envoy` `HTTP filters`
-      * [network/](./src/extension/filter/network/) - base types for `Envoy` `Network filters`
   * [host/](./src/host/) - types to represent various `Envoy APIs`
     * [http/](./src/host/http/client.rs) - `Envoy` `HTTP Client API`
     * [stream_info/](./src/host/stream_info/mod.rs) - `Envoy` `Stream Info API`

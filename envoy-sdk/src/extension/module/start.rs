@@ -24,7 +24,7 @@ use crate::extension::{Module, Result};
 ///
 /// ```
 /// # use envoy_sdk as envoy;
-/// # use envoy::extension::{self, AccessLogger, NetworkFilter, HttpFilter, InstanceId, ExtensionFactory};
+/// # use envoy::extension::{self, HttpFilter, InstanceId, ExtensionFactory};
 /// #
 /// # struct MyHttpFilter;
 /// # impl HttpFilter for MyHttpFilter {}
@@ -43,31 +43,6 @@ use crate::extension::{Module, Result};
 /// #     }
 /// # }
 /// #
-/// # struct MyNetworkFilter;
-/// # impl NetworkFilter for MyNetworkFilter {}
-/// #
-/// # struct MyNetworkFilterFactory;
-/// # impl MyNetworkFilterFactory {
-/// #     fn default() -> extension::Result<Self> { Ok(MyNetworkFilterFactory) }
-/// # }
-/// # impl ExtensionFactory for MyNetworkFilterFactory {
-/// #     type Extension = MyNetworkFilter;
-/// #
-/// #     fn name() -> &'static str { "my_network_filter" }
-/// #
-/// #     fn new_extension(&mut self, instance_id: InstanceId) -> extension::Result<Self::Extension> {
-/// #         Ok(MyNetworkFilter)
-/// #     }
-/// # }
-/// #
-/// # struct MyAccessLogger;
-/// # impl AccessLogger for MyAccessLogger {
-/// #     fn name() -> &'static str { "my_access_logger" }
-/// # }
-/// # impl MyAccessLogger {
-/// #     fn default() -> extension::Result<Self> { Ok(MyAccessLogger) }
-/// # }
-/// #
 /// use envoy::extension::{entrypoint, Module, Result};
 ///
 /// entrypoint! { initialize } // put initialization logic into a function to make it unit testable
@@ -79,9 +54,7 @@ use crate::extension::{Module, Result};
 ///     // arbitrary initialization steps
 ///
 ///     Module::new()
-///         .add_http_filter(|_instance_id| MyHttpFilterFactory::default())?
-///         .add_network_filter(|_instance_id| MyNetworkFilterFactory::default())?
-///         .add_access_logger(|_instance_id| MyAccessLogger::default())
+///         .add_http_filter(|_instance_id| MyHttpFilterFactory::default())
 /// }
 /// ```
 #[macro_export]

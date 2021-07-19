@@ -14,7 +14,6 @@
 
 use std::time::{Duration, SystemTime};
 
-use envoy::extension::access_logger;
 use envoy::host::stream_info::{ResponseFlags, TrafficDirection};
 use envoy::host::{HeaderMap, Result, StreamInfo};
 
@@ -323,74 +322,3 @@ fn test_plugin() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn test_headers() -> Result<()> {
-    let fake_info = FakeStreamInfo::new().with(|info| {
-        info.request()
-            .method("GET")
-            .scheme("https")
-            .host("www.example.com")
-            .path("/search?q=example")
-            .protocol("HTTP/1.1")
-            .header("content-type", "application/json")
-            .header("content-length", "1001")
-            .header("user-agent", "curl")
-            .header("referer", "https://www.example.com");
-        info.response()
-            .status_code(201)
-            .header("content-type", "application/json")
-            .header("content-length", "2002")
-            .trailer("grpc-message", "UNKNOWN")
-            .size(1024)
-            .grpc_status(1);
-    });
-    let log_ops: &dyn access_logger::LogOps = &fake_info;
-
-    assert_eq!(
-        log_ops.request_headers()?,
-        HeaderMap::builder()
-            .header(":method", "GET")
-            .header(":scheme", "https")
-            .header(":authority", "www.example.com")
-            .header(":path", "/search?q=example")
-            .header("content-type", "application/json")
-            .header("content-length", "1001")
-            .header("user-agent", "curl")
-            .header("referer", "https://www.example.com")
-            .build()
-    );
-    assert_eq!(
-        log_ops.request_header("content-type")?,
-        Some("application/json".into())
-    );
-    assert_eq!(log_ops.request_header("x-custom-header")?, None);
-
-    assert_eq!(
-        log_ops.response_headers()?,
-        HeaderMap::builder()
-            .header(":status", "201")
-            .header("content-type", "application/json")
-            .header("content-length", "2002")
-            .build()
-    );
-    assert_eq!(
-        log_ops.response_header("content-length")?,
-        Some("2002".into())
-    );
-    assert_eq!(log_ops.response_header("x-custom-header")?, None);
-
-    assert_eq!(
-        log_ops.response_trailers()?,
-        HeaderMap::builder()
-            .header("grpc-message", "UNKNOWN")
-            .header("grpc-status", "1")
-            .build()
-    );
-    assert_eq!(
-        log_ops.response_trailer("grpc-message")?,
-        Some("UNKNOWN".into())
-    );
-    assert_eq!(log_ops.response_trailer("x-custom-trailer")?, None);
-
-    Ok(())
-}

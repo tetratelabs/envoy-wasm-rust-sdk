@@ -242,8 +242,6 @@ impl DrainStatus {
 ///
 /// [`ExtensionFactory`]: trait.ExtensionFactory.html
 /// [`HttpFilter`]: ../filter/http/trait.HttpFilter.html
-/// [`NetworkFilter`]: ../filter/network/trait.NetworkFilter.html
-/// [`AccessLogger`]: ../access_logger/trait.AccessLogger.html
 pub trait ExtensionFactory {
     type Extension;
 
