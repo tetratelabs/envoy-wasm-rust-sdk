@@ -2,7 +2,7 @@
 name = "envoy-sdk"
 version = "0.2.0-alpha.1"
 authors = ["Tetrate Labs <tetratelabs@tetrate.io>"]
-description = "Rust SDK for WebAssembly-based Envoy extensions"
+description = "Deprecated. Try proxy-wasm instead"
 license = "Apache-2.0"
 repository = "https://github.com/tetratelabs/envoy-wasm-rust-sdk/"
 readme = "README.md"
@@ -31,3 +31,8 @@ log = { version = "0.4", optional = true }
 
 [dev-dependencies]
 version-sync = "0.9"
+
+[badges]
+# Note: This is not used by crates.io, yet. The only way to change crates.io at the moment is yanking.
+# See https://github.com/rust-lang/crates.io/issues/2437
+maintenance = { status = "deprecated" }
